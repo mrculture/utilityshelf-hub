@@ -1,15 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://utilityshelf.pages.dev/</loc>
+    <loc>https://utilityshelf.site/</loc>
   </url>
   <url>
-    <loc>https://utilityshelf.pages.dev/terms.html</loc>
+    <loc>https://utilityshelf.site/terms.html</loc>
   </url>
   <url>
-    <loc>https://utilityshelf.pages.dev/privacy.html</loc>
+    <loc>https://utilityshelf.site/privacy.html</loc>
   </url>
   <url>
-    <loc>https://utilityshelf.pages.dev/contact.html</loc>
+    <loc>https://utilityshelf.site/contact.html</loc>
+  </url>
+  <url>
+    <loc>https://utilityshelf.site/guides.html</loc>
+  </url>
+  <url>
+    <loc>https://utilityshelf.site/guides/clean-pasted-text-before-publishing.html</loc>
+  </url>
+  <url>
+    <loc>https://utilityshelf.site/guides/remove-invisible-characters.html</loc>
+  </url>
+  <url>
+    <loc>https://utilityshelf.site/guides/why-pdf-text-breaks-forms.html</loc>
+  </url>
+  <url>
+    <loc>https://utilityshelf.site/guides/clean-newsletter-copy.html</loc>
+  </url>
+  <url>
+    <loc>https://utilityshelf.site/guides/redact-emails-phone-numbers.html</loc>
+  </url>
+  <url>
+    <loc>https://utilityshelf.site/guides/remove-tracking-parameters.html</loc>
+  </url>
+  <url>
+    <loc>https://utilityshelf.site/guides/utm-fbclid-gclid-msclkid.html</loc>
+  </url>
+  <url>
+    <loc>https://utilityshelf.site/guides/clean-links-client-emails.html</loc>
+  </url>
+  <url>
+    <loc>https://utilityshelf.site/guides/clean-links-social-posts.html</loc>
+  </url>
+  <url>
+    <loc>https://utilityshelf.site/guides/check-url-after-removing-tracking.html</loc>
   </url>
 </urlset>

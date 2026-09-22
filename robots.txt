@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://utilityshelf.pages.dev/sitemap.xml
+Sitemap: https://utilityshelf.site/sitemap.xml

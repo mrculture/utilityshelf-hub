@@ -14,15 +14,15 @@
       content="A growing shelf of focused browser tools for text, links, and everyday digital work."
     >
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://utilityshelf.pages.dev/">
-    <link rel="canonical" href="https://utilityshelf.pages.dev/">
-    <link rel="stylesheet" href="styles.css?v=20260528-hub1">
+    <meta property="og:url" content="https://utilityshelf.site/">
+    <link rel="canonical" href="https://utilityshelf.site/">
+    <link rel="stylesheet" href="styles.css?v=20260605-digital1">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "UtilityShelf",
-        "url": "https://utilityshelf.pages.dev/",
+        "url": "https://utilityshelf.site/",
         "description": "A growing shelf of small, practical browser tools for cleaning text, links, and everyday digital work."
       }
     </script>
@@ -38,6 +38,7 @@
       </a>
       <nav aria-label="Main">
         <a href="#tools">Tools</a>
+        <a href="guides.html">Guides</a>
         <a href="#roadmap">Roadmap</a>
         <a href="contact.html">Contact</a>
       </nav>
@@ -45,12 +46,38 @@
 
     <main>
       <section class="intro" aria-labelledby="page-title">
-        <p class="eyebrow">Micro utility network</p>
-        <h1 id="page-title">Small tools for everyday digital cleanup.</h1>
-        <p class="lede">
-          UtilityShelf collects focused browser-first utilities that help you clean,
-          check, prepare, and share everyday content without turning a tiny job into a project.
-        </p>
+        <div class="intro-copy">
+          <p class="eyebrow">Micro utility network</p>
+          <h1 id="page-title">Small tools for everyday digital cleanup.</h1>
+          <p class="lede">
+            UtilityShelf collects focused browser-first utilities that help you clean,
+            check, prepare, and share everyday content without turning a tiny job into a project.
+          </p>
+          <div class="signal-row" aria-label="UtilityShelf status">
+            <span><strong>2</strong> live tools</span>
+            <span><strong>3</strong> coming soon</span>
+            <span><strong>0</strong> installs needed</span>
+            <span><strong>Fast</strong> browser-first flow</span>
+          </div>
+        </div>
+        <div class="workspace-visual" aria-hidden="true">
+          <div class="visual-toolbar">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="visual-grid">
+            <span>clean.text()</span>
+            <span>strip.trackers()</span>
+            <span>check.meta()</span>
+            <span>build.script()</span>
+            <span>scan.email()</span>
+            <span>ship.ready()</span>
+          </div>
+          <div class="visual-meter">
+            <span></span>
+          </div>
+        </div>
       </section>
 
       <section class="tools" id="tools" aria-labelledby="tools-title">
@@ -60,26 +87,73 @@
         </div>
 
         <div class="tool-grid">
-          <article class="tool-card">
+          <article class="tool-card tool-card-text">
+            <span class="tool-icon" aria-hidden="true">T</span>
             <p class="tag">Text cleanup</p>
             <h3>CleanText Shelf</h3>
             <p>
               Remove hidden characters, tidy formatting, clean tracking links, and redact
               sensitive details before pasting text elsewhere.
             </p>
-            <a class="button" href="https://cleantext-shelf-git.pages.dev/">Open CleanText</a>
+            <a class="button" href="https://cleantext.utilityshelf.site/">Open CleanText</a>
           </article>
 
-          <article class="tool-card">
+          <article class="tool-card tool-card-link">
+            <span class="tool-icon" aria-hidden="true">L</span>
             <p class="tag">Link cleanup</p>
             <h3>LinkClean Shelf</h3>
             <p>
               Remove common tracking parameters from copied URLs while keeping useful
               destination parameters intact.
             </p>
-            <a class="button" href="https://linkclean-shelf.pages.dev/">Open LinkClean</a>
+            <a class="button" href="https://linkclean.utilityshelf.site/">Open LinkClean</a>
+          </article>
+
+          <article class="tool-card tool-card-meta">
+            <span class="tool-icon" aria-hidden="true">M</span>
+            <p class="tag">Coming soon</p>
+            <h3>Metadata Checker</h3>
+            <p>
+              Audit titles, descriptions, canonical tags, robots directives, Open Graph
+              cards, and Twitter metadata before publishing a page.
+            </p>
+            <span class="button button-muted" aria-disabled="true">Planned</span>
+          </article>
+
+          <article class="tool-card tool-card-script">
+            <span class="tool-icon" aria-hidden="true">S</span>
+            <p class="tag">Coming soon</p>
+            <h3>System Care Script Builder</h3>
+            <p>
+              Build cautious Windows cleanup scripts with dry-run options, restore point
+              prompts, and reviewable output.
+            </p>
+            <span class="button button-muted" aria-disabled="true">Planned</span>
+          </article>
+
+          <article class="tool-card tool-card-mail">
+            <span class="tool-icon" aria-hidden="true">@</span>
+            <p class="tag">Coming soon</p>
+            <h3>TempMail</h3>
+            <p>
+              Check emails, domains, and URLs against a bundled disposable-mail domain
+              list with local allow and block overrides.
+            </p>
+            <span class="button button-muted" aria-disabled="true">Planned</span>
           </article>
         </div>
+      </section>
+
+      <section class="guide-band" aria-labelledby="guide-band-title">
+        <div>
+          <p class="eyebrow">Guides</p>
+          <h2 id="guide-band-title">Practical cleanup checklists.</h2>
+          <p>
+            Short guides for cleaning pasted text, removing tracking links, and preparing
+            everyday digital work before publishing or sharing.
+          </p>
+        </div>
+        <a class="button" href="guides.html">Browse Guides</a>
       </section>
 
       <section class="roadmap" id="roadmap" aria-labelledby="roadmap-title">
@@ -104,6 +178,7 @@
       <div class="footer-inner">
         <p>UtilityShelf is an early-stage network of practical micro utilities.</p>
         <nav aria-label="Footer">
+          <a href="guides.html">Guides</a>
           <a href="terms.html">Terms</a>
           <a href="privacy.html">Privacy</a>
           <a href="contact.html">Contact</a>

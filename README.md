@@ -4,8 +4,14 @@ Central catalogue site for the UtilityShelf micro utility network.
 
 ## Live Tools
 
-- CleanText Shelf: https://cleantext-shelf-git.pages.dev/
-- LinkClean Shelf: https://linkclean-shelf.pages.dev/
+- CleanText Shelf: https://cleantext.utilityshelf.site/
+- LinkClean Shelf: https://linkclean.utilityshelf.site/
+
+## Coming Soon
+
+- Metadata Checker: https://metadata-checker.utilityshelf.site/
+- System Care Script Builder: https://system-care-script-builder.utilityshelf.site/
+- TempMail: https://tempmail.utilityshelf.site/
 
 ## Publishing
 
