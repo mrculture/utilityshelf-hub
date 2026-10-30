@@ -623,3 +623,15 @@ footer p {
     min-height: 0;
   }
 }
+
+
+.example-block {
+  background: var(--panel-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 0.95rem;
+  padding: 14px 16px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

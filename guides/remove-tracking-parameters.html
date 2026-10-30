@@ -6,7 +6,7 @@
     <title>How to Remove Tracking Parameters From Copied Links | UtilityShelf</title>
     <meta name="description" content="A practical checklist for removing common tracking parameters from copied URLs before sharing them.">
     <link rel="canonical" href="https://utilityshelf.site/guides/remove-tracking-parameters">
-    <link rel="stylesheet" href="../styles.css?v=20260605-guides1">
+    <link rel="stylesheet" href="../styles.css?v=20261030-guides2">
   </head>
   <body>
     <header class="site-header"><a class="brand" href="/"><span class="brand-mark">U</span><span><strong>UtilityShelf</strong><small>Practical browser tools</small></span></a><nav aria-label="Main"><a href="/#tools">Tools</a><a href="/guides">Guides</a></nav></header>
@@ -15,6 +15,13 @@
       <h1>How to remove tracking parameters from copied links</h1>
       <p>Many copied links include campaign tags, social click IDs, ad identifiers, and email tracking fields. They can make a URL long and reveal where it was copied from. Removing obvious tracking parameters makes links easier to read and share.</p>
       <div class="tool-callout"><h2>Clean links in your browser</h2><p>LinkClean Shelf removes common tracking parameters while keeping destination parameters that may be needed for the page to work.</p><a class="button" href="https://linkclean.utilityshelf.site/">Open LinkClean</a></div>
+      <h2>Worked example: keep the useful parameter</h2>
+      <p>This is an illustrative URL. The campaign tag describes where the link came from; the <code>section</code> value identifies a destination view and should remain.</p>
+      <p><strong>Before</strong></p>
+      <pre class="example-block"><code>https://example.com/article?utm_source=newsletter&amp;section=pricing</code></pre>
+      <p><strong>After</strong></p>
+      <pre class="example-block"><code>https://example.com/article?section=pricing</code></pre>
+      <p>Paste a real URL into LinkClean with <strong>Remove tracking parameters</strong> enabled, then select <strong>Clean Links</strong>. Open the cleaned URL and confirm it still shows the intended page before sharing it. If a removed parameter changes the destination or breaks access, keep the original link.</p>
       <h2>Checklist</h2>
       <ol class="checklist">
         <li>Paste the URL into a link cleaner.</li>
