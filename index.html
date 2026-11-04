@@ -16,7 +16,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://utilityshelf.site/">
     <link rel="canonical" href="https://utilityshelf.site/">
-    <link rel="stylesheet" href="styles.css?v=20260605-digital1">
+    <link rel="stylesheet" href="/styles.css?v=20261104-companions">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -39,7 +39,7 @@
       <nav aria-label="Main">
         <a href="#tools">Tools</a>
         <a href="/guides">Guides</a>
-        <a href="#roadmap">Roadmap</a>
+        <a href="#companions">Companion tools</a>
         <a href="/contact">Contact</a>
       </nav>
     </header>
@@ -54,7 +54,7 @@
             check, prepare, and share everyday content without turning a tiny job into a project.
           </p>
           <div class="signal-row" aria-label="UtilityShelf status">
-            <span><strong>6</strong> live tools</span>
+            <span><strong>16</strong> live tools</span>
             <span><strong>1</strong> under safety review</span>
             <span><strong>0</strong> installs needed</span>
             <span><strong>Fast</strong> browser-first flow</span>
@@ -70,7 +70,7 @@
             <span>clean.text()</span>
             <span>strip.trackers()</span>
             <span>check.meta()</span>
-            <span>build.script()</span>
+            <span>check.image()</span>
             <span>scan.email()</span>
             <span>ship.ready()</span>
           </div>
@@ -96,6 +96,7 @@
               sensitive details before pasting text elsewhere.
             </p>
             <a class="button" href="https://cleantext.utilityshelf.site/">Open CleanText</a>
+            <p><a href="/utilities/list-difference/">Compare two cleaned lists</a></p>
           </article>
 
           <article class="tool-card tool-card-link">
@@ -107,6 +108,7 @@
               destination parameters intact.
             </p>
             <a class="button" href="https://linkclean.utilityshelf.site/">Open LinkClean</a>
+            <p><a href="/utilities/utm-link-builder/">Build a campaign link</a></p>
           </article>
 
           <article class="tool-card tool-card-meta">
@@ -118,6 +120,7 @@
               cards, and Twitter metadata before publishing a page.
             </p>
             <a class="button" href="https://metadata-checker.utilityshelf.site/">Open Metadata Checker</a>
+            <p><a href="/utilities/heading-outline-checker/">Review an HTML heading outline</a></p>
             <p><a href="https://metadata-checker.utilityshelf.site/#launch-example">Find a leftover noindex tag before launch</a></p>
           </article>
 
@@ -127,6 +130,7 @@
             <h3>Filename Cleaner</h3>
             <p>Clean a batch of filenames, preserve extensions, and resolve duplicates before copying the final list.</p>
             <a class="button" href="https://filename-cleaner.utilityshelf.site/">Clean filenames</a>
+            <p><a href="/utilities/image-dimension-checker/">Check photo dimensions</a></p>
             <p><a href="https://filename-cleaner.utilityshelf.site/#five-photo-example">Try the five-photo example</a></p>
           </article>
 
@@ -136,6 +140,7 @@
             <h3>CSV Import Checker</h3>
             <p>Find duplicate headings, unexpected separators, and rows with missing or extra fields before importing a file.</p>
             <a class="button" href="https://csv-import-checker.utilityshelf.site/">Check a CSV before importing</a>
+            <p><a href="/utilities/csv-column-mapper/">Map columns to a template</a></p>
             <p><a href="https://csv-import-checker.utilityshelf.site/#inventory-example">Try the inventory example</a></p>
           </article>
 
@@ -159,8 +164,41 @@
               list with local allow and block overrides.
             </p>
             <a class="button" href="https://tempmail.utilityshelf.site/">Open TempMail Checker</a>
+            <p><a href="/utilities/list-difference/">Compare two domain lists</a></p>
             <p><a href="https://tempmail.utilityshelf.site/#domain-example">Compare three disposable email check results</a></p>
           </article>
+        </div>
+      </section>
+
+      <section class="tools" id="companions" aria-labelledby="companions-title">
+        <div class="section-heading">
+          <p class="eyebrow">File, import and publishing tasks</p>
+          <h2 id="companions-title">One-page companion tools</h2>
+          <p>Pick the step you need. Each tool includes a sample you can try before using your own files or text.</p>
+        </div>
+        <div class="companion-directory">
+          <section class="companion-group"><h3>Files and photos</h3>
+            <ul>
+              <li><a href="/utilities/image-dimension-checker/">Image Dimension Checker</a><span>Find product photos outside a width, height or file-size limit.</span></li>
+              <li><a href="/utilities/image-contact-sheet/">Image Contact Sheet</a><span>Make a labelled image grid to review or share.</span></li>
+              <li><a href="/utilities/file-checksum/">File Checksum</a><span>Compare a file’s SHA-256 fingerprint with an expected digest.</span></li>
+            </ul>
+          </section>
+          <section class="companion-group"><h3>Data imports</h3>
+            <ul>
+              <li><a href="/utilities/csv-column-mapper/">CSV Column Mapper</a><span>Rename and reorder supplier columns to match an import template.</span></li>
+              <li><a href="/utilities/csv-formula-checker/">CSV Formula Checker</a><span>Find cells a spreadsheet might interpret as formulas.</span></li>
+              <li><a href="/utilities/list-difference/">List Difference</a><span>Compare expected and actual lists of identifiers.</span></li>
+              <li><a href="/utilities/jsonl-import-checker/">JSON Lines Import Checker</a><span>Locate invalid records in a newline-delimited JSON file.</span></li>
+            </ul>
+          </section>
+          <section class="companion-group"><h3>Publishing</h3>
+            <ul>
+              <li><a href="/utilities/heading-outline-checker/">Heading Outline Checker</a><span>Review the heading order in an HTML draft.</span></li>
+              <li><a href="/utilities/utm-link-builder/">UTM Link Builder</a><span>Add campaign tags while preserving the destination of a link.</span></li>
+              <li><a href="/utilities/slug-generator/">Batch Slug Generator</a><span>Plan URL paths for a batch of titles and catch collisions.</span></li>
+            </ul>
+          </section>
         </div>
       </section>
 

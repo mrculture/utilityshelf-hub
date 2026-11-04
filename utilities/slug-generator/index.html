@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Turn draft titles into readable URL segments and catch duplicate slugs before you create the pages.">
+  <link rel="canonical" href="https://utilityshelf.site/utilities/slug-generator/">
+  <link rel="stylesheet" href="/utilities/shared.css">
+  <script src="/utilities/slug-generator/app.js" defer></script>
+  <title>Batch Slug Generator | UtilityShelf</title>
+</head>
+<body>
+  <header><a href="/#companions">UtilityShelf tools</a></header>
+  <main>
+    <p class="eyebrow">URL planning</p>
+    <h1>Batch Slug Generator</h1>
+    <p class="intro">Turn draft titles into readable URL segments and catch duplicate slugs before you create the pages.</p>
+    <noscript>Enable JavaScript to run this tool in your browser.</noscript>
+    <section class="panel">
+      <h2>Prepare titles</h2>
+      <form id="builder"><label for="titles">Page titles, one per line</label><textarea id="titles" rows="5" placeholder="Café guide&#10;Winter menu" required></textarea>
+      <label for="fold"><input id="fold" type="checkbox"> Simplify accented Latin letters where possible (é → e)</label>
+      <div class="actions"><button type="submit">Generate slugs</button> <button type="button" id="sample">Try title batch</button></div></form>
+    </section>
+    <section class="panel">
+      <h2>Review URL segments</h2><p id="summary" role="status">Enter at least one title.</p>
+      <div id="result" hidden><ol id="rows"></ol>
+        <div id="copy-area" hidden><label for="output">Final slugs in title order</label><textarea id="output" rows="4" readonly></textarea><button type="button" id="select">Select all slugs</button></div>
+      </div>
+    </section>
+    <section class="panel"><h2>Where a slug goes</h2>
+      <p>For a page called “Summer Menu”, use <code>summer-menu</code> as the final segment of a URL such as <code>/journal/summer-menu</code>. The tool keeps letters from different writing systems, uses hyphens between words and shows the encoded segment for links.</p>
+      <p>When two titles produce the same segment, make one title more specific and generate again. Confirm the final path in your CMS: this check covers duplicates in this batch only. <a href="https://developers.google.com/search/docs/crawling-indexing/url-structure">Google’s URL structure guidance</a></p>
+    </section>
+    <p>Preparing names for files too? <a href="https://filename-cleaner.utilityshelf.site/">Open Filename Cleaner</a>.</p>
+  </main>
+  <footer><a href="/#companions">All companion tools</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "104d69dafb54484bbb4e18e34d50c835"}'></script>
+</body>
+</html>

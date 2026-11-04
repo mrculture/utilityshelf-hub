@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Tag a campaign link and review what changes before sharing it in a newsletter, advert or social post.">
+  <link rel="canonical" href="https://utilityshelf.site/utilities/utm-link-builder/">
+  <link rel="stylesheet" href="/utilities/shared.css">
+  <script src="/utilities/utm-link-builder/app.js" defer></script>
+  <title>UTM Link Builder | UtilityShelf</title>
+</head>
+<body>
+  <header><a href="/#companions">UtilityShelf tools</a></header>
+  <main>
+    <p class="eyebrow">Campaign publishing</p>
+    <h1>UTM Link Builder</h1>
+    <p class="intro">Tag a campaign link and review what changes before sharing it in a newsletter, advert or social post.</p>
+    <noscript>Enable JavaScript to run this tool in your browser.</noscript>
+    <section class="panel">
+      <h2>Build a campaign link</h2>
+      <p>Use the naming convention from your analytics reports. Capital letters in tag values are preserved.</p>
+      <form id="builder">
+        <label for="destination">Destination URL</label>
+        <input id="destination" type="url" required placeholder="https://example.com/shop?section=mugs#blue" autocomplete="off">
+        <label for="source">Campaign source</label><input id="source" required placeholder="weekly-newsletter">
+        <label for="medium">Campaign medium</label><input id="medium" required placeholder="email">
+        <label for="campaign">Campaign name</label><input id="campaign" required placeholder="winter-launch">
+        <label for="content">Content tag (optional)</label><input id="content" placeholder="hero-button">
+        <label for="term">Keyword tag (optional)</label><input id="term" placeholder="blue mugs">
+        <div class="actions"><button type="submit">Build link</button> <button type="button" id="sample">Try newsletter example</button></div>
+      </form>
+    </section>
+    <section class="panel">
+      <h2>Tagged URL</h2>
+      <p id="summary" role="status">Enter a destination and the three campaign fields.</p>
+      <div id="result" hidden>
+        <label for="output">Select and copy your URL</label><textarea id="output" rows="3" readonly></textarea>
+        <button type="button" id="select">Select URL</button>
+        <h3>Tag changes</h3><ul id="changes"></ul>
+      </div>
+    </section>
+    <section class="panel"><h2>Before you share</h2>
+      <p>The builder replaces tags you fill in and preserves other query parameters, their order and the fragment. Blank optional fields keep their existing tags. Check the destination yourself before sending. Avoid tagging signed or single-use links because changing their query string can invalidate them.</p>
+      <p>Build the tag here and measure visits in your destination’s analytics. <a href="https://support.google.com/analytics/answer/10917952">Google Analytics campaign tagging guide</a></p>
+    </section>
+    <p>Need a clean copy for personal sharing? <a href="https://linkclean.utilityshelf.site/">Open LinkClean</a>.</p>
+  </main>
+  <footer><a href="/#companions">All companion tools</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "104d69dafb54484bbb4e18e34d50c835"}'></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CSV Formula Checker | UtilityShelf</title>
+  <meta name="description" content="Find cells that might open as formulas before sharing a CSV. Review their row, column and visible starting characters.">
+  <link rel="canonical" href="https://utilityshelf.site/utilities/csv-formula-checker/">
+  <link rel="stylesheet" href="/utilities/shared.css">
+
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header><a href="/#companions">UtilityShelf tools</a></header>
+  <main>
+    <p class="eyebrow">Data preparation</p>
+    <h1>CSV Formula Checker</h1>
+    <p class="intro">Find cells that might open as formulas before sharing a CSV. Review their row, column and visible starting characters.</p>
+
+    <section class="panel">
+      <h2>Inspect an export</h2>
+      <label for="file">Open a UTF-8 text file (up to 2 MiB)</label>
+      <input type="file" id="file" accept=".csv,.tsv,.txt,text/csv,text/plain">
+      <label for="source">Or paste the file contents</label>
+      <textarea id="source" rows="7" spellcheck="false" placeholder="Order,Customer note"></textarea>
+      <label for="delimiter">Field separator used in this file</label>
+      <select id="delimiter"><option value="comma">Comma</option><option value="semicolon">Semicolon</option><option value="tab">Tab</option></select>
+      <div class="actions"><button id="scan" type="button">Check fields</button> <button id="sample" type="button">Try order notes</button></div>
+      <p id="summary" role="status">Choose the separator your spreadsheet uses.</p>
+    </section>
+    <section class="panel" aria-labelledby="flags">
+      <h2 id="flags">Fields to review</h2>
+      <ol id="issues"></ol>
+      <p>Locations count the header as record 1. The line number is the start of that record in the file. Tabs and line breaks appear as escape sequences in each preview.</p>
+    </section>
+    <section>
+      <h2>Why a quoted field can still matter</h2>
+      <p>In the example, <code>"=SUM(2,3)"</code> is one CSV field. After the spreadsheet reads the quotes, the value starts with an equals sign. Confirm that the sender intended a formula; otherwise import that column as text. The signed amount <code>-12.50</code> also merits a look even though it may be an ordinary refund.</p>
+      <p>The checker reads the header and every field as text in this tab. It flags formula prefixes, including full-width variants and leading controls. Spreadsheet behaviour varies with application, locale and import settings. A clear report only means this prefix check found no matches.</p>
+      <p><a href="https://community.owasp.org/attacks/CSV_Injection">OWASP's explanation of CSV formula injection</a> · <a href="/utilities/csv-column-mapper/">Rearrange CSV columns</a></p>
+    </section>
+  </main>
+  <footer><a href="/#companions">More utilities</a> · <a href="https://csv-import-checker.utilityshelf.site/">CSV Import Checker</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "104d69dafb54484bbb4e18e34d50c835"}'></script>
+</body>
+</html>

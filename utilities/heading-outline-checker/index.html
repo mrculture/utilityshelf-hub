@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Review the headings in pasted HTML. Find empty headings and skipped levels before publishing a draft.">
+  <link rel="canonical" href="https://utilityshelf.site/utilities/heading-outline-checker/">
+  <link rel="stylesheet" href="/utilities/shared.css">
+  <script src="/utilities/heading-outline-checker/app.js" defer></script>
+  <title>Heading Outline Checker | UtilityShelf</title>
+</head>
+<body>
+  <header><a href="/#companions">UtilityShelf tools</a></header>
+  <main>
+    <p class="eyebrow">Page structure</p>
+    <h1>Heading Outline Checker</h1>
+    <p class="intro">Review the headings in pasted HTML. Find empty headings and skipped levels before publishing a draft.</p>
+    <noscript>Enable JavaScript to run this tool in your browser.</noscript>
+    <section class="panel">
+      <h2>Inspect a document or fragment</h2><form id="builder">
+        <label for="markup">HTML source</label><textarea id="markup" rows="7" spellcheck="false" placeholder="&lt;h1&gt;Care guide&lt;/h1&gt;&#10;&lt;h2&gt;Washing&lt;/h2&gt;" required></textarea>
+        <div class="actions"><button type="submit">Check outline</button> <button type="button" id="sample">Try draft article</button></div></form>
+    </section>
+    <section class="panel"><h2>Heading order</h2><p id="summary" role="status">Paste HTML to see its heading order.</p><ol id="outline"></ol><ul id="notes"></ul></section>
+    <section class="panel"><h2>Read the outline</h2>
+      <p>Read the headings as a table of contents. Going from H2 straight to H4 can leave a missing section level. Returning from H4 to H2 can simply close a subsection.</p>
+      <p>The checker reads native H1–H6 elements from the supplied markup. It skips explicitly hidden content and template contents. Stylesheets, JavaScript-generated content, ARIA heading roles and a full accessibility-tree evaluation are outside this check. For a fragment, review the surrounding document before acting on H1 advice.</p>
+      <p><a href="https://www.w3.org/WAI/tutorials/page-structure/headings/">W3C guide to heading structure</a></p>
+    </section>
+    <p>Also review the page title used in search previews. <a href="https://metadata-checker.utilityshelf.site/">Open Metadata Checker</a>.</p>
+  </main>
+  <footer><a href="/#companions">All companion tools</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "104d69dafb54484bbb4e18e34d50c835"}'></script>
+</body>
+</html>
