@@ -283,6 +283,10 @@ h1 {
   margin-top: 34px;
 }
 
+.tools {
+  scroll-margin-top: 110px;
+}
+
 .section-heading {
   align-items: end;
   display: flex;
@@ -635,10 +639,3 @@ footer p {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.companion-directory { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr)); gap:16px }
-.companion-group { background:#fff; border:1px solid #d4dfd9; border-top:4px solid #087f6f; border-radius:8px; padding:18px; min-width:0 }
-.companion-group h3 { margin:0; font-size:1.25rem }
-.companion-group ul { list-style:none; padding:0; margin:12px 0 0 }
-.companion-group li { padding:12px 0; border-top:1px solid #e1e7e3 }
-.companion-group a { font-weight:750; color:#075b50; text-underline-offset:3px }
-.companion-group span { display:block; color:#485f56; font-size:.94rem; margin-top:4px }
