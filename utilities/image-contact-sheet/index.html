@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Image Contact Sheet | UtilityShelf</title>
+  <meta name="description" content="Make a downloadable PNG sheet of product photos with numbered filename captions. Review a batch without opening each file individually.">
+  <link rel="canonical" href="https://utilityshelf.site/utilities/image-contact-sheet/">
+  <link rel="stylesheet" href="/utilities/shared.css">
+  <script src="./tool.js" defer></script>
+</head>
+<body>
+  <header><a href="/">UtilityShelf</a><nav aria-label="Main"><a href="/#companions">Browse tools</a></nav></header>
+  <main>
+    <p class="eyebrow">File preparation</p>
+    <h1>Image Contact Sheet</h1>
+    <p class="intro">Make a downloadable PNG sheet of product photos with numbered filename captions. Review a batch without opening each file individually.</p>
+    <section class="panel"><h2>Photos to review</h2>
+      <div class="controls"><div><label for="files">Choose photos</label><input id="files" type="file" accept="image/png,image/jpeg,image/webp" multiple></div>
+      <div><label for="columns">Columns</label><select id="columns"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select></div></div>
+      <p class="hint">Select up to 24 JPEG, PNG or WebP files, up to 32 MB each. Photos are arranged in the order supplied by the file picker, with a number you can match to the filename list below.</p><button id="demo" type="button">Try three product views</button>
+    </section>
+    <section class="panel" aria-label="Results"><h2>Contact sheet preview</h2><p role="status" id="status">Choose photos or try the example.</p><canvas id="sheet" hidden aria-label="Contact sheet preview, with filename list below"></canvas><div class="actions"><button id="download" type="button" disabled>Download PNG</button></div><ol id="names" aria-label="Filenames in sheet order"></ol></section>
+    <section class="panel"><h2>Review the batch before you send it</h2><p>Try the three example views, switch to two columns, and download the sheet. Ask a reviewer for a change to “02” and use the filename list to locate that photo.</p><p>The sheet fits each image inside its cell without cropping. Long captions are shortened on the image; the list preserves the full names. Transparent areas appear white in the thumbnails.</p><p>For submission checks, <a href="/utilities/image-dimension-checker/">check the original image dimensions</a>.</p></section>
+    <p class="hint">Processing takes place on this device. Files you select stay in your browser.</p>
+  </main>
+  <footer><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "104d69dafb54484bbb4e18e34d50c835"}'></script>
+</body></html>

@@ -1,0 +1,35 @@
+/* UtilityShelf companion tools */
+:root { color-scheme: light; --ink: #172e29; --muted: #486459; --accent: #11634d; --line: #c9d8cf; }
+* { box-sizing: border-box }
+body { margin: 0; background: #f4f7f1; color: var(--ink); font: 1rem/1.55 system-ui, sans-serif }
+body > header { padding: .9rem max(calc((100vw - 60rem) / 2), 1.2rem); background: white; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: center }
+header a, footer a { font-weight: 650 }
+header nav, footer nav { display: flex; gap: 1rem; flex-wrap: wrap }
+a { color: var(--accent); text-underline-offset: 3px }
+main { max-width: 62rem; padding: clamp(1rem,4vw,2rem); margin: auto }
+h1 { font-size: clamp(2.25rem,6vw,4.25rem); letter-spacing: -.045em; line-height: 1.05; margin: .4em 0 .25em; overflow-wrap: anywhere }
+h2 { font-size: 1.4rem; line-height: 1.2; margin: 0 0 .65rem }
+h3 { font-size: 1.1rem; margin: .9rem 0 .3rem }
+p { margin: .55rem 0 1rem }
+.eyebrow, .kicker { color: var(--accent); text-transform: uppercase; font-size: .77rem; letter-spacing: .1em; font-weight: 750 }
+.panel, main > form, main > section:not(.hero, .intro, .panel) { margin: 1.3rem 0; padding: clamp(1rem,3.5vw,1.7rem); border: 1px solid var(--line); border-radius: .85rem; background: #fff }
+.hint, .muted, small { color: var(--muted) }
+label { display: block; margin: .55rem 0 .25rem; font-weight: 620 }
+textarea, input, select, button { font: inherit; max-width: 100% }
+textarea, input:not([type=checkbox],[type=radio],[type=range]), select { border: 1px solid #879c91; border-radius: .4rem; padding: .55rem .65rem; background: white; color: var(--ink) }
+textarea { display: block; width: 100%; min-height: 5rem; resize: vertical; font: .94rem/1.45 ui-monospace,Consolas,monospace }
+textarea[readonly], input[readonly] { background: #f5f8f4 }
+button, .button { display: inline-block; cursor: pointer; padding: .5rem .85rem; border: 1px solid #8fa99c; border-radius: .45rem; font-weight: 650; color: var(--accent); background: #eff5ee }
+button[type=submit], button.primary, .primary { background: var(--accent); color: white }
+button:disabled { opacity: .6; cursor: default }
+.actions, .controls { display: flex; align-items: end; flex-wrap: wrap; gap: .65rem; margin: .8rem 0 }
+:focus-visible { outline: 3px solid #207da8; outline-offset: 2px }
+[role=status] { font-weight: 600 }
+table { width: 100%; border-collapse: collapse; font-size: .95rem }
+th, td { text-align: left; vertical-align: top; padding: .55rem; border-bottom: 1px solid var(--line); overflow-wrap: anywhere }
+.table-wrap { overflow-x: auto }
+canvas, img { max-width: 100%; height: auto }
+pre, code, output { overflow-wrap: anywhere }
+pre { white-space: pre-wrap; background: #eef4ec; padding: .8rem; border-radius: .5rem }
+footer { max-width: 62rem; margin: 1rem auto; padding: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .92rem }
+[hidden] { display: none !important }

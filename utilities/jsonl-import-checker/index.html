@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JSON Lines Import Checker | UtilityShelf</title>
+<meta name="description" content="Check a JSONL file one record at a time. Find blank lines, broken JSON and records that are not objects before an import.">
+<link rel="canonical" href="https://utilityshelf.site/utilities/jsonl-import-checker/">
+<link rel="stylesheet" href="/utilities/shared.css"><script defer src="app.js"></script>
+</head><body>
+<header><a href="/">UtilityShelf</a><a href="/#companions">Browse tools</a></header>
+<main><p class="eyebrow">Data imports</p><h1>JSON Lines Import Checker</h1>
+<p>Find the line that breaks a batch import. Each line should contain one complete JSON value. If your importer expects one object per line, turn on the extra check.</p>
+<section class="panel"><h2>Check records</h2>
+<label for="file">Open a UTF-8 JSONL or NDJSON file (up to 4 MiB)</label><input type="file" id="file" accept=".jsonl,.ndjson,.txt">
+<label for="data">Or paste JSON Lines</label><textarea id="data" rows="7" spellcheck="false" placeholder='{"sku":"A101","price":12}'></textarea>
+<label><input type="checkbox" id="objects"> Require a JSON object on every line</label>
+<div class="actions"><button type="button" class="primary" id="check">Check records</button><button id="sample">Try an inventory example</button></div>
+<p class="hint">File contents stay in your browser. An empty line between records counts as an error. A single final newline is fine.</p></section>
+<section class="panel"><h2>Results</h2><p id="status" role="status">Open a file or try the example.</p><ol id="errors"></ol></section>
+<section class="panel"><h2>What to fix in the example</h2><p>Line 2 ends with a comma before the closing brace. Remove the comma, then check again. Line 3 contains <code>null</code>. That is valid JSON Lines, but an inventory importer that requires objects may reject it.</p>
+<p>This checks JSON syntax and the optional object requirement. Your destination may also require specific keys or value types. For a table with a header row, use <a href="https://csv-import-checker.utilityshelf.site/">CSV Import Checker</a>.</p></section></main>
+<footer><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "104d69dafb54484bbb4e18e34d50c835"}'></script>
+</body></html>

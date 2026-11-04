@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CSV Column Mapper | UtilityShelf</title>
+  <meta name="description" content="Match supplier columns to a destination template. Reorder and rename fields, preview the result, and download the mapped CSV.">
+  <link rel="canonical" href="https://utilityshelf.site/utilities/csv-column-mapper/">
+  <link rel="stylesheet" href="/utilities/shared.css">
+
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header><a href="/#companions">UtilityShelf tools</a></header>
+  <main>
+    <p class="eyebrow">Data preparation</p>
+    <h1>CSV Column Mapper</h1>
+    <p class="intro">Match supplier columns to a destination template. Reorder and rename fields, preview the result, and download the mapped CSV.</p>
+
+    <section class="panel">
+      <h2>Source and destination</h2>
+      <label for="file">Open a UTF-8 CSV (up to 2 MiB)</label>
+      <input type="file" id="file" accept=".csv,text/csv">
+      <label for="source">Source CSV, including its header</label>
+      <textarea id="source" rows="6" spellcheck="false" placeholder="Stock code,Item,Cost"></textarea>
+      <label for="target">Destination headings, as one comma-separated CSV header</label>
+      <textarea id="target" rows="2" spellcheck="false" placeholder="SKU,Title,Price"></textarea>
+      <div class="actions"><button id="prepare" type="button">Set up mapping</button> <button id="sample" type="button">Try supplier inventory</button></div>
+      <p role="status" id="message">Enter both headers to begin.</p>
+    </section>
+    <section class="panel" id="mapping" hidden>
+      <h2>Choose source columns</h2>
+      <p>Each destination column needs a selection. Select “Use empty values” only when your importer accepts a blank column. Source columns you leave unused are excluded.</p>
+      <div id="choices"></div>
+      <button id="generate" type="button">Build mapped CSV</button>
+    </section>
+    <section class="panel" id="result" hidden>
+      <h2>Mapped CSV</h2>
+      <label for="output">Preview (first five data rows)</label>
+      <textarea id="output" rows="7" readonly spellcheck="false"></textarea>
+      <button id="download" type="button">Download full CSV</button>
+    </section>
+    <section>
+      <h2>Try a supplier feed</h2>
+      <p>The example sends <strong>Stock code</strong> to <strong>SKU</strong>, <strong>Supplier title</strong> to <strong>Title</strong> and <strong>Unit cost</strong> to <strong>Price</strong>. The supplier’s internal note drops out. A code such as <code>0012</code> retains its leading zeros in the file; choose a text column when opening it in a spreadsheet.</p>
+      <p>Paste the exact headings from your destination’s own template. The tool checks field counts and quoting; importer-specific required values still need review. Formula-like input values are preserved. <a href="/utilities/csv-formula-checker/">Check formula prefixes</a> before sharing an export.</p>
+    </section>
+  </main>
+  <footer><a href="/#companions">More utilities</a> · <a href="https://csv-import-checker.utilityshelf.site/">CSV Import Checker</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "104d69dafb54484bbb4e18e34d50c835"}'></script>
+</body>
+</html>

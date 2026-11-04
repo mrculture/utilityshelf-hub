@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>List Difference Checker | UtilityShelf</title>
+  <meta name="description" content="Compare two lists of SKUs, filenames or IDs. See what was added, what went missing and what appears in both.">
+  <link rel="canonical" href="https://utilityshelf.site/utilities/list-difference/">
+  <link rel="stylesheet" href="/utilities/shared.css">
+
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header><a href="/#companions">UtilityShelf tools</a></header>
+  <main>
+    <p class="eyebrow">Data preparation</p>
+    <h1>List Difference Checker</h1>
+    <p class="intro">Compare two lists of SKUs, filenames or IDs. See what was added, what went missing and what appears in both.</p>
+
+    <section class="panel">
+      <h2>Compare two snapshots</h2>
+      <div class="grid">
+        <div><label for="a">List A · original</label><textarea id="a" rows="6" spellcheck="false" placeholder="One identifier per line"></textarea></div>
+        <div><label for="b">List B · updated</label><textarea id="b" rows="6" spellcheck="false" placeholder="One identifier per line"></textarea></div>
+      </div>
+      <label><input type="checkbox" id="trim" checked> Ignore spaces at the edges of a line</label>
+      <label><input type="checkbox" id="fold"> Ignore uppercase and lowercase differences</label>
+      <div class="actions"><button type="button" id="compare">Compare lists</button> <button type="button" id="sample">Try a stock check</button></div>
+      <p role="status" id="summary">Paste a snapshot in either box to begin.</p>
+    </section>
+    <section class="panel" id="results" hidden>
+      <h2>Comparison results</h2>
+      <p>Each item appears once per result. Items keep their original spelling and order, using List A for shared items. Select any result to copy its lines.</p>
+      <label for="added">Added · only in B <span id="added-count"></span></label><textarea id="added" rows="4" readonly></textarea>
+      <label for="removed">Missing · only in A <span id="removed-count"></span></label><textarea id="removed" rows="4" readonly></textarea>
+      <label for="shared">In both lists <span id="shared-count"></span></label><textarea id="shared" rows="4" readonly></textarea>
+    </section>
+    <section>
+      <h2>Read a stock check</h2>
+      <p>Compare yesterday’s SKU list with today’s export. If <code>A102</code> appears only in the original, review that product before removing its listing. A repeated SKU still represents one distinct item; the summary counts extra occurrences for each input.</p>
+      <p>Blank lines are skipped. A changed SKU appears once as missing and once as added. For a multi-column inventory file, first extract the identifier column with <a href="/utilities/csv-column-mapper/">CSV Column Mapper</a>.</p>
+    </section>
+  </main>
+  <footer><a href="/#companions">More utilities</a> · <a href="https://csv-import-checker.utilityshelf.site/">CSV Import Checker</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "104d69dafb54484bbb4e18e34d50c835"}'></script>
+</body>
+</html>

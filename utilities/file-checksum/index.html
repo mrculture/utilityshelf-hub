@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>File Checksum Checker | UtilityShelf</title>
+  <meta name="description" content="Calculate the SHA-256 checksum of a local file. Compare it with an expected hash to check whether a download or export matches byte for byte.">
+  <link rel="canonical" href="https://utilityshelf.site/utilities/file-checksum/">
+  <link rel="stylesheet" href="/utilities/shared.css">
+  <script src="./tool.js" defer></script>
+</head>
+<body>
+  <header><a href="/">UtilityShelf</a><nav aria-label="Main"><a href="/#companions">Browse tools</a></nav></header>
+  <main>
+    <p class="eyebrow">File preparation</p>
+    <h1>File Checksum Checker</h1>
+    <p class="intro">Calculate the SHA-256 checksum of a local file. Compare it with an expected hash to check whether a download or export matches byte for byte.</p>
+    <section class="panel"><h2>File to verify</h2>
+      <label for="file">Choose a file to hash</label><input type="file" id="file"><p class="hint">Up to 64 MiB. Your browser reads the complete file into memory to calculate SHA-256.</p><button id="demo" type="button">Try the three-byte example</button>
+    </section>
+    <section class="panel" aria-label="Results"><h2>SHA-256 result</h2><p id="status" role="status">Choose a file or try the example.</p><label for="hash">Computed checksum</label><textarea id="hash" readonly rows="2" spellcheck="false"></textarea><label for="expected">Expected SHA-256 (optional)</label><input id="expected" type="text" placeholder="64 hexadecimal characters" autocomplete="off" spellcheck="false"><p id="match" role="status"></p></section>
+    <section class="panel"><h2>Check a download or an exported CSV</h2><p>Use the checksum supplied by a source you trust. Select your downloaded copy and paste the expected 64-character digest. A match verifies the bytes against that reference. It does not establish who created the file or whether its contents are safe.</p><p>The example uses the three bytes of <code>abc</code> with no newline. Edit the last digit of the expected digest to see a mismatch. Changing a CSV's encoding or line endings also changes the hash, even when the cells look the same.</p><p>To check the structure of a spreadsheet export, open <a href="https://csv-import-checker.utilityshelf.site/">CSV Import Checker</a>.</p></section>
+    <p class="hint">Processing takes place on this device. Files you select stay in your browser.</p>
+  </main>
+  <footer><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "104d69dafb54484bbb4e18e34d50c835"}'></script>
+</body></html>
