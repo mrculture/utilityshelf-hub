@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="canonical" href="https://csv-import-checker.utilityshelf.site/">
+  <meta name="description" content="Check CSV headers, row lengths, quoting and likely separator mistakes before importing a file. Your CSV is checked locally in your browser.">
+  <title>CSV Import Checker | UtilityShelf</title>
+  <style>
+    * { box-sizing: border-box }
+    body { margin: 0; color: #1a302a; background: #f5f6ee; font: 1rem/1.5 system-ui,sans-serif }
+    header { padding: .9rem 5vw; background: white; border-bottom: 1px solid #ccd7ce; display: flex; align-items: center; gap: .7rem }
+    header b { background: #195d49; color: white; padding: .2rem .65rem; border-radius: .4rem }
+    header small { margin-left: auto }
+    main { max-width: 60rem; margin: auto; padding: 2.5rem 1rem }
+    h1 { margin: .25rem 0; font-size: clamp(2.4rem,6vw,4rem); line-height: 1.1; letter-spacing: -.05em }
+    h2 { font-size: 1.2rem; margin: 0 0 .4rem }
+    .eyebrow { font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; color: #195d49; font-weight: bold }
+    section { background: white; border: 1px solid #ccd7ce; border-radius: .8rem; padding: clamp(1rem,3vw,1.6rem); margin: 1.3rem 0 }
+    .hint, small { color: #476156 }
+    label { display:block; font-weight:650; margin: 1rem 0 .4rem }
+    textarea { width: 100%; resize: vertical; border: 1px solid #82958c; border-radius: .4rem; padding: .8rem; font: 1rem/1.55 ui-monospace,monospace }
+    button { border: 1px solid #a1b7aa; background: #eff4ed; color: #195d49; border-radius: .4rem; padding: .55rem .85rem; font: inherit; font-weight: 650; cursor:pointer }
+    button:first-child { background: #195d49; color: white }
+    .actions { display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.6rem }
+    :focus-visible { outline: 3px solid #297ba5; outline-offset: 2px }
+    li { padding:.6rem 0; border-top:1px solid #e0e6df; overflow-wrap:anywhere }
+    ul { list-style:none; padding:0; margin:.7rem 0 0 }
+    #summary { font-weight:650 }
+  </style>
+</head>
+<body>
+  <header><b aria-hidden="true">U</b><strong>UtilityShelf</strong><small><a href="https://utilityshelf.site/">UtilityShelf tools</a></small></header>
+  <main>
+    <span class="eyebrow">File preparation</span>
+    <h1>CSV Import Checker</h1>
+    <p>Catch repeated headings and uneven rows before uploading a spreadsheet to your shop or database.</p>
+    <section id="inventory-example" aria-labelledby="input-title">
+      <h2 id="input-title">Check a CSV</h2>
+      <p class="hint">Use a comma-separated file with a header on line 1. Files are read locally as UTF-8. You can also paste CSV below.</p>
+      <label for="file">Open a CSV file</label>
+      <input id="file" type="file" accept=".csv,text/csv">
+      <label for="source">CSV to check</label>
+      <textarea id="source" rows="7" spellcheck="false" placeholder="SKU,Product,Price"></textarea>
+      <div class="actions"><button id="check">Check CSV</button><button id="sample">Try inventory sample</button></div>
+    </section>
+    <section aria-labelledby="results-title">
+      <h2 id="results-title">Import checks</h2>
+      <div id="summary" role="status">Open a file, paste CSV, or try the sample.</div>
+      <ul id="issues"></ul>
+      <p class="hint">Header comparisons ignore case and outer spaces. Line numbers refer to the pasted text, including the header. Quoted fields may contain commas and line breaks.</p>
+    </section>
+    <footer><a href="https://utilityshelf.site/privacy">Privacy</a> · <a href="https://utilityshelf.site/terms">Terms</a> · <a href="https://utilityshelf.site/contact">Contact</a></footer>
+  </main>
+  <script>
+    const source = document.getElementById('source');
+    const summary = document.getElementById('summary');
+    const issues = document.getElementById('issues');
+    const sample = 'SKU,Product,Price,Price\nA101,"Mug, blue",12.00,8.00\nA102,Notebook,6.50\nA103,"Frame, small",15.00,9.50';
+    // Yield each logical record with the physical line on which it starts.
+    function* records(text, delimiter = ',') {
+      text = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+      let fields = [], value = '', state = 'start', line = 1, start = 1;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (state === 'quoted') {
+          if (ch === '"') {
+            if (text[i + 1] === '"') { value += '"'; i++; }
+            else state = 'closed';
+          } else {
+            value += ch;
+            if (ch === '\n') line++;
+          }
+        } else if (ch === delimiter || ch === '\n') {
+          fields.push(value);
+          value = '';
+          state = 'start';
+          if (ch === '\n') {
+            yield { fields, start };
+            fields = [];
+            start = ++line;
+          }
+        } else if (ch === '"' && state === 'start') {
+          state = 'quoted';
+        } else if (state === 'closed' || ch === '"') {
+          throw new Error('Line ' + line + ' has an unexpected character around a quotation mark. Use two quotes for a literal quote inside a quoted field.');
+        } else {
+          value += ch;
+          state = 'plain';
+        }
+      }
+      if (state === 'quoted') throw new Error('The quoted field in the record starting on line ' + start + ' is missing its closing quote.');
+      if (fields.length || state !== 'start') yield { fields: [...fields, value], start };
+    }
+    function likelySeparator(text) {
+      try {
+        const header = records(text).next().value;
+        if (header && header.fields.length > 1) return '';
+      } catch {
+        // Quoted fields in a non-comma export can also fail comma parsing.
+      }
+      for (const [delimiter, name] of [[';', 'semicolons'], ['\t', 'tabs']]) {
+        let width = 0, rows = 0, consistent = true;
+        try {
+          for (const { fields } of records(text, delimiter)) {
+            if (!rows) width = fields.length;
+            if (width < 2 || fields.length !== width) { consistent = false; break; }
+            rows++;
+          }
+          // Only recommend another separator when the entire file fits it.
+          if (consistent && rows >= 2) return name;
+        } catch { /* Try the next separator. */ }
+      }
+      return '';
+    }
+    function check() {
+      issues.replaceChildren();
+      if (!source.value.trim()) { summary.textContent = 'Enter CSV with a header on line 1.'; return; }
+      const separator = likelySeparator(source.value);
+      if (separator) {
+        summary.textContent = 'Check the separator: these rows appear to use ' + separator +
+          ' between columns. If you expected multiple columns, export the sheet again as CSV with a comma separator. If you intended one text column, quote each field containing punctuation.';
+        return;
+      }
+      let width = 0, dataRows = 0, count = 0;
+      function report(message) {
+        count++;
+        if (count > 100) return;
+        const item = document.createElement('li');
+        item.textContent = message;
+        issues.append(item);
+      }
+      try {
+        for (const { fields, start } of records(source.value)) {
+          if (!width) {
+            width = fields.length;
+            const seen = new Map();
+            fields.forEach((header, index) => {
+              const name = header.trim().toLowerCase();
+              if (!name) report('Line 1, column ' + (index + 1) + ' has a blank header. Give it a name.');
+              else if (seen.has(name)) report('Line 1 repeats the header “' + header.trim() + '” in columns ' + seen.get(name) + ' and ' + (index + 1) + '. Give each column a distinct name.');
+              else seen.set(name, index + 1);
+            });
+          } else {
+            dataRows++;
+            if (fields.length !== width) report('Line ' + start + ' has ' + fields.length + ' fields. The header defines ' + width + '. Check for a missing value or an extra comma.');
+          }
+        }
+      } catch (err) {
+        report(err.message);
+        summary.textContent = 'CSV parsing stopped. Fix the quoting and check again.';
+        return;
+      }
+      summary.textContent = (count ? count + (count === 1 ? ' issue' : ' issues') + ' found.' : 'Header and field-count checks passed.') +
+        ' Checked ' + width + (width === 1 ? ' column and ' : ' columns and ') + dataRows + (dataRows === 1 ? ' data row.' : ' data rows.') +
+        (count > 100 ? ' Showing the first 100 issues.' : '');
+    }
+    let revision = 0;
+    source.addEventListener('input', () => {
+      revision++;
+      issues.replaceChildren();
+      summary.textContent = 'Select Check CSV to check the edited text.';
+    });
+    document.getElementById('check').addEventListener('click', check);
+    document.getElementById('sample').addEventListener('click', () => { revision++; source.value = sample; check(); });
+    document.getElementById('file').addEventListener('change', async event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const request = ++revision;
+      try {
+        const text = await file.text();
+        if (request !== revision) return;
+        source.value = text;
+        check();
+      } catch {
+        if (request !== revision) return;
+        issues.replaceChildren();
+        summary.textContent = 'Could not read the file. Paste its contents below the file picker.';
+      }
+    });
+    if (location.hash === "#inventory-example") { source.value = sample; check(); }
+  </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "104d69dafb54484bbb4e18e34d50c835"}'></script>
+</body>
+</html>
