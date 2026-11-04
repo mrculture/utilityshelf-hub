@@ -303,6 +303,14 @@ h1 {
   margin-bottom: 0;
 }
 
+#companions .section-heading {
+  display: block;
+}
+
+#companions .section-heading h2 {
+  margin-bottom: 10px;
+}
+
 .tool-grid {
   display: grid;
   gap: 18px;
