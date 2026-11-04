@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://filename-cleaner.utilityshelf.site/sitemap.xml
