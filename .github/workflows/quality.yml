@@ -13,7 +13,7 @@ concurrency:
 jobs:
   checks:
     name: Website and browser checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     defaults:
       run:
@@ -28,7 +28,9 @@ jobs:
           cache: npm
           cache-dependency-path: .github/qa/package-lock.json
       - run: npm ci --ignore-scripts
-      - run: npx playwright install --with-deps chromium
+      - name: Install Chromium on the prepared Ubuntu runner
+        timeout-minutes: 5
+        run: npx playwright install chromium
       - run: node --test ../release/tests/*.test.cjs
       - run: npm test
       - name: Save browser report
@@ -45,7 +47,7 @@ jobs:
     name: Deploy verified commit with recovery
     needs: checks
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.DEPLOYMENTS_ENABLED == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: production
     steps:
@@ -62,7 +64,9 @@ jobs:
             .github/release/package-lock.json
       - run: npm ci --ignore-scripts --prefix .github/qa
       - run: npm ci --ignore-scripts --prefix .github/release
-      - run: npx --prefix .github/qa playwright install --with-deps chromium
+      - name: Install Chromium on the prepared Ubuntu runner
+        timeout-minutes: 5
+        run: npx --prefix .github/qa playwright install chromium
       - name: Deploy, verify and recover if necessary
         run: node .github/release/run.cjs
         env:
