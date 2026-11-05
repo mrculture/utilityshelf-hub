@@ -1,0 +1,28 @@
+{
+  "targets": [
+    {
+      "name": "utilityshelf-hub",
+      "kind": "worker",
+      "source": "",
+      "origin": "https://utilityshelf.site",
+      "title": "UtilityShelf",
+      "test": "hub"
+    },
+    {
+      "name": "utilityshelf-filename-cleaner",
+      "kind": "pages",
+      "source": "tools/filename-cleaner",
+      "origin": "https://filename-cleaner.utilityshelf.site",
+      "title": "Filename Cleaner",
+      "test": "filename"
+    },
+    {
+      "name": "utilityshelf-csv-import-checker",
+      "kind": "pages",
+      "source": "tools/csv-import-checker",
+      "origin": "https://csv-import-checker.utilityshelf.site",
+      "title": "CSV Import Checker",
+      "test": "csv"
+    }
+  ]
+}
