@@ -1,6 +1,6 @@
 # Guarded Cloudflare releases
 
-Status: prepared, disabled until Cloudflare credentials and the cutover are verified.
+Status: enabled on 2026-11-05. Both repository variables are true; the account-scoped deployment token is stored as an encrypted Actions secret. See the Quality checks runs for release verification evidence.
 
 The Quality checks workflow runs browser checks and release-control tests first.
 Only the same main-branch commit can enter the deployment job. PR jobs receive no
@@ -67,3 +67,24 @@ Cloudflare references:
 - https://developers.cloudflare.com/pages/configuration/git-integration/
 - https://developers.cloudflare.com/pages/configuration/rollbacks/
 - https://developers.cloudflare.com/workers/versions-and-deployments/
+
+## Recorded cutover (2026-11-05)
+
+Before cutover, all four projects deployed main automatically. The homepage
+Worker had no build command, root `/`, deploy command `npx wrangler deploy`,
+version command `npx wrangler versions upload`, and all paths included. It is
+static-assets-only, with zero bindings and compatibility date 2026-06-05.
+Its Disable builds setting is now on (including native preview builds).
+
+The Pages projects retain their Git connections, main production branch,
+version 3 build system, and non-production preview builds. Only automatic
+production deployments are off. Filename Cleaner uses root
+`tools/filename-cleaner`, CSV Import Checker uses `tools/csv-import-checker`,
+and both output `.` with no build command. System Care uses the repository
+root with no build command. The actual Pages project name is
+`system-care-script-builder-git`.
+
+GitHub now controls production for these four targets. This does not configure
+branch merge protection or change deployment settings for other UtilityShelf
+projects. The tests simulate failure and recovery; production is not deliberately
+broken to test rollback.
