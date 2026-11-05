@@ -5,3 +5,5 @@
 wrangler.jsonc
 *.md
 /tools/
+
+.github/

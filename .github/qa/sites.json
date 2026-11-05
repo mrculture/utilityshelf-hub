@@ -1,0 +1,14 @@
+[
+  {
+    "dir": "",
+    "origin": "https://utilityshelf.site"
+  },
+  {
+    "dir": "tools/filename-cleaner/",
+    "origin": "https://filename-cleaner.utilityshelf.site"
+  },
+  {
+    "dir": "tools/csv-import-checker/",
+    "origin": "https://csv-import-checker.utilityshelf.site"
+  }
+]
