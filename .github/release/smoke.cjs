@@ -25,6 +25,13 @@ const target=JSON.parse(process.argv[2]);const expected=process.argv[3];
   } else if(target.test==='filename') {
    await page.locator('#sample').click();
    if(await page.locator('#rows input').count()!==5) throw Error('Five-photo example did not produce five rows');
+   if(expected) {
+    await page.locator('#mode').selectOption('numbered');
+    await page.locator('#prefix').fill('SKU-1042');
+    if(!(await page.locator('#result').inputValue()).startsWith('sku-1042-001.JPG\nsku-1042-002.jpg')) throw Error('Numbered filename result changed');
+    const collector=await context.request.get(target.origin+'/usage');
+    if(collector.status()!==200 || await collector.text()!=='Usage collector ready') throw Error('Usage collector binding unavailable');
+   }
   } else {
    if(await page.locator('a[href="https://system-care-script-builder.utilityshelf.site/"]').count()<1) throw Error('System Care homepage link missing');
   }

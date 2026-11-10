@@ -63,8 +63,17 @@ async function adapterFor(target,directory) {
       const current=await this.current();
       if(current.id!==before.id) throw new ReleaseError('Production changed before upload.');
       if(pages) {
+        let deployCwd = directory;
+        if (target.pagesConfig) {
+          const settings = JSON.parse(fs.readFileSync(path.join(root,target.pagesConfig),'utf8'));
+          if (settings.name !== target.name) throw new ReleaseError('Pages configuration target mismatch');
+          deployCwd = path.join(report,'config',target.name);
+          fs.mkdirSync(deployCwd,{recursive:true});
+          const file = path.join(deployCwd,'wrangler.jsonc');
+          fs.writeFileSync(file,JSON.stringify({...settings,pages_build_output_dir:directory}));
+        }
         let failure;
-        try {await command([wrangler,'pages','deploy',directory,'--project-name',target.name,'--branch','main','--commit-hash',sha,'--commit-message',tag,'--commit-dirty=false'],{cwd:directory});} catch(error){failure=error;}
+        try {await command([wrangler,'pages','deploy',directory,'--project-name',target.name,'--branch','main','--commit-hash',sha,'--commit-message',tag,'--commit-dirty=false'],{cwd:deployCwd});} catch(error){failure=error;}
         // Detect an accepted-but-pending deployment before considering a retry.
         for(let poll=0;poll<12;poll++) {
           const matches=(await api(route+'/deployments?env=production&per_page=25')).filter(d=>d.deployment_trigger?.metadata?.commit_message===tag);

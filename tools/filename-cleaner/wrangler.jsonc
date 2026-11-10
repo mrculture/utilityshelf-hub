@@ -1,0 +1,8 @@
+{
+  "name": "utilityshelf-filename-cleaner",
+  "pages_build_output_dir": ".",
+  "compatibility_date": "2026-11-10",
+  "analytics_engine_datasets": [
+    { "binding": "USAGE", "dataset": "utilityshelf_tool_usage" }
+  ]
+}

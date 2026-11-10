@@ -12,6 +12,7 @@
       "name": "utilityshelf-filename-cleaner",
       "kind": "pages",
       "source": "tools/filename-cleaner",
+      "pagesConfig": "tools/filename-cleaner/wrangler.jsonc",
       "origin": "https://filename-cleaner.utilityshelf.site",
       "title": "Filename Cleaner",
       "test": "filename"

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="canonical" href="https://filename-cleaner.utilityshelf.site/">
-  <meta name="description" content="Clean a batch of filenames in your browser. Preserve extensions, spot duplicate names, and copy the reviewed list.">
-  <title>Filename Cleaner | UtilityShelf</title>
+  <meta name="description" content="Clean filenames or create numbered product-photo names with a SKU prefix. Preserve extensions, review duplicates, and copy your final list. Free browser tool.">
+  <title>Filename Cleaner — Batch Product Photo Names | UtilityShelf</title>
   <style>
     :root{color-scheme:light;--ink:#172e2b;--muted:#4c655e;--green:#155b49;--line:#cbd9d1;--warn:#843813}
     *{box-sizing:border-box}
@@ -30,6 +30,7 @@
     .original{overflow-wrap:anywhere;white-space:pre-wrap}.pair label{font-size:.76rem;color:var(--muted)}.issue{font-size:.87rem;color:var(--warn);margin:3px 0 0}
     input[aria-invalid=true]{border:2px solid var(--warn);background:#fff8ee}.foot{border-top:1px solid var(--line);padding-top:16px}
     #summary{font-weight:650}#copyStatus{color:var(--green)}[hidden]{display:none!important}
+    .number-controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}.choice{display:flex;align-items:start;gap:8px;font-weight:400}.choice input{width:auto;margin-top:5px}.examples{width:100%;border-collapse:collapse}.examples th,.examples td{text-align:left;padding:10px 6px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.examples code{white-space:normal}details{margin:14px 0}summary{cursor:pointer;font-weight:650}li{margin:8px 0}
     @media(max-width:640px){.controls,.pair{grid-template-columns:1fr}.controls{gap:10px}.pair{gap:7px}main{padding-top:24px}}
   </style>
 </head>
@@ -38,20 +39,29 @@
   <main>
     <span class="eyebrow">File preparation</span>
     <h1>Filename Cleaner</h1>
-    <p class="intro">Turn a batch of messy names into a consistent list. Review each suggestion and catch duplicates before you rename your files.</p>
+    <p class="intro">Clean messy filenames or prepare a numbered set of product-photo names. Add a product or SKU prefix, preserve file extensions, and review the final list before renaming your files.</p>
     <section class="panel" id="five-photo-example" aria-label="Filename input">
       <div class="controls"><div>
         <label for="names">Original filenames</label>
         <textarea id="names" rows="5" spellcheck="false" placeholder="Front View.JPG&#10;front_view.jpg"></textarea>
         <div class="bar"><span class="hint">One filename per line. Paste names without folder paths.</span><button id="sample">Try five photo names</button></div>
       </div><div>
+        <label for="mode">What would you like to do?</label>
+        <select id="mode"><option value="clean">Clean existing names</option><option value="numbered">Product / SKU + numbers</option></select>
+        <div id="numbering" hidden>
+          <label for="prefix">Product or SKU prefix (optional)</label>
+          <input id="prefix" maxlength="200" placeholder="e.g. SKU-1042" spellcheck="false" aria-describedby="prefixHint">
+          <p class="hint" id="prefixHint">Blank uses “photo”. The prefix follows your naming style.</p>
+          <div class="number-controls"><div><label for="start">Start at</label><input id="start" type="number" min="1" max="999999" step="1" value="1"></div><div><label for="digits">Minimum digits</label><select id="digits"><option value="2">2 (01)</option><option value="3" selected>3 (001)</option><option value="4">4 (0001)</option></select></div></div>
+          <p class="issue" id="settingsIssue" role="status"></p>
+        </div>
         <label for="style">Naming style</label>
         <select id="style"><option value="-">Lowercase with hyphens</option><option value="_">Lowercase with underscores</option><option value=" ">Lowercase with spaces</option></select>
         <p class="hint">The final extension keeps its original spelling and case. Duplicate checks ignore case.</p>
       </div></div>
     </section>
     <section class="panel" aria-labelledby="review"><h2 id="review">Review proposed names</h2>
-      <p class="hint">Edit a suggestion to make it distinct. Changing the naming style regenerates the suggestions.</p>
+      <p class="hint">Edit any suggestion. Changing naming settings regenerates the suggestions and replaces your edits. Numbered names follow the order of the original list.</p>
       <div id="rows"></div>
       <div class="bar foot"><span id="summary" role="status"></span><button id="copy" class="primary" disabled>Copy final list</button></div>
       <span id="copyStatus" role="status"></span>
@@ -62,100 +72,24 @@
         <span class="hint">Copy the selection with Ctrl+C or ⌘C.</span>
       </div>
     </section>
-    <p class="hint">Everything runs in this browser tab. Only the names you paste are checked. Your files stay untouched.</p>
+    <p class="hint">Filename processing happens in this browser tab. Your files stay untouched: this tool creates a naming list, not renamed files.</p>
+    <label class="choice hint"><input id="usage" type="checkbox" checked><span>Share anonymous usage counts (list ready and list copied). No filenames, prefixes or file contents are sent. <a href="https://utilityshelf.site/privacy">Privacy details</a></span></label>
+    <section class="panel" aria-labelledby="how"><h2 id="how">Prepare product-photo filenames in four steps</h2>
+      <ol><li>Paste the original filenames, one per line, in the order you want to use. Leave out folder paths.</li><li>Choose <strong>Clean existing names</strong> to keep descriptive words, or <strong>Product / SKU + numbers</strong> for an ordered photo set. For example, use the prefix <code>SKU-1042</code>, start at 1 and choose three digits.</li><li>Review the suggestions. Resolve highlighted duplicates or invalid names; the final list appears only when every name is ready.</li><li>Copy or select the final list. Apply the names using your file manager or a renaming tool, checking that each name matches the correct original file.</li></ol>
+      <p>For five photos of one product, numbering separates front, side, rear and packaging views even if their original names collide. Use a new batch and prefix for each product.</p>
+      <table class="examples"><thead><tr><th>Original filename</th><th>Clean existing names</th><th>Prefix + numbers</th></tr></thead><tbody><tr><td><code>Front View.JPG</code></td><td><code>front-view.JPG</code></td><td><code>sku-1042-001.JPG</code></td></tr><tr><td><code>front_view.jpg</code></td><td><code>front-view.jpg</code> (duplicate)</td><td><code>sku-1042-002.jpg</code></td></tr><tr><td><code>Side (Left).png</code></td><td><code>side-left.png</code></td><td><code>sku-1042-003.png</code></td></tr></tbody></table>
+      <p class="hint">Example settings: lowercase with hyphens, prefix SKU-1042, start 1, minimum three digits. Extensions keep their original case.</p>
+      <p><a href="https://utilityshelf.site/utilities/image-dimension-checker/">Next: check your product photos’ dimensions and file sizes</a> before uploading them to a listing.</p>
+    </section>
+    <section class="panel" aria-labelledby="questions"><h2 id="questions">Filename questions</h2>
+      <details><summary>Does this rename or upload my files?</summary><p>No. You paste filenames and receive a reviewed list. Files are neither opened nor uploaded, and nothing on your device is renamed.</p></details>
+      <details><summary>Why are two differently capitalised names duplicates?</summary><p>Some file systems treat capitalisation as equivalent. This tool compares names without case differences and with Unicode normalisation to help you avoid collisions.</p></details>
+      <details><summary>Can I use spaces, accents and mixed file types?</summary><p>Yes. Choose spaces, hyphens or underscores between words. Accented letters are preserved, as is each final extension, such as .JPG or .png. Folder paths, Windows reserved names and unsupported characters are flagged. A filename longer than 255 UTF-8 bytes is also flagged; your destination may have stricter limits.</p></details>
+      <details><summary>Does a clean filename guarantee search rankings?</summary><p>No. Descriptive names help you organise your photos. Product-page content, image quality and the requirements of your publishing platform still matter.</p></details>
+    </section>
     <footer><a href="https://utilityshelf.site/privacy">Privacy</a> · <a href="https://utilityshelf.site/terms">Terms</a> · <a href="https://utilityshelf.site/contact">Contact</a></footer>
   </main>
-  <script>
-    const byId = id => document.getElementById(id);
-    const names = byId('names'), style = byId('style'), rows = byId('rows');
-    const examples = ['Front View.JPG','front_view.jpg','Side (Left).png','Rear – Detail 02.jpeg','Box & Accessories.webp'];
-    let batch = [];
-    function splitName(name) {
-      const dot = name.lastIndexOf('.');
-      return dot > 0 && dot < name.length - 1 ? [name.slice(0,dot), name.slice(dot)] : [name,''];
-    }
-    function suggest(original, separator) {
-      if (/[\\/]/.test(original)) return '';
-      const [stem, ext] = splitName(original.trim());
-      const cleaned = stem.normalize('NFC').toLowerCase().match(/[\p{L}\p{N}\p{M}]+/gu);
-      return (stem.startsWith('.') ? '.' : '') + (cleaned || []).join(separator) + ext;
-    }
-    function key(value) { return value.normalize('NFC').toLowerCase(); }
-    function issueFor(item, counts) {
-      const value = item.value;
-      if (/[\\/]/.test(item.original)) return 'Replace the path in the original list with just the filename.';
-      if (!value.trim() || /^\.+$/.test(value)) return 'Enter a filename.';
-      const ext = splitName(item.original.trim())[1];
-      if (ext && (!value.endsWith(ext) || value.length === ext.length)) return 'Keep a name before the original extension ' + ext + '.';
-      if (/[<>:"/\\|?*\u0000-\u001f]/.test(value) || /[. ]$/.test(value) || /^\s/.test(value)) return 'Remove unsupported characters or spaces at the edges.';
-      if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(value)) return 'Choose a different name. This one is reserved on Windows.';
-      if (new TextEncoder().encode(value).length > 255) return 'Shorten this name to 255 bytes or fewer.';
-      if (counts.get(key(value)) > 1) return 'Duplicate in this batch. Give one of the matching files a different name.';
-      return '';
-    }
-    function update() {
-      const counts = new Map();
-      for (const {value} of batch) counts.set(key(value), (counts.get(key(value)) || 0) + 1);
-      let problems = 0;
-      batch.forEach(item => {
-        const issue = issueFor(item, counts);
-        item.note.textContent = issue;
-        item.input.setAttribute('aria-invalid', String(Boolean(issue)));
-        if (issue) problems++;
-      });
-      byId('summary').textContent = !batch.length ? 'Paste filenames or try the sample.' : problems ? problems + ' of ' + batch.length + ' names need review.' : batch.length + (batch.length === 1 ? ' name ready.' : ' names ready.');
-      const ready = batch.length > 0 && problems === 0;
-      byId('copy').disabled = !ready;
-      byId('result').value = ready ? batch.map(item => item.value).join('\n') : '';
-      byId('manual').hidden = !ready;
-      byId('copyStatus').textContent = '';
-    }
-    function rebuild(reset = false) {
-      const prior = new Map(batch.map(item => [item.id,item.value]));
-      const occurrences = new Map();
-      batch = [];
-      rows.replaceChildren();
-      for (const original of names.value.split(/\r?\n/).filter(line => line.trim())) {
-        const seq = (occurrences.get(original) || 0) + 1;
-        occurrences.set(original,seq);
-        const id = JSON.stringify([original,seq]);
-        const value = !reset && prior.has(id) ? prior.get(id) : suggest(original,style.value);
-        const row = document.createElement('div'); row.className = 'pair';
-        const left = document.createElement('div'); left.className = 'original'; left.textContent = original;
-        const right = document.createElement('div'), label = document.createElement('label'), input = document.createElement('input'), note = document.createElement('div');
-        const index = batch.length + 1;
-        label.textContent = 'Proposed name ' + index; label.htmlFor = input.id = 'name-' + index;
-        input.value = value; input.spellcheck = false;
-        note.id = 'issue-' + index; note.className = 'issue'; input.setAttribute('aria-describedby',note.id);
-        const item = {id, original, value, input, note};
-        input.addEventListener('input', () => { item.value = input.value; update(); });
-        right.append(label,input,note); row.append(left,right); rows.append(row); batch.push(item);
-      }
-      update();
-    }
-    names.addEventListener('input', () => rebuild());
-    style.addEventListener('change', () => rebuild(true));
-    byId('sample').addEventListener('click', () => { names.value = examples.join('\n'); rebuild(true); });
-    function selectList() {
-      byId('result').focus();
-      byId('result').select();
-    }
-    byId('selectList').addEventListener('click', selectList);
-    byId('copy').addEventListener('click', async () => {
-      const list = byId('result').value;
-      try {
-        await navigator.clipboard.writeText(list);
-        if (byId('result').value !== list) return;
-        byId('copyStatus').textContent = 'Copied the final list.';
-      } catch {
-        if (byId('result').value !== list) return;
-        selectList();
-        byId('copyStatus').textContent = 'List selected. Press Ctrl+C or ⌘C to copy.';
-      }
-    });
-    if (location.hash === '#five-photo-example') { names.value = examples.join('\n'); }
-    rebuild();
-  </script>
+  <script src="app.js" defer></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "104d69dafb54484bbb4e18e34d50c835"}'></script>
 </body>
 </html>
