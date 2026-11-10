@@ -3,6 +3,7 @@ const productionOrigin = 'https://filename-cleaner.utilityshelf.site';
 const hubOrigin = 'https://utilityshelf.site';
 const csvOrigin = 'https://csv-import-checker.utilityshelf.site';
 const modes = {
+  'product-photo-workflow': {entry:['home','guide'], check_resize:['home','guide'], arrange:['home','guide'], name_download:['home','guide'], walkthrough:['home']},
   'filename-cleaner': {ready:['clean','numbered'], copy:['clean','numbered'], mapping_download:['clean','numbered'], zip_download:['clean','numbered']},
   'image-contact-sheet': {reorder:['sheet'], sheet_download:['sheet'], names_copy:['sheet']},
   'image-dimension-checker': {check_complete:['custom','ebay'], ebay_preset:['ebay'], report_download:['custom','ebay'], resize_complete:['custom','ebay'], resize_download:['custom','ebay']},

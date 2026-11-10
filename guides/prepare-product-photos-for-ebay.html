@@ -9,11 +9,12 @@
 </head>
 <body>
   <header class="site-header"><a class="brand" href="/"><span class="brand-mark">U</span><span><strong>UtilityShelf</strong><small>Practical browser tools</small></span></a><nav aria-label="Main"><a href="/#product-photos">Photo workflow</a><a href="/guides">Guides</a></nav></header>
-  <main class="article-page"><article class="article-card">
+  <main class="article-page"><article class="article-card" data-photo-workflow="guide">
     <p class="eyebrow">Product photos · Updated 10 November 2026</p>
-    <h1>How to prepare product photos for an eBay listing</h1>
+    <h1 data-workflow-entry>How to prepare product photos for an eBay listing</h1>
+    <p><label><input type="checkbox" id="usage" checked> Share anonymous photo-workflow usage counts</label> · <a href="/privacy">Privacy</a></p>
     <p>A useful listing photo set needs clear views, suitable image sizes and a predictable order. Take six illustrative photos through three UtilityShelf tools and finish with checked photos, reports, a contact sheet and ZIP of SKU-named copies, including their filename mapping.</p>
-    <div class="tool-callout"><h2>Start with the original photos</h2><p>These tools check, resize, arrange and create renamed copies locally. They do not upload pictures to eBay or change your original files. If resizing is needed, extract the new copies first, then select those same checked files separately in each remaining tool. If your photos already meet your limits, keep them as they are.</p><a class="button" href="/utilities/image-dimension-checker/">Check photo dimensions</a></div>
+    <div class="tool-callout"><h2>Start with the original photos</h2><p>These tools check, resize, arrange and create renamed copies locally. They do not upload pictures to eBay or change your original files. If resizing is needed, extract the new copies first, then select those same checked files separately in each remaining tool. If your photos already meet your limits, keep them as they are.</p><a class="button" data-photo-step="check_resize" href="/utilities/image-dimension-checker/">Check photo dimensions</a></div>
     <h2>1. Check sizes and download the photo report</h2>
     <p>Choose your JPEG, PNG or WebP photos in Image Dimension Checker. Select <strong>eBay — recommended size</strong>. UtilityShelf checks for at least 1600 pixels in both dimensions and a maximum of 12 MB per photo; a rectangular image can pass without a square crop.</p>
     <p>For example, a 4000 × 2992 JPEG at 2.8 MB passes these size checks. A 1600 × 900 image falls short of this preset's height target. That result does not, by itself, mean eBay will reject it: this is a recommended-size check, not a complete acceptance test.</p>
@@ -35,7 +36,7 @@
     <p>If you start with already-resized photos that pass your chosen limits, skip creating another checked-copy ZIP. Save their current photo report and continue with those files.</p>
     <p>Inspect focus, glare, colour and whether the photo accurately shows the item. Check the current <a href="https://www.ebay.co.uk/help/listings/default/adding-pictures-listings?id=4148">eBay photo guidance</a> for its own requirements and tips. Guidance checked 10 November 2026.</p>
     <h2>3. Choose the listing order</h2>
-    <p>Open <a href="/utilities/image-contact-sheet/">Image Contact Sheet</a> and choose the final checked files again, including any resized copies or replacements. Use <strong>Move earlier</strong> and <strong>Move later</strong> to put a clear main view first. Supporting views should explain what is included, show useful details and reveal any defects. The best order depends on the item.</p>
+    <p>Open <a data-photo-step="arrange" href="/utilities/image-contact-sheet/">Image Contact Sheet</a> and choose the final checked files again, including any resized copies or replacements. Use <strong>Move earlier</strong> and <strong>Move later</strong> to put a clear main view first. Supporting views should explain what is included, show useful details and reveal any defects. The best order depends on the item.</p>
     <p>Here is an illustrative six-photo order after resizing. The filenames below are examples, not a required naming format; use the actual names of your checked files.</p>
     <div class="article-table-wrap"><table class="article-table"><thead><tr><th>Order</th><th>Current checked filename</th><th>View</th><th>Planned name</th></tr></thead><tbody>
       <tr><td>1</td><td><code>01-front-resized.jpg</code></td><td>Whole item and included accessories</td><td><code>sku-1042-001.jpg</code></td></tr>
@@ -49,7 +50,7 @@
     <h2>4. Copy the order and create SKU names</h2>
     <ol class="checklist">
       <li>Select <strong>Copy filenames in this order</strong>. If automatic copying is unavailable, use <strong>Select all filenames</strong> and press Ctrl+C or ⌘C.</li>
-      <li>Open <a href="https://filename-cleaner.utilityshelf.site/">Filename Cleaner</a> and paste into <strong>Original filenames</strong>. Here, “Original filenames” means the current names of the checked files you selected, including resized-copy names. The list should contain exactly the views you chose, one name per line.</li>
+      <li>Open <a data-photo-step="name_download" href="https://filename-cleaner.utilityshelf.site/">Filename Cleaner</a> and paste into <strong>Original filenames</strong>. Here, “Original filenames” means the current names of the checked files you selected, including resized-copy names. The list should contain exactly the views you chose, one name per line.</li>
       <li>Choose <strong>Product / SKU + numbers</strong>, enter <code>SKU-1042</code>, start at <code>1</code>, select <code>3</code> minimum digits and use lowercase with hyphens.</li>
       <li>Review all six names. The tool preserves extension case, so a source ending in <code>.JPG</code> keeps <code>.JPG</code>.</li>
       <li>Confirm that the final list contains all six names in your chosen order. You can copy it or download the mapping separately; the next step also includes that mapping inside the photo ZIP.</li>
@@ -69,5 +70,6 @@
     <p><a href="/#product-photos">Back to the product-photo workflow</a> · <a href="/guides/prepare-supplier-csv-for-import">Prepare a supplier CSV</a></p>
   </article></main>
   <footer><div class="footer-inner"><p>UtilityShelf · Practical browser tools</p><nav aria-label="Footer"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a></nav></div></footer>
-  <script src="/utilities/usage.js?v=20261110-photo-report-flow" defer></script>
+  <script src="/utilities/usage.js?v=20261110-workflow-tracking" defer></script>
+  <script src="/photo-workflow.js?v=20261110-workflow-tracking" defer></script>
 </body></html>

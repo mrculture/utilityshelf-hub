@@ -23,6 +23,20 @@ test('standalone CSV tracker matches the shared tracker',()=>{
 function request(body=event,headers={},url=origin+'/usage') {
  return new Request(url,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',...headers},body:typeof body==='string'?body:JSON.stringify(body)});
 }
+
+test('workflow collector accepts only fixed navigation labels from the hub',async()=>{
+ const points=[],env={USAGE:{writeDataPoint:p=>points.push(p)}},w=await worker;
+ for(const mode of ['home','guide'])for(const action of ['entry','check_resize','arrange','name_download',...(mode==='home'?['walkthrough']:[])]){
+  const data={tool:'product-photo-workflow',event:action,mode,source:'custom'};
+  assert.equal((await w.fetch(request(data,{Origin:'https://utilityshelf.site'}),env)).status,204);
+  assert.equal((await w.fetch(request(data),env)).status,403);
+  assert.equal((await w.fetch(request({...data,url:'/private'},{Origin:'https://utilityshelf.site'}),env)).status,400);
+ }
+ const bad={tool:'product-photo-workflow',event:'walkthrough',mode:'guide',source:'custom'};
+ assert.equal((await w.fetch(request(bad,{Origin:'https://utilityshelf.site'}),env)).status,400);
+ assert.equal(points.length,9);
+ assert.deepEqual(points[0],{indexes:['product-photo-workflow'],blobs:['entry','home','custom'],doubles:[1]});
+});
 test('collector persists only fixed labels and count, with no network identifiers',async()=>{
  const points=[];const env={USAGE:{writeDataPoint:p=>points.push(p)}};
  const response=await (await worker).fetch(request(),env);

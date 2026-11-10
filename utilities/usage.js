@@ -26,6 +26,7 @@
   const privateBrowser = () => navigator.doNotTrack === '1' || navigator.globalPrivacyControl;
   if (choice && (usageTestMode || privateBrowser())) { choice.checked = false; choice.disabled = true; }
   const modes = {
+    'product-photo-workflow': {entry: ['home', 'guide'], check_resize: ['home', 'guide'], arrange: ['home', 'guide'], name_download: ['home', 'guide'], walkthrough: ['home']},
     'image-contact-sheet': {reorder: ['sheet'], sheet_download: ['sheet'], names_copy: ['sheet']},
     'image-dimension-checker': {check_complete: ['custom', 'ebay'], ebay_preset: ['ebay'], report_download: ['custom', 'ebay'], resize_complete: ['custom', 'ebay'], resize_download: ['custom', 'ebay']},
     'csv-import-checker': {check_complete: ['passed', 'issues'], corrected_download: ['passed'], report_download: ['passed', 'issues', 'incomplete']},

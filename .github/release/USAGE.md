@@ -27,6 +27,8 @@ not imply a passing image. Definitions for each action are in the repository REA
 ## Future testing
 
 Use these links before starting any owner/agent test:
+- https://utilityshelf.site/?test-mode=1#product-photos
+- https://utilityshelf.site/guides/prepare-product-photos-for-ebay?test-mode=1
 - https://filename-cleaner.utilityshelf.site/?test-mode=1
 - https://utilityshelf.site/utilities/image-contact-sheet/?test-mode=1
 - https://utilityshelf.site/utilities/image-dimension-checker/?test-mode=1
@@ -34,13 +36,13 @@ Use these links before starting any owner/agent test:
 - https://utilityshelf.site/utilities/csv-column-mapper/?test-mode=1
 - https://utilityshelf.site/utilities/csv-formula-checker/?test-mode=1
 
-The visible Test mode notice confirms exclusion. On these six pages it disables
+The visible Test mode notice confirms exclusion. On these pages it disables
 both action events and the Cloudflare Web Analytics beacon, without preventing
 checks, reordering or downloads. Direct links between these tools retain the
 flag. Opening a normal URL, or navigating elsewhere on UtilityShelf, does not
 carry the exclusion automatically. It is not a persistent browser opt-out.
 DNT, GPC and the normal checkbox continue to suppress action events as before.
-Automation and release-check URLs also suppress the beacon on these six tools.
+Automation and release-check URLs also suppress the beacon on these pages.
 
 For an intentional end-to-end collector test, use built-in samples. If custom
 input is necessary, record its exact stored signatures and purpose in
@@ -59,3 +61,14 @@ The SQL files use a rolling seven-day window in UTC. Change the generator's
 window argument for another period while retaining the same exclusions. Reports
 may lag new actions. GET `/usage` is the non-writing collector health check.
 The deployment token does not need Analytics Read access for deployment.
+
+## Product photo workflow navigation
+
+The existing seven-day report also includes `product-photo-workflow` events.
+`entry` counts heading exposure (at least 50% visible in a visible tab) or a
+marked link activation. `check_resize`, `arrange`, `name_download` and homepage-only
+`walkthrough` count link activations. Modes `home` and `guide` distinguish the
+source page without storing URLs. Source is `custom` because there is no sample
+input. All counts retain the page-load deduplication and privacy/test exclusions.
+Do not add navigation events to completed tool actions as an adoption total, or
+interpret cross-page counts as unique people or a completed conversion funnel.
