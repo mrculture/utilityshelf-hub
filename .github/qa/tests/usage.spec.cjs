@@ -30,6 +30,7 @@ async function customPhotos(page,count=2){
  await page.locator('#files').setInputFiles(Array.from({length:count},(_,i)=>({name:'PRIVATE-SKU-'+i+'.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')})));
 }
 async function download(page){const pending=page.waitForEvent('download');await page.locator('#download').click();await pending;}
+async function photoReport(page){const pending=page.waitForEvent('download');await page.locator('#downloadReport').click();await pending;}
 
 test('contact events follow successful reorder and export, deduplicate, separate sample/custom and omit filenames',async({page})=>{
  const requests=[];page.on('request',r=>requests.push(r.url()));
@@ -82,13 +83,14 @@ test('image completion and eBay use require readable photos and valid limits, wi
  ]);
 });
 
-for(const setting of ['optout','dnt','gpc','automated','release'])test('image usage suppressed for '+setting,async({page})=>{
+for(const setting of ['optout','dnt','gpc','automated','release','offline'])test('image usage suppressed for '+setting,async({page})=>{
  const events=await open(page,'image-dimension-checker',{[setting]:true});
  if(setting==='optout')await page.locator('#usage').uncheck();
  if(['dnt','gpc'].includes(setting))await expect(page.locator('#usage')).toBeDisabled();
  await customPhotos(page);
  await expect(page.locator('#status')).toContainText('0 of 2');
  await page.locator('#preset').selectOption('ebay');
+ await photoReport(page);
  await page.waitForTimeout(700);
  expect(events).toEqual([]);
 });
@@ -128,9 +130,22 @@ for(const tool of ['image-contact-sheet','image-dimension-checker'])test('owner 
  } else {
   await page.locator('#preset').selectOption('ebay');
   await expect(page.locator('#status')).toContainText('0 of 2');
+  await photoReport(page);
  }
  await page.waitForTimeout(800);
  expect(events).toEqual([]);expect(requests.filter(url=>url.includes('cloudflareinsights'))).toEqual([]);
  const other=tool==='image-contact-sheet'?'check the original image dimensions':'make a contact sheet';
  await expect(page.getByRole('link',{name:other})).toHaveAttribute('href',/test-mode=1/);
+});
+
+test('photo report download events use fixed mode labels, separate samples and omit filenames',async({page})=>{
+ const events=await open(page,'image-dimension-checker');
+ await expect(page.locator('#downloadReport')).toBeDisabled();
+ await customPhotos(page);await expect(page.locator('#downloadReport')).toBeEnabled();await photoReport(page);await photoReport(page);
+ await page.locator('#preset').selectOption('ebay');await photoReport(page);
+ await page.locator('#demo').click();await expect(page.locator('#status')).toContainText('1 of 2');await photoReport(page);
+ await page.locator('#preset').selectOption('ebay');await photoReport(page);await photoReport(page);
+ await expect.poll(()=>events.filter(e=>e.event==='report_download').length).toBe(4);
+ expect(events.filter(e=>e.event==='report_download')).toEqual(['custom','sample'].flatMap(source=>['custom','ebay'].map(mode=>({tool:'image-dimension-checker',event:'report_download',mode,source}))));
+ expect(JSON.stringify(events)).not.toMatch(/PRIVATE|SKU|png|1600|filename/);
 });

@@ -63,6 +63,7 @@ identifiers, or request headers are written to the dataset.
 | Image Contact Sheet | names_copy | Ordered original filename list copied successfully | sheet |
 | Image Dimension Checker | check_complete | Valid limits evaluated against at least one readable image | custom, ebay |
 | Image Dimension Checker | ebay_preset | Completed image check using the eBay preset | ebay |
+| Image Dimension Checker | report_download | Current photo report download started, including reports with unreadable files | custom, ebay |
 | CSV Import Checker | check_complete | Parsed nonempty CSV and completed header/field-count checks | passed, issues |
 | CSV Import Checker | corrected_download | Exact checked CSV download started after passing structure checks | passed |
 | CSV Column Mapper | build_complete / mapped_download | Mapping built / full CSV download started | mapped |

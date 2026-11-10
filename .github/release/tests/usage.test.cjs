@@ -79,3 +79,15 @@ test('CSV actions require the correct production origin and fixed payload schema
  assert.equal(pre.status,204);assert.equal(pre.headers.get('Access-Control-Allow-Origin'),csv);
  assert.equal(points.length,cases.length+6);
 });
+
+test('image report collector accepts preset labels only and rejects report contents or wrong origins',async()=>{
+ const points=[],env={USAGE:{writeDataPoint:p=>points.push(p)}},w=await worker;
+ for(const mode of ['custom','ebay']){
+  const payload={tool:'image-dimension-checker',event:'report_download',mode,source:'custom'};
+  assert.equal((await w.fetch(request(payload,{Origin:'https://utilityshelf.site'}),env)).status,204);
+  assert.equal((await w.fetch(request(payload),env)).status,403);
+  assert.equal((await w.fetch(request({...payload,filename:'photo.jpg'},{Origin:'https://utilityshelf.site'}),env)).status,400);
+  assert.equal((await w.fetch(request({...payload,mode:'private size'},{Origin:'https://utilityshelf.site'}),env)).status,400);
+ }
+ assert.deepEqual(points.map(p=>p.blobs),[['report_download','custom','custom'],['report_download','ebay','custom']]);
+});

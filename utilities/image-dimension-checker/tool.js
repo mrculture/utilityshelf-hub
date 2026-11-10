@@ -4,6 +4,13 @@ const status = byId('status');
 let generation = 0;
 let inputSource = 'custom';
 let usageTimer;
+const downloadReport = byId('downloadReport');
+let reportText = null, reportKey = null;
+const currentReportKey = () => JSON.stringify([generation, byId('preset').value, ...['width', 'height', 'size'].map(id => byId(id).value)]);
+function invalidateReport() {
+  reportText = null; reportKey = null; downloadReport.disabled = true;
+  byId('reportStatus').textContent = 'Choose photos and valid limits to create a report.';
+}
 function scheduleUsage() {
   clearTimeout(usageTimer);
   if (!measurements.some(item => !item.error)) return;
@@ -59,6 +66,7 @@ preset.addEventListener('change', () => {
 
 function evaluatePhotos() {
   clearTimeout(usageTimer);
+  invalidateReport();
   output.replaceChildren();
   if (!measurements.length) return;
   const limits = ['width', 'height', 'size'].map(byId);
@@ -77,7 +85,8 @@ function evaluatePhotos() {
   }
   const body = table.createTBody();
   let passes = 0;
-  for (const item of measurements) {
+  const attention = [], passed = [];
+  for (const [index, item] of measurements.entries()) {
     const problems = [];
     if (item.error) {
       problems.push(item.error);
@@ -87,6 +96,11 @@ function evaluatePhotos() {
       if (item.bytes > maxSize * 1000000) problems.push('Over the file size limit');
     }
     if (!problems.length) passes++;
+    const entry = ['Photo ' + (index + 1) + ': ' + JSON.stringify(item.name),
+      'Dimensions: ' + (item.error ? 'Not available' : item.width + ' x ' + item.height + ' px'),
+      'File size: ' + item.bytes + ' bytes',
+      'Result: ' + (item.error ? 'Could not check: ' : '') + (problems.join('; ') || 'Pass')].join('\r\n');
+    (problems.length ? attention : passed).push(entry);
     const row = body.insertRow();
     for (const text of [item.name, item.error ? '—' : item.width + ' × ' + item.height,
       item.bytes.toLocaleString() + ' bytes', problems.join('; ') || 'Pass']) {
@@ -96,11 +110,27 @@ function evaluatePhotos() {
   output.append(table);
   status.textContent = passes + ' of ' + measurements.length +
     (preset.value === 'ebay' ? ' meet the eBay recommended-size preset.' : ' meet your limits.');
+  const unreadable = measurements.filter(item => item.error).length;
+  const result = unreadable ? 'Check incomplete' : attention.length ? 'Needs attention' : 'Passed';
+  reportText = ['UtilityShelf - Image Dimension Checker report', 'Status: ' + result,
+    'Preset: ' + (preset.value === 'ebay' ? 'eBay recommended-size preset' : 'Custom limits'),
+    'Minimum width: ' + minWidth + ' px; minimum height: ' + minHeight + ' px.',
+    'Maximum file size: ' + maxSize + ' MB (' + (maxSize * 1000000) + ' bytes). 1 MB = 1,000,000 bytes.',
+    'Selected: ' + measurements.length + '. Passed: ' + passes + '. Need attention (including unreadable): ' + attention.length + '. Unreadable: ' + unreadable + '.',
+    '', 'PHOTOS NEEDING ATTENTION', attention.length ? attention.join('\r\n\r\n') : 'None. All selected photos meet these limits.',
+    '', 'PASSING PHOTOS', passed.length ? passed.join('\r\n\r\n') : 'None.', '',
+    'Scope: decoded dimensions in display orientation and file sizes only. Unreadable files could not be checked for dimensions.',
+    'This report does not assess focus, composition or marketplace acceptance. The eBay preset is a size target, not a guarantee of listing approval.',
+    'Review the listed files, choose replacement photos if needed, and download a fresh report after checking again. Original photos are not changed.'].join('\r\n') + '\r\n';
+  reportKey = currentReportKey();
+  downloadReport.disabled = false;
+  byId('reportStatus').textContent = 'Report status: ' + result + '.';
   scheduleUsage();
 }
 
 async function load(files, id, source = 'custom') {
   clearTimeout(usageTimer);
+  invalidateReport();
   inputSource = source;
   measurements = [];
   output.replaceChildren();
@@ -135,6 +165,7 @@ for (const id of ['width', 'height', 'size']) byId(id).addEventListener('input',
 byId('demo').addEventListener('click', async () => {
   const id = ++generation;
   clearTimeout(usageTimer);
+  invalidateReport();
   measurements = [];
   output.replaceChildren();
   input.value = '';
@@ -143,7 +174,20 @@ byId('demo').addEventListener('click', async () => {
   byId('width').value = 800;
   byId('height').value = 800;
   byId('size').value = 8;
-  const files = await Promise.all([examplePhoto('front.png', 1000, 1000, '#22523f'),
-    examplePhoto('detail.png', 1000, 600, '#c07141')]);
-  if (id === generation) load(files, id, 'sample');
+  status.textContent = 'Preparing example photos…';
+  try {
+    const files = await Promise.all([examplePhoto('front.png', 1000, 1000, '#22523f'),
+      examplePhoto('detail.png', 1000, 600, '#c07141')]);
+    if (id === generation) load(files, id, 'sample');
+  } catch {
+    if (id === generation) status.textContent = 'Could not prepare the example. Choose photos from your device instead.';
+  }
+});
+downloadReport.addEventListener('click', () => {
+  if (downloadReport.disabled || reportText === null || reportKey !== currentReportKey()) return;
+  const url = URL.createObjectURL(new Blob([reportText], {type:'text/plain;charset=utf-8'}));
+  const link = document.createElement('a');
+  link.href = url; link.download = 'image-dimension-report.txt'; link.click();
+  window.UtilityShelfUsage?.track('image-dimension-checker', 'report_download', preset.value, inputSource);
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
 });
