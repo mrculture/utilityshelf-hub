@@ -190,4 +190,6 @@ test('owner test mode suppresses filename events and beacon while downloads stil
  expect(requests.filter(url=>url.includes('cloudflareinsights'))).toEqual([]);
  await expect(page.getByRole('link',{name:'check your product photos’ dimensions and file sizes'})).toHaveAttribute('href',/test-mode=1/);
  await expect(page.getByRole('link',{name:'Arrange photos and copy their original filenames'})).toHaveAttribute('href',/test-mode=1/);
+ await expect(page.getByRole('link',{name:'Follow the six-photo listing walkthrough'})).toHaveAttribute('href','https://utilityshelf.site/guides/prepare-product-photos-for-ebay?test-mode=1');
+ await expect(page.getByRole('link',{name:'UtilityShelf tools',exact:true})).toHaveAttribute('href','https://utilityshelf.site/?test-mode=1');
 });

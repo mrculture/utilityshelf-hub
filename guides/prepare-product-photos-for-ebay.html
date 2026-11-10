@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Prepare Product Photos for an eBay Listing | UtilityShelf</title>
-  <meta name="description" content="A six-photo walkthrough: save a photo size report, arrange a contact sheet, copy the chosen order, and create SKU filenames with an original-to-new mapping.">
+  <meta name="description" content="A six-photo walkthrough: save a size report, arrange a contact sheet, then download SKU-named photo copies in a ZIP with an original-to-new filename mapping.">
   <link rel="canonical" href="https://utilityshelf.site/guides/prepare-product-photos-for-ebay">
   <link rel="stylesheet" href="/styles.css?v=20261110-workflows">
 </head>
@@ -12,8 +12,8 @@
   <main class="article-page"><article class="article-card">
     <p class="eyebrow">Product photos · Updated 10 November 2026</p>
     <h1>How to prepare product photos for an eBay listing</h1>
-    <p>A useful listing photo set needs clear views, suitable image sizes and a predictable order. This walkthrough takes six illustrative photos through three UtilityShelf tools. Keep your originals and work with copies when you apply the final names.</p>
-    <div class="tool-callout"><h2>Start with the original photos</h2><p>These tools check, arrange and name your files locally. They do not upload pictures to eBay or rename files on your device.</p><a class="button" href="/utilities/image-dimension-checker/">Check photo dimensions</a></div>
+    <p>A useful listing photo set needs clear views, suitable image sizes and a predictable order. Take six illustrative photos through three UtilityShelf tools and finish with a size report, contact sheet and ZIP of SKU-named copies, including their filename mapping.</p>
+    <div class="tool-callout"><h2>Start with the original photos</h2><p>These tools check, arrange and create renamed copies locally. They do not upload pictures to eBay or change your original files. Choose the same final batch separately in each tool.</p><a class="button" href="/utilities/image-dimension-checker/">Check photo dimensions</a></div>
     <h2>1. Check sizes and download the photo report</h2>
     <p>Choose your JPEG, PNG or WebP photos in Image Dimension Checker. Select <strong>eBay — recommended size</strong>. UtilityShelf checks for at least 1600 pixels in both dimensions and a maximum of 12 MB per photo; a rectangular image can pass without a square crop.</p>
     <p>For example, a 4000 × 2992 JPEG at 2.8 MB passes these size checks. A 1600 × 900 image falls short of this preset's height target. That result does not, by itself, mean eBay will reject it: this is a recommended-size check, not a complete acceptance test.</p>
@@ -42,13 +42,20 @@
       <li>Open <a href="https://filename-cleaner.utilityshelf.site/">Filename Cleaner</a> and paste into <strong>Original filenames</strong>. The list should contain exactly the views you chose, one name per line.</li>
       <li>Choose <strong>Product / SKU + numbers</strong>, enter <code>SKU-1042</code>, start at <code>1</code>, select <code>3</code> minimum digits and use lowercase with hyphens.</li>
       <li>Review all six names. The tool preserves extension case, so a source ending in <code>.JPG</code> keeps <code>.JPG</code>.</li>
-      <li>Copy the final list and download the filename mapping. Reordering the contact sheet later means copying its updated list and generating a fresh mapping.</li>
+      <li>Confirm that the final list contains all six names in your chosen order. You can copy it or download the mapping separately; the next step also includes that mapping inside the photo ZIP.</li>
     </ol>
-    <h2>4. Rename copies and verify the listing</h2>
-    <p>Keep three downloads together: the latest <strong>photo report</strong> for size findings, the <strong>contact-sheet PNG</strong> for the chosen view order, and the <strong>filename mapping</strong> connecting original names to SKU names. The report uses the original names and selection order; use the mapping to identify the renamed copies, not matching row numbers. Changing only the listing order needs a fresh contact sheet and mapping, while changed photos or size limits also need a fresh report.</p>
-    <p>In Filename Cleaner, select your original photos under <strong>Download renamed photo copies</strong>, then select <strong>Download renamed photos (.zip)</strong>. Every file must match an original filename in the reviewed list exactly; file-picker order does not matter. The ZIP contains the renamed copies and <code>filename-mapping.txt</code>. Extract it into a new listing folder and check each pairing. Photo bytes and embedded metadata are unchanged; originals are never renamed or uploaded.</p>
+    <h2>4. Download the renamed-photo ZIP</h2>
+    <ol class="checklist">
+      <li>In Filename Cleaner, find <strong>Download renamed photo copies</strong> and choose the six original photos using <strong>Original photos for the ZIP</strong>. Match every original filename in your reviewed list exactly, including spelling and case. File-picker order does not matter.</li>
+      <li>Wait for <strong>6 photos matched by original filename</strong>. If files are missing, extra or ambiguously named, correct the selection or list first. The download stays unavailable until every photo has a unique match and every proposed name is valid.</li>
+      <li>Select <strong>Download renamed photos (.zip)</strong>. Save <code>renamed-photos.zip</code> alongside the photo report and contact sheet. It contains the six reviewed names, from <code>sku-1042-001.jpg</code> to <code>sku-1042-006.jpg</code> in this example, plus <code>filename-mapping.txt</code>.</li>
+      <li>Extract the ZIP into a new listing folder. Open the copies and compare them with the contact sheet and mapping. Photo bytes and embedded metadata are unchanged; originals are never renamed or uploaded.</li>
+    </ol>
+    <p>Keep the latest <strong>photo report</strong>, <strong>contact-sheet PNG</strong> and <strong>renamed-photo ZIP</strong> together. The mapping inside the ZIP connects original names to SKU names. The report follows the original selection order; match by filename rather than row number.</p>
+    <p>If you change the listing order, copy the new order into Filename Cleaner and download a fresh contact sheet and ZIP. Changed photos also need a fresh size check and report; changed size limits need a fresh report. Editing names or selected files while a ZIP is being prepared cancels that pending ZIP.</p>
     <p>The ZIP supports up to 30 JPEG, PNG or WebP photos, 32 MB each and 100 MB combined. For other file types or larger batches, use the mapping in your file manager or renaming application. Do not assume the file manager's sort order matches the contact sheet. Neither the copied list nor the mapping download alone renames anything automatically.</p>
-    <p>Upload the full-size copies to your listing and verify the main photo and order in eBay's editor. Numbered filenames help you organise the set, but the uploader may choose a different order. Review the completed listing before publishing.</p>
+    <h2>5. Verify the listing photos</h2>
+    <p>Upload the extracted full-size photos to your listing, not the ZIP or contact-sheet PNG. Verify the main photo and order in eBay's editor. Numbered filenames help you organise the set, but the uploader may choose a different order. Review the completed listing before publishing.</p>
     <p><a href="/#product-photos">Back to the product-photo workflow</a> · <a href="/guides/prepare-supplier-csv-for-import">Prepare a supplier CSV</a></p>
   </article></main>
   <footer><div class="footer-inner"><p>UtilityShelf · Practical browser tools</p><nav aria-label="Footer"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a></nav></div></footer>
