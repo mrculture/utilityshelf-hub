@@ -44,3 +44,41 @@ Production deployments now depend on these checks. Direct Cloudflare Git product
 ## Guarded deployments
 
 The deployment job follows successful checks, verifies the live release, retries known temporary failures at most twice, and restores the captured previous release if live verification fails and this run still owns production. Credentials, cutover settings and recovery limits are documented in [.github/release/README.md](.github/release/README.md).
+
+## Tool action counts
+
+Anonymous Analytics Engine events use `utilityshelf_tool_usage`: `index1` = tool,
+`blob1` = action, `blob2` = fixed mode, `blob3` = sample/custom, `double1` = 1.
+The collector at `https://filename-cleaner.utilityshelf.site/usage` accepts only
+allowlisted tool/action/mode combinations from their production origins. The
+image tools use exact-origin CORS. No filenames, image bytes, input values,
+identifiers, or request headers are written to the dataset.
+
+| Tool | Action | Meaning | Modes |
+| --- | --- | --- | --- |
+| Filename Cleaner | ready / copy | Stable valid list / successful copy | clean, numbered |
+| Filename Cleaner | mapping_download | Browser download started | clean, numbered |
+| Image Contact Sheet | reorder | A photo moved successfully | sheet |
+| Image Contact Sheet | sheet_download | PNG generated and browser download started | sheet |
+| Image Dimension Checker | check_complete | Valid limits evaluated against at least one readable image | custom, ebay |
+| Image Dimension Checker | ebay_preset | Completed image check using the eBay preset | ebay |
+
+Each action/mode/source combination is counted at most once per page load.
+Counts are not unique people, total clicks, saved files, or necessarily passing
+checks. Image checks settle for 500 ms so intermediate limit edits do not count.
+Invalid/empty batches, failed exports and stale asynchronous results do not count.
+Opt-out, DNT, GPC, automated browsers, previews and `?release-check` suppress events.
+Sample activity must be excluded when assessing custom use. Tests intercept all
+collector calls; any explicitly performed live sample verification stays sample.
+Analytics failures do not block the tools. No cookies or persistent IDs are used.
+
+Example seven-day custom-use query (sampling-adjusted):
+
+```sql
+SELECT index1 AS tool, blob1 AS action, blob2 AS mode,
+       SUM(_sample_interval * double1) AS events
+FROM utilityshelf_tool_usage
+WHERE timestamp >= NOW() - INTERVAL '7' DAY AND blob3 = 'custom'
+GROUP BY tool, action, mode
+ORDER BY events DESC
+```

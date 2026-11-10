@@ -2,6 +2,18 @@ const byId = id => document.getElementById(id);
 const input = byId('files');
 const status = byId('status');
 let generation = 0;
+let inputSource = 'custom';
+let usageTimer;
+function scheduleUsage() {
+  clearTimeout(usageTimer);
+  if (!measurements.some(item => !item.error)) return;
+  const id = generation, mode = preset.value, source = inputSource;
+  usageTimer = setTimeout(() => {
+    if (id !== generation) return;
+    window.UtilityShelfUsage?.track('image-dimension-checker', 'check_complete', mode, source);
+    if (mode === 'ebay') window.UtilityShelfUsage?.track('image-dimension-checker', 'ebay_preset', mode, source);
+  }, 500);
+}
 
 async function openPhoto(file) {
   if (file.size > 32000000) throw new Error('Exceeds the 32 MB reading limit');
@@ -46,6 +58,7 @@ preset.addEventListener('change', () => {
 });
 
 function evaluatePhotos() {
+  clearTimeout(usageTimer);
   output.replaceChildren();
   if (!measurements.length) return;
   const limits = ['width', 'height', 'size'].map(byId);
@@ -83,9 +96,12 @@ function evaluatePhotos() {
   output.append(table);
   status.textContent = passes + ' of ' + measurements.length +
     (preset.value === 'ebay' ? ' meet the eBay recommended-size preset.' : ' meet your limits.');
+  scheduleUsage();
 }
 
-async function load(files, id) {
+async function load(files, id, source = 'custom') {
+  clearTimeout(usageTimer);
+  inputSource = source;
   measurements = [];
   output.replaceChildren();
   if (!files.length || files.length > 30) {
@@ -118,6 +134,9 @@ for (const id of ['width', 'height', 'size']) byId(id).addEventListener('input',
 });
 byId('demo').addEventListener('click', async () => {
   const id = ++generation;
+  clearTimeout(usageTimer);
+  measurements = [];
+  output.replaceChildren();
   input.value = '';
   preset.value = 'custom';
   showPreset();
@@ -126,5 +145,5 @@ byId('demo').addEventListener('click', async () => {
   byId('size').value = 8;
   const files = await Promise.all([examplePhoto('front.png', 1000, 1000, '#22523f'),
     examplePhoto('detail.png', 1000, 600, '#c07141')]);
-  if (id === generation) load(files, id);
+  if (id === generation) load(files, id, 'sample');
 });

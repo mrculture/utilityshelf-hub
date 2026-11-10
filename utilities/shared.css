@@ -32,4 +32,6 @@ canvas, img { max-width: 100%; height: auto }
 pre, code, output { overflow-wrap: anywhere }
 pre { white-space: pre-wrap; background: #eef4ec; padding: .8rem; border-radius: .5rem }
 footer { max-width: 62rem; margin: 1rem auto; padding: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .92rem }
+.usage-choice { display: block; margin-top: 1rem }
+.usage-choice input { width: auto; display: inline; margin-right: .4rem }
 [hidden] { display: none !important }

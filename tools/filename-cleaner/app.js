@@ -10,10 +10,10 @@
     if (!trackingAllowed()) { byId('usage').checked = false; byId('usage').disabled = true; }
     function track(event, eventMode = mode.value, source = inputSource) {
       if (!trackingAllowed() || location.hostname !== 'filename-cleaner.utilityshelf.site' || navigator.webdriver || new URLSearchParams(location.search).has('release-check')) return;
-      if (!['ready','copy'].includes(event) || !['clean','numbered'].includes(eventMode) || !['sample','custom'].includes(source)) return;
+      if (!['ready','copy','mapping_download'].includes(event) || !['clean','numbered'].includes(eventMode) || !['sample','custom'].includes(source)) return;
       const id = [event,eventMode,source].join(':');
       if (recorded.has(id)) return;
-      recorded.add(id); // At most eight events per page load, even if a request fails.
+      recorded.add(id); // At most twelve events per page load, even if a request fails.
       fetch('/usage', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event,mode:eventMode,source}), credentials:'omit', referrerPolicy:'no-referrer', keepalive:true}).catch(() => {});
     }
     byId('usage').addEventListener('change', () => { clearTimeout(readyTimer); });
@@ -130,6 +130,7 @@
         link.download = 'filename-mapping.txt';
         document.body.append(link);
         link.click();
+        track('mapping_download');
         byId('mappingStatus').textContent = 'Filename mapping download started: ' + batch.length +
           (batch.length === 1 ? ' pair.' : ' pairs.');
       } catch {

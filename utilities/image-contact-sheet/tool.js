@@ -2,6 +2,8 @@ const byId = id => document.getElementById(id);
 const input = byId('files');
 const status = byId('status');
 let generation = 0;
+let inputSource = 'custom';
+const track = (event, source = inputSource) => window.UtilityShelfUsage?.track('image-contact-sheet', event, 'sheet', source);
 
 async function openPhoto(file) {
   if (file.size > 32000000) throw new Error('Exceeds the 32 MB reading limit');
@@ -80,6 +82,7 @@ function render() {
         if (destination < 0 || destination >= photos.length) return;
         [photos[index], photos[destination]] = [photos[destination], photos[index]];
         render();
+        track('reorder');
         status.textContent += ' Moved ' + photo.name + ' to position ' + (destination + 1) + '.';
         const buttons = names.children[destination].querySelectorAll('button');
         const sameDirection = Array.from(buttons).find(control => control.dataset.direction === String(direction));
@@ -94,7 +97,8 @@ function render() {
     (errors.length ? ' Skipped: ' + errors.join(', ') + '.' : '');
 }
 
-async function load(files, id) {
+async function load(files, id, source = 'custom') {
+  inputSource = source;
   photos = [];
   errors = [];
   render();
@@ -138,12 +142,14 @@ byId('demo').addEventListener('click', async () => {
   try {
     const files = await Promise.all([examplePhoto('front.png', 640, 480, '#2d5845'),
       examplePhoto('side.png', 400, 600, '#b16a36'), examplePhoto('detail.png', 600, 400, '#416781')]);
-    if (id === generation) await load(files, id);
+    if (id === generation) await load(files, id, 'sample');
   } catch {
     if (id === generation) status.textContent = 'Could not prepare the example. Try again or choose your own photos.';
   }
 });
 download.addEventListener('click', () => {
+  if (download.disabled || !photos.length) return;
+  const source = inputSource;
   const id = generation;
   const version = renderVersion;
   sheet.toBlob(blob => {
@@ -153,6 +159,7 @@ download.addEventListener('click', () => {
     const link = document.createElement('a');
     link.href = url; link.download = 'contact-sheet.png';
     document.body.append(link); link.click(); link.remove();
+    track('sheet_download', source);
     setTimeout(() => URL.revokeObjectURL(url), 30000);
   }, 'image/png');
 });

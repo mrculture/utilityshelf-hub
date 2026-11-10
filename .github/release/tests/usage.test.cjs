@@ -30,3 +30,22 @@ test('health is non-writing, missing binding fails, and privacy signals skip col
  for(const header of ['DNT','Sec-GPC'])assert.equal((await w.fetch(request(event,{[header]:'1'}),env)).status,204);
  assert.equal(writes,0);
 });
+
+test('image events allow exact hub CORS and fixed tool/action/mode combinations only',async()=>{
+ const points=[],env={USAGE:{writeDataPoint:p=>points.push(p)}};
+ const w=await worker,hub='https://utilityshelf.site';
+ const image={tool:'image-dimension-checker',event:'ebay_preset',mode:'ebay',source:'custom'};
+ const preflight=new Request(origin+'/usage',{method:'OPTIONS',headers:{Origin:hub,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'}});
+ const pre=await w.fetch(preflight,env);assert.equal(pre.status,204);assert.equal(pre.headers.get('Access-Control-Allow-Origin'),hub);assert.equal(points.length,0);
+ for(const data of [image,{...image,event:'check_complete',mode:'custom'},{tool:'image-contact-sheet',event:'reorder',mode:'sheet',source:'sample'},{tool:'image-contact-sheet',event:'sheet_download',mode:'sheet',source:'custom'}]){
+  const response=await w.fetch(request(data,{Origin:hub}),env);
+  assert.equal(response.status,204);assert.equal(response.headers.get('Access-Control-Allow-Origin'),hub);
+ }
+ assert.equal((await w.fetch(request({...event,event:'mapping_download'}),env)).status,204);
+ assert.equal(points.length,5);
+ for(const data of [{...image,mode:'custom'},{...image,tool:'__proto__'},{...image,tool:null},{...image,tool:['image-dimension-checker']},{...image,event:['ebay_preset']},{...image,event:'toString'},{...image,filename:'secret.jpg'},{...image,tool:'filename-cleaner',event:'copy',mode:'clean'}])assert.ok((await w.fetch(request(data,{Origin:hub}),env)).status>=400);
+ assert.equal((await w.fetch(request(image),env)).status,403);
+ const blocked=await w.fetch(new Request(origin+'/usage',{method:'OPTIONS',headers:{Origin:'https://bad.example','Access-Control-Request-Method':'POST'}}),env);
+ assert.equal(blocked.status,403);assert.equal(blocked.headers.get('Access-Control-Allow-Origin'),null);
+ assert.equal(points.length,5);
+});

@@ -31,9 +31,15 @@ const target=JSON.parse(process.argv[2]);const expected=process.argv[3];
     if(!(await page.locator('#result').inputValue()).startsWith('sku-1042-001.JPG\nsku-1042-002.jpg')) throw Error('Numbered filename result changed');
     const collector=await context.request.get(target.origin+'/usage');
     if(collector.status()!==200 || await collector.text()!=='Usage collector ready') throw Error('Usage collector binding unavailable');
+    const preflight=await context.request.fetch(target.origin+'/usage',{method:'OPTIONS',headers:{Origin:'https://utilityshelf.site','Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'}});
+    if(preflight.status()!==204 || preflight.headers()['access-control-allow-origin']!=='https://utilityshelf.site') throw Error('Image usage collector CORS unavailable');
    }
   } else {
    if(await page.locator('a[href="https://system-care-script-builder.utilityshelf.site/"]').count()<1) throw Error('System Care homepage link missing');
+   if(expected) for(const tool of ['image-contact-sheet','image-dimension-checker']) {
+    await page.goto(target.origin+'/utilities/'+tool+'/?release-check='+Date.now(),{waitUntil:'networkidle'});
+    if(!await page.locator('#usage').isChecked() || !await page.evaluate(()=>typeof window.UtilityShelfUsage?.track==='function')) throw Error('Image usage controls unavailable');
+   }
   }
   if(errors.length) throw Error(errors.join('\n'));
   console.log(`${target.name}: live browser checks passed${expected?' for '+expected:''}`);

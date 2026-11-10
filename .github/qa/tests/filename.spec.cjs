@@ -153,3 +153,24 @@ test('opt-out and Do Not Track suppress usage; denied clipboard does not report 
  await next.waitForTimeout(1700);
  expect(events).toEqual([]);
 });
+
+test('mapping downloads track started exports only, once per mode/source and respect opt-out',async({page})=>{
+ const events=await openTool(page,{tracking:true});
+ await page.locator('#sample').click();
+ await expect(page.locator('#downloadMapping')).toBeDisabled();
+ expect(events).toEqual([]);
+ await page.locator('#mode').selectOption('numbered');
+ for(let i=0;i<2;i++){
+  const pending=page.waitForEvent('download');await page.locator('#downloadMapping').click();await pending;
+ }
+ await expect.poll(()=>events.filter(e=>e.event==='mapping_download').length).toBe(1);
+ await page.locator('#names').fill('PRIVATE.jpg');
+ await page.locator('#usage').uncheck();
+ const pending=page.waitForEvent('download');await page.locator('#downloadMapping').click();await pending;
+ expect(events.filter(e=>e.event==='mapping_download')).toEqual([{event:'mapping_download',mode:'numbered',source:'sample'}]);
+ await page.locator('#usage').check();
+ await page.evaluate(()=>URL.createObjectURL=()=>{throw Error('Failed export');});
+ await page.locator('#downloadMapping').click();
+ await expect(page.locator('#mappingStatus')).toContainText('could not start');
+ expect(events.filter(e=>e.event==='mapping_download').length).toBe(1);
+});

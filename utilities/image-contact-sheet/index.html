@@ -6,7 +6,8 @@
   <link rel="canonical" href="https://utilityshelf.site/utilities/image-contact-sheet/">
   <link rel="stylesheet" href="/utilities/shared.css">
   <link rel="stylesheet" href="./tool.css">
-  <script src="./tool.js" defer></script>
+  <script src="/utilities/usage.js?v=20261110-usage2" defer></script>
+  <script src="./tool.js?v=20261110-usage2" defer></script>
 </head>
 <body>
   <header><a href="/">UtilityShelf</a><nav aria-label="Main"><a href="/#companions">Browse tools</a></nav></header>
@@ -21,6 +22,7 @@
     </section>
     <section class="panel" aria-label="Results"><h2>Contact sheet preview</h2><p role="status" id="status">Choose photos or try the example.</p><canvas id="sheet" hidden aria-label="Contact sheet preview, with filename list below"></canvas><div class="actions"><button id="download" type="button" disabled>Download PNG</button></div><ol id="names" aria-label="Filenames in sheet order"></ol></section>
     <section class="panel"><h2>Review the batch before you send it</h2><p>Choose your strongest photo first, then arrange the supporting views with Move earlier and Move later. You can use the buttons with a mouse, touch or keyboard. Changing the number of columns keeps your chosen order; choosing new files starts a new batch.</p><p>Download the sheet to share your chosen order. The sheet fits each image inside its cell without cropping. Long captions are shortened on the image; the list preserves the full names. Transparent areas appear white in the thumbnails. Your original photos and filenames stay unchanged.</p><p>For submission checks, <a href="/utilities/image-dimension-checker/">check the original image dimensions</a>.</p></section>
+    <label class="hint usage-choice"><input id="usage" type="checkbox" checked> Share anonymous action counts. No filenames or photo contents are sent. <a href="/privacy">Privacy details</a></label>
     <p class="hint">Processing takes place on this device. Files you select stay in your browser.</p>
   </main>
   <footer><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer>
