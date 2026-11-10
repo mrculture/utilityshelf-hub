@@ -5,6 +5,17 @@ const path=require('node:path');
 const origin='https://filename-cleaner.utilityshelf.site';
 const worker=import('data:text/javascript;base64,'+fs.readFileSync(path.resolve(__dirname,'../../../tools/filename-cleaner/_worker.js')).toString('base64')).then(m=>m.default);
 const event={event:'copy',mode:'numbered',source:'custom'};
+
+test('photo ZIP events accept fixed naming modes without names, contents or cross-origin submissions',async()=>{
+ const points=[],env={USAGE:{writeDataPoint:p=>points.push(p)}},w=await worker;
+ for(const mode of ['clean','numbered']){
+  const payload={event:'zip_download',mode,source:'custom'};
+  assert.equal((await w.fetch(request(payload),env)).status,204);
+  assert.equal((await w.fetch(request({...payload,filename:'photo.jpg'}),env)).status,400);
+  assert.equal((await w.fetch(request(payload,{Origin:'https://utilityshelf.site'}),env)).status,403);
+ }
+ assert.deepEqual(points.map(p=>p.blobs),[['zip_download','clean','custom'],['zip_download','numbered','custom']]);
+});
 test('standalone CSV tracker matches the shared tracker',()=>{
  const root=path.resolve(__dirname,'../../..');
  assert.equal(fs.readFileSync(path.join(root,'tools/csv-import-checker/usage.js'),'utf8'),fs.readFileSync(path.join(root,'utilities/usage.js'),'utf8'));

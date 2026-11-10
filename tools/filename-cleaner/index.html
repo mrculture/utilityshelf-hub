@@ -74,8 +74,18 @@
         <span class="hint">Copy the selection with Ctrl+C or ⌘C.</span>
       </div>
     </section>
-    <p class="hint">Filename processing happens in this browser tab. Your files stay untouched: this tool creates a naming list, not renamed files.</p>
-    <label class="choice hint"><input id="usage" type="checkbox" checked><span>Share anonymous usage counts (list ready, list copied and mapping download started). No filenames, prefixes or file contents are sent. <a href="https://utilityshelf.site/privacy">Privacy details</a></span></label>
+    <section class="panel" aria-labelledby="photoZipTitle">
+      <h2 id="photoZipTitle">Download renamed photo copies</h2>
+      <p>Once every name is ready, select the original photos matching your list. Files are matched by exact original filename, not file-picker order. The ZIP contains renamed copies in the reviewed list order and <code>filename-mapping.txt</code>.</p>
+      <label for="photoFiles">Original photos for the ZIP</label>
+      <input id="photoFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple aria-describedby="photoZipHelp">
+      <p class="hint" id="photoZipHelp">JPEG, PNG and WebP only. Up to 30 photos, 32 MB each and 100 MB combined (1 MB = 1,000,000 bytes). Missing, extra or ambiguous filenames must be resolved first. The ZIP preserves image bytes and embedded metadata; it does not resize, recompress or strip location information. Use Image Dimension Checker to check image sizes.</p>
+      <div class="bar"><button id="downloadZip" class="primary" type="button" disabled>Download renamed photos (.zip)</button><button id="clearPhotos" type="button">Clear selected photos</button></div>
+      <p id="zipStatus" role="status">Finish reviewing a valid filename list first.</p>
+      <p class="hint">Processing stays in this browser. Your originals are not changed or uploaded. Extract the ZIP into a new folder and verify the copies before using them. Changing names or selected files cancels a ZIP still being prepared; download a fresh ZIP for the latest list.</p>
+    </section>
+    <p class="hint">You can use the filename list and mapping without selecting files, or select photos to download renamed copies. Originals stay untouched.</p>
+    <label class="choice hint"><input id="usage" type="checkbox" checked><span>Share anonymous usage counts (list ready, list copied, mapping and ZIP download started). No filenames, prefixes or file contents are sent. <a href="https://utilityshelf.site/privacy">Privacy details</a></span></label>
     <section class="panel" aria-labelledby="how"><h2 id="how">Prepare product-photo filenames in four steps</h2>
       <ol><li>Paste the original filenames, one per line, in the order you want to use. Leave out folder paths.</li><li>Choose <strong>Clean existing names</strong> to keep descriptive words, or <strong>Product / SKU + numbers</strong> for an ordered photo set. For example, use the prefix <code>SKU-1042</code>, start at 1 and choose three digits.</li><li>Review the suggestions. Resolve highlighted duplicates or invalid names; the final list appears only when every name is ready.</li><li>Copy or select the final list and download the filename mapping. Use the numbered original/new pairs to match each file when applying the names in your file manager or renaming tool.</li></ol>
       <p>For five photos of one product, numbering separates front, side, rear and packaging views even if their original names collide. Use a new batch and prefix for each product.</p>
@@ -85,14 +95,15 @@
       <p><a href="https://utilityshelf.site/guides/prepare-product-photos-for-ebay">Follow the six-photo listing walkthrough</a> to check sizes, order your views and apply the mapping to copies of your files.</p>
     </section>
     <section class="panel" aria-labelledby="questions"><h2 id="questions">Filename questions</h2>
-      <details><summary>Does this rename or upload my files?</summary><p>No. You paste filenames and receive a reviewed list. Files are neither opened nor uploaded, and nothing on your device is renamed.</p></details>
+      <details><summary>Does this rename or upload my files?</summary><p>Your originals are never renamed or uploaded. Pasting names produces a reviewed list and mapping. If you also select photos, the browser reads them locally and creates a ZIP of renamed copies with identical image bytes. Extract it into a new folder before using the copies.</p></details>
       <details><summary>Why are two differently capitalised names duplicates?</summary><p>Some file systems treat capitalisation as equivalent. This tool compares names without case differences and with Unicode normalisation to help you avoid collisions.</p></details>
       <details><summary>Can I use spaces, accents and mixed file types?</summary><p>Yes. Choose spaces, hyphens or underscores between words. Accented letters are preserved, as is each final extension, such as .JPG or .png. Folder paths, Windows reserved names and unsupported characters are flagged. A filename longer than 255 UTF-8 bytes is also flagged; your destination may have stricter limits.</p></details>
       <details><summary>Does a clean filename guarantee search rankings?</summary><p>No. Descriptive names help you organise your photos. Product-page content, image quality and the requirements of your publishing platform still matter.</p></details>
     </section>
     <footer><a href="https://utilityshelf.site/privacy">Privacy</a> · <a href="https://utilityshelf.site/terms">Terms</a> · <a href="https://utilityshelf.site/contact">Contact</a></footer>
   </main>
-  <script src="app.js?v=20261110-testmode" defer></script>
+  <script src="zip.js?v=20261110-photo-zip" defer></script>
+  <script src="app.js?v=20261110-photo-zip" defer></script>
 
 </body>
 </html>

@@ -16,7 +16,7 @@ async function openTool(page,{tracking=false,clipboardFails=false,dnt=false,test
   if(url.origin!==origin)return route.abort();
   if(url.pathname==='/usage'){events.push(JSON.parse(route.request().postData()));return route.fulfill({status:204});}
   const file=url.pathname==='/'?'index.html':url.pathname.slice(1);
-  if(!['index.html','app.js'].includes(file))return route.fulfill({status:404});
+  if(!['index.html','app.js','zip.js'].includes(file))return route.fulfill({status:404});
   return route.fulfill({body:fs.readFileSync(path.join(root,file)),contentType:file.endsWith('.js')?'text/javascript':'text/html'});
  });
  await page.goto(origin+(testMode?'/?test-mode=1':''));

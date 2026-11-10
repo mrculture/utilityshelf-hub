@@ -32,10 +32,10 @@
     if (!trackingAllowed()) { byId('usage').checked = false; byId('usage').disabled = true; }
     function track(event, eventMode = mode.value, source = inputSource) {
       if (!trackingAllowed() || location.hostname !== 'filename-cleaner.utilityshelf.site' || navigator.webdriver || new URLSearchParams(location.search).has('release-check')) return;
-      if (!['ready','copy','mapping_download'].includes(event) || !['clean','numbered'].includes(eventMode) || !['sample','custom'].includes(source)) return;
+      if (!['ready','copy','mapping_download','zip_download'].includes(event) || !['clean','numbered'].includes(eventMode) || !['sample','custom'].includes(source)) return;
       const id = [event,eventMode,source].join(':');
       if (recorded.has(id)) return;
-      recorded.add(id); // At most twelve events per page load, even if a request fails.
+      recorded.add(id); // Deduplicate fixed event/mode/source combinations per page load.
       fetch('/usage', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event,mode:eventMode,source}), credentials:'omit', referrerPolicy:'no-referrer', keepalive:true}).catch(() => {});
     }
     byId('usage').addEventListener('change', () => { clearTimeout(readyTimer); });
@@ -98,6 +98,7 @@
       byId('result').value = ready ? batch.map(item => item.value).join('\n') : '';
       byId('manual').hidden = !ready;
       byId('copyStatus').textContent = '';
+      refreshPhotoZip();
       // Count a stable valid list, not every keystroke or intermediate suggestion.
       if (ready) readyTimer = setTimeout(() => track('ready'),1500);
     }
@@ -137,13 +138,16 @@
       byId('result').select();
     }
     byId('selectList').addEventListener('click', selectList);
-    byId('downloadMapping').addEventListener('click', () => {
-      if (byId('downloadMapping').disabled || !batch.length) return;
-      const pairs = batch.map((item, index) =>
+    function mappingText(items = batch) {
+      const pairs = items.map((item, index) =>
         (index + 1) + '.\r\nOriginal: ' + item.original + '\r\nNew: ' + item.value);
-      const text = 'UtilityShelf filename mapping\r\n' +
+      return 'UtilityShelf filename mapping\r\n' +
         'Match each original file to its new name. This list does not rename files.\r\n\r\n' +
         pairs.join('\r\n\r\n') + '\r\n';
+    }
+    byId('downloadMapping').addEventListener('click', () => {
+      if (byId('downloadMapping').disabled || !batch.length) return;
+      const text = mappingText();
       let url;
       const link = document.createElement('a');
       try {
@@ -183,6 +187,63 @@
         if (byId('result').value !== list) return;
         selectList();
         byId('copyStatus').textContent = 'List selected. Press Ctrl+C or ⌘C to copy.';
+      }
+    });
+    const photoFiles = byId('photoFiles'), zipButton = byId('downloadZip'), zipStatus = byId('zipStatus');
+    let zipRevision = 0;
+    function photoZipIssue() {
+      const files = Array.from(photoFiles.files);
+      if (byId('downloadMapping').disabled) return 'Finish reviewing a valid filename list first.';
+      if (!files.length) return 'Select the original photos that match your reviewed list.';
+      if (files.length > 30 || batch.length > 30) return 'Choose no more than 30 photos per ZIP.';
+      if (files.some(file => !file.size || file.size > 32000000)) return 'Each photo must contain data and be no larger than 32 MB.';
+      if (files.reduce((total,file) => total + file.size, 0) > 100000000) return 'Keep the combined photo size at or below 100 MB.';
+      if (new Set(batch.map(item => key(item.original))).size !== batch.length || new Set(files.map(file => key(file.name))).size !== files.length) return 'Ambiguous original filenames: use one uniquely named file for each list entry, including case and Unicode differences.';
+      if (files.length !== batch.length || batch.some(item => !files.some(file => file.name === item.original))) return 'Files do not match the list. Select exactly one photo for every original filename, with the same spelling and case; remove missing or extra files.';
+      if (batch.some(item => !/\.(jpe?g|png|webp)$/i.test(item.original))) return 'ZIP copies support JPEG, PNG and WebP photos only.';
+      if (typeof window.UtilityShelfPhotoZip !== 'function') return 'ZIP support could not load. Reload the page and try again.';
+      return '';
+    }
+    function refreshPhotoZip() {
+      zipRevision++;
+      const issue = photoZipIssue();
+      zipButton.disabled = Boolean(issue);
+      zipStatus.textContent = issue || batch.length + ' photos matched by original filename. Ready to download renamed copies and the mapping.';
+    }
+    photoFiles.addEventListener('change', refreshPhotoZip);
+    byId('clearPhotos').addEventListener('click', () => { photoFiles.value = ''; refreshPhotoZip(); });
+    zipButton.addEventListener('click', async () => {
+      if (zipButton.disabled || photoZipIssue()) return;
+      const revision = ++zipRevision, items = batch.map(({original,value}) => ({original,value}));
+      const files = new Map(Array.from(photoFiles.files, file => [file.name,file]));
+      const eventMode = mode.value;
+      zipButton.disabled = true; zipStatus.textContent = 'Preparing renamed copies…';
+      let url, link;
+      try {
+        const entries = [];
+        for (const item of items) {
+          const bytes = new Uint8Array(await files.get(item.original).arrayBuffer());
+          if (revision !== zipRevision) return;
+          const ext = splitName(item.original)[1].toLowerCase();
+          const jpeg = bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255;
+          const png = [137,80,78,71,13,10,26,10].every((n,i) => bytes[i] === n);
+          const webp = String.fromCharCode(...bytes.slice(0,4)) === 'RIFF' && String.fromCharCode(...bytes.slice(8,12)) === 'WEBP';
+          if (!((['.jpg','.jpeg'].includes(ext) && jpeg) || (ext === '.png' && png) || (ext === '.webp' && webp))) throw Error('A selected file does not match its JPEG, PNG or WebP extension. Check your originals before trying again.');
+          entries.push({name:item.value,bytes});
+        }
+        entries.push({name:'filename-mapping.txt',bytes:new TextEncoder().encode('\uFEFF' + mappingText(items))});
+        url = URL.createObjectURL(window.UtilityShelfPhotoZip(entries));
+        if (revision !== zipRevision) return;
+        link = document.createElement('a'); link.href = url; link.download = 'renamed-photos.zip';
+        document.body.append(link); link.click();
+        track('zip_download', eventMode, 'custom');
+        zipStatus.textContent = 'ZIP download started: ' + items.length + ' renamed photo copies and filename-mapping.txt. Original image bytes and embedded metadata are unchanged.';
+      } catch (error) {
+        if (revision === zipRevision) zipStatus.textContent = 'ZIP not created. ' + (error.name === 'Error' ? error.message : 'A photo could not be read or the download could not start. Reselect your photos and try again.');
+      } finally {
+        link?.remove();
+        if (url) setTimeout(() => URL.revokeObjectURL(url),30000);
+        if (revision === zipRevision) zipButton.disabled = Boolean(photoZipIssue());
       }
     });
     if (location.hash === '#five-photo-example') { inputSource = 'sample'; names.value = examples.join('\n'); }

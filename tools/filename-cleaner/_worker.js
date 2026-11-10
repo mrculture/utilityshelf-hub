@@ -3,7 +3,7 @@ const productionOrigin = 'https://filename-cleaner.utilityshelf.site';
 const hubOrigin = 'https://utilityshelf.site';
 const csvOrigin = 'https://csv-import-checker.utilityshelf.site';
 const modes = {
-  'filename-cleaner': {ready:['clean','numbered'], copy:['clean','numbered'], mapping_download:['clean','numbered']},
+  'filename-cleaner': {ready:['clean','numbered'], copy:['clean','numbered'], mapping_download:['clean','numbered'], zip_download:['clean','numbered']},
   'image-contact-sheet': {reorder:['sheet'], sheet_download:['sheet'], names_copy:['sheet']},
   'image-dimension-checker': {check_complete:['custom','ebay'], ebay_preset:['ebay'], report_download:['custom','ebay']},
   'csv-import-checker': {check_complete:['passed','issues'], corrected_download:['passed'], report_download:['passed','issues','incomplete']},

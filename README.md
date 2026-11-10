@@ -58,6 +58,7 @@ identifiers, or request headers are written to the dataset.
 | --- | --- | --- | --- |
 | Filename Cleaner | ready / copy | Stable valid list / successful copy | clean, numbered |
 | Filename Cleaner | mapping_download | Browser download started | clean, numbered |
+| Filename Cleaner | zip_download | Renamed photo ZIP download started; custom files only | clean, numbered |
 | Image Contact Sheet | reorder | A photo moved successfully | sheet |
 | Image Contact Sheet | sheet_download | PNG generated and browser download started | sheet |
 | Image Contact Sheet | names_copy | Ordered original filename list copied successfully | sheet |
