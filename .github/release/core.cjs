@@ -77,7 +77,7 @@ function packageSite(root, target, sha, output) {
     const relative=file.slice(prefix.length);
     if (relative.split('/').some(part=>part.startsWith('.')) || relative.endsWith('.md')) continue;
     if (!prefix && relative.startsWith('tools/')) continue;
-    const publicSample = !prefix && /^guides\/samples\/supplier-inventory-(original|corrected)\.csv$/.test(relative);
+    const publicSample = !prefix && (/^guides\/samples\/supplier-inventory-(original|corrected)\.csv$/.test(relative) || relative === 'guides/samples/product-photo-practice-v1.zip');
     if (!publicSample && !publicExtensions.has(path.extname(relative)) && !['_headers','_redirects'].includes(relative)) continue;
     const source=path.join(root,file);
     if (fs.lstatSync(source).isSymbolicLink()) throw new Error('Symlink in public assets: '+file);

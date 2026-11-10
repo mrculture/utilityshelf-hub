@@ -1,5 +1,6 @@
 .wrangler/
 *.zip
+!guides/samples/product-photo-practice-v1.zip
 .DS_Store
 Thumbs.db
 

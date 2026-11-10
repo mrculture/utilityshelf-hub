@@ -16,6 +16,25 @@
     <p>A useful listing photo set needs clear views, suitable image sizes and a predictable order. Take six illustrative photos through three UtilityShelf tools and finish with checked photos, reports, a contact sheet and ZIP of SKU-named copies, including their filename mapping.</p>
     <div class="tool-callout"><h2>Start with the original photos</h2><p>These tools check, resize, arrange and create renamed copies locally. They do not upload pictures to eBay or change your original files. If resizing is needed, extract the new copies first, then select those same checked files separately in each remaining tool. If your photos already meet your limits, keep them as they are.</p><a class="button" data-photo-step="check_resize" href="/utilities/image-dimension-checker/">Check photo dimensions</a></div>
     <p>Use batches of up to <strong>30 photos, 32 MB per photo and 100 MB combined</strong> across all three tools (1 MB = 1,000,000 bytes). If you select 31 or more photos, or exceed 100 MB combined, split the batch and select it again. The tools reject oversized batches without silently dropping the extra photos. Resizing also has the pixel limits shown in Image Dimension Checker.</p>
+    <section class="tool-callout" id="practice-pack" aria-labelledby="practice-title">
+      <h2 id="practice-title">Try a downloadable practice batch</h2>
+      <p><a class="button" href="/guides/samples/product-photo-practice-v1.zip" download>Download practice photo pack (.zip)</a></p>
+      <p>This pack contains six synthetic test files, a replacement photo, <code>practice-settings.json</code> and <code>START-HERE.txt</code>. One test file is deliberately unreadable. The examples are illustrations, not real product photos. This exercise starts with six files and finishes with five checked photos; it is separate from the six-view listing example below.</p>
+      <ol class="checklist">
+        <li>Extract the ZIP into a new folder. Open <a href="/utilities/image-dimension-checker/?test-mode=1">Image Dimension Checker in practice mode</a> and use <strong>Load settings</strong> to select <code>practice-settings.json</code>. These custom practice limits are <strong>800 × 800 px minimum, 1 MB maximum and a 1200 px maximum long edge</strong>, not eBay requirements. Practice mode excludes your test actions from usage counts.</li>
+        <li>Choose only the six files in the <code>photos</code> folder. Expect <strong>3 of 6 meet your limits</strong> and a report marked <strong>Check incomplete</strong>. The maximum long edge applies when preparing copies, rather than to the initial dimension check.</li>
+      </ol>
+      <div class="article-table-wrap"><table class="article-table"><thead><tr><th>Practice file</th><th>Expected initial result</th><th>What to do</th></tr></thead><tbody>
+        <tr><td><code>01-pass-front.jpg</code></td><td>Pass · 1600 × 1200</td><td>Keep</td></tr>
+        <tr><td><code>02-pass-detail.png</code></td><td>Pass · 1200 × 1200</td><td>Keep</td></tr>
+        <tr><td><code>03-fail-too-small.jpg</code></td><td>600 × 450 · width short by 200 px, height short by 350 px</td><td>Replace with <code>replacements/03-replacement.jpg</code></td></tr>
+        <tr><td><code>04-fail-file-size.png</code></td><td>1200 × 1200 · over 1 MB</td><td>Prepare a smaller copy</td></tr>
+        <tr><td><code>05-fail-unreadable.jpg</code></td><td>Could not check · deliberately not an image</td><td>Remove</td></tr>
+        <tr><td><code>06-pass-packaging.webp</code></td><td>Pass · 1400 × 1000</td><td>Keep</td></tr>
+      </tbody></table></div>
+      <p>Remove the unreadable file: <strong>3 of 5</strong> should pass. Replace the small photo: <strong>4 of 5</strong> should pass. Select <strong>Prepare smaller copies</strong>, download and extract the ZIP, then recheck those five copies with the same settings: <strong>5 of 5</strong> should pass. Save a fresh report. Output byte sizes can vary by browser.</p>
+      <p>Continue with those five checked files in the contact sheet and Filename Cleaner. Try the prefix <code>PRACTICE-1042</code>, start at 1 and use 3 digits. Keep each file's extension; the output may contain both JPEG and PNG files. The final renamed ZIP should contain five photos plus the mapping, with neither the unreadable file nor the old undersized photo. Follow the tool links to keep practice mode enabled.</p>
+    </section>
     <h2>1. Check sizes and download the photo report</h2>
     <p>Choose your JPEG, PNG or WebP photos in Image Dimension Checker. Select <strong>eBay — recommended size</strong>. UtilityShelf checks for at least 1600 pixels in both dimensions and a maximum of 12 MB per photo; a rectangular image can pass without a square crop.</p>
     <p>For example, a 4000 × 2992 JPEG at 2.8 MB passes these size checks. A 1600 × 900 image falls short of this preset's height target. That result does not, by itself, mean eBay will reject it: this is a recommended-size check, not a complete acceptance test.</p>
