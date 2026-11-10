@@ -1,6 +1,7 @@
 import { csvRows, attachFileInput } from '../csv-column-mapper/csv.js';
 const byId = id => document.getElementById(id);
 const source = byId('source'), summary = byId('summary'), issues = byId('issues');
+let inputSource = 'custom';
 
 function reason(value) {
   const prefix = value.trimStart()[0] || '';
@@ -35,6 +36,7 @@ function scan() {
     }
     issues.append(results);
     summary.textContent = found + (found === 1 ? ' field' : ' fields') + ' to review out of ' + scanned + ' checked.' + (found > 100 ? ' Showing the first 100.' : '');
+    window.UtilityShelfUsage?.track('csv-formula-checker', 'scan_complete', found ? 'warnings' : 'clear', inputSource);
   } catch (err) {
     summary.textContent = 'Scan incomplete. ' + err.message;
   }
@@ -44,12 +46,13 @@ function reset() {
   issues.replaceChildren();
   summary.textContent = 'Select Check fields to scan the current input.';
 }
-source.addEventListener('input', reset);
+source.addEventListener('input', () => { inputSource = 'custom'; reset(); });
 byId('delimiter').addEventListener('change', reset);
 byId('scan').addEventListener('click', scan);
 byId('sample').addEventListener('click', () => {
   source.value = 'Order,Customer note,Adjustment\n1001,"=SUM(2,3)",-12.50\n1002,"Leave at desk, please",0\n1003,"  @review",0';
   source.dispatchEvent(new Event('input'));
+  inputSource = 'sample';
   byId('delimiter').value = 'comma';
   scan();
 });

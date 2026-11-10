@@ -48,6 +48,8 @@ export function attachFileInput(file, source, message) {
   file.addEventListener('change', async () => {
     const selected = file.files[0];
     if (!selected) return;
+    source.value = '';
+    source.dispatchEvent(new Event('input'));
     const current = ++version;
     file.value = '';
     try {

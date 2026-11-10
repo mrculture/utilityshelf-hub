@@ -5,6 +5,10 @@ const path=require('node:path');
 const origin='https://filename-cleaner.utilityshelf.site';
 const worker=import('data:text/javascript;base64,'+fs.readFileSync(path.resolve(__dirname,'../../../tools/filename-cleaner/_worker.js')).toString('base64')).then(m=>m.default);
 const event={event:'copy',mode:'numbered',source:'custom'};
+test('standalone CSV tracker matches the shared tracker',()=>{
+ const root=path.resolve(__dirname,'../../..');
+ assert.equal(fs.readFileSync(path.join(root,'tools/csv-import-checker/usage.js'),'utf8'),fs.readFileSync(path.join(root,'utilities/usage.js'),'utf8'));
+});
 function request(body=event,headers={},url=origin+'/usage') {
  return new Request(url,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',...headers},body:typeof body==='string'?body:JSON.stringify(body)});
 }
@@ -48,4 +52,20 @@ test('image events allow exact hub CORS and fixed tool/action/mode combinations 
  const blocked=await w.fetch(new Request(origin+'/usage',{method:'OPTIONS',headers:{Origin:'https://bad.example','Access-Control-Request-Method':'POST'}}),env);
  assert.equal(blocked.status,403);assert.equal(blocked.headers.get('Access-Control-Allow-Origin'),null);
  assert.equal(points.length,6);
+});
+
+test('CSV actions require the correct production origin and fixed payload schema',async()=>{
+ const points=[],env={USAGE:{writeDataPoint:p=>points.push(p)}},w=await worker;
+ const csv='https://csv-import-checker.utilityshelf.site',hub='https://utilityshelf.site';
+ const cases=[['csv-import-checker','check_complete','issues',csv],['csv-import-checker','check_complete','passed',csv],['csv-import-checker','corrected_download','passed',csv],['csv-column-mapper','build_complete','mapped',hub],['csv-column-mapper','mapped_download','mapped',hub],['csv-formula-checker','scan_complete','clear',hub],['csv-formula-checker','scan_complete','warnings',hub]];
+ for(const [tool,action,mode,from] of cases){
+  const payload={tool,event:action,mode,source:'custom'};
+  assert.equal((await w.fetch(request(payload,{Origin:from}),env)).status,204);
+  assert.equal((await w.fetch(request(payload,{Origin:from===hub?csv:hub}),env)).status,403);
+  assert.equal((await w.fetch(request({...payload,csv:'private'},{Origin:from}),env)).status,400);
+ }
+ assert.equal(points.length,cases.length);
+ const pre=await w.fetch(new Request(origin+'/usage',{method:'OPTIONS',headers:{Origin:csv,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'}}),env);
+ assert.equal(pre.status,204);assert.equal(pre.headers.get('Access-Control-Allow-Origin'),csv);
+ assert.equal(points.length,cases.length);
 });

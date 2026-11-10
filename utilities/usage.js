@@ -10,8 +10,8 @@
     document.querySelector('h1').after(notice);
     for (const link of document.querySelectorAll('a[href]')) {
       const destination = new URL(link.href);
-      if ((destination.origin === 'https://filename-cleaner.utilityshelf.site' && destination.pathname === '/') ||
-          (destination.origin === 'https://utilityshelf.site' && ['/utilities/image-contact-sheet/', '/utilities/image-dimension-checker/'].includes(destination.pathname))) {
+      if ((['https://filename-cleaner.utilityshelf.site', 'https://csv-import-checker.utilityshelf.site'].includes(destination.origin) && destination.pathname === '/') ||
+          (destination.origin === 'https://utilityshelf.site' && ['/utilities/image-contact-sheet/', '/utilities/image-dimension-checker/', '/utilities/csv-column-mapper/', '/utilities/csv-formula-checker/'].includes(destination.pathname))) {
         destination.searchParams.set('test-mode', '1'); link.href = destination.href;
       }
     }
@@ -27,11 +27,15 @@
   if (choice && (usageTestMode || privateBrowser())) { choice.checked = false; choice.disabled = true; }
   const modes = {
     'image-contact-sheet': {reorder: ['sheet'], sheet_download: ['sheet'], names_copy: ['sheet']},
-    'image-dimension-checker': {check_complete: ['custom', 'ebay'], ebay_preset: ['ebay']}
+    'image-dimension-checker': {check_complete: ['custom', 'ebay'], ebay_preset: ['ebay']},
+    'csv-import-checker': {check_complete: ['passed', 'issues'], corrected_download: ['passed']},
+    'csv-column-mapper': {build_complete: ['mapped'], mapped_download: ['mapped']},
+    'csv-formula-checker': {scan_complete: ['clear', 'warnings']}
   };
   window.UtilityShelfUsage = {
     track(tool, event, mode, source) {
-      if (usageTestMode || !choice?.checked || privateBrowser() || navigator.webdriver || location.origin !== 'https://utilityshelf.site' || new URLSearchParams(location.search).has('release-check')) return;
+      const expectedOrigin = tool === 'csv-import-checker' ? 'https://csv-import-checker.utilityshelf.site' : 'https://utilityshelf.site';
+      if (usageTestMode || !choice?.checked || privateBrowser() || navigator.webdriver || location.origin !== expectedOrigin || releaseTestMode) return;
       if (!modes[tool]?.[event]?.includes(mode) || !['sample', 'custom'].includes(source)) return;
       const key = [tool, event, mode, source].join(':');
       if (recorded.has(key)) return;

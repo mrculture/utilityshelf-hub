@@ -30,14 +30,17 @@ Use these links before starting any owner/agent test:
 - https://filename-cleaner.utilityshelf.site/?test-mode=1
 - https://utilityshelf.site/utilities/image-contact-sheet/?test-mode=1
 - https://utilityshelf.site/utilities/image-dimension-checker/?test-mode=1
+- https://csv-import-checker.utilityshelf.site/?test-mode=1
+- https://utilityshelf.site/utilities/csv-column-mapper/?test-mode=1
+- https://utilityshelf.site/utilities/csv-formula-checker/?test-mode=1
 
-The visible Test mode notice confirms exclusion. On these three pages it disables
+The visible Test mode notice confirms exclusion. On these six pages it disables
 both action events and the Cloudflare Web Analytics beacon, without preventing
 checks, reordering or downloads. Direct links between these tools retain the
 flag. Opening a normal URL, or navigating elsewhere on UtilityShelf, does not
 carry the exclusion automatically. It is not a persistent browser opt-out.
 DNT, GPC and the normal checkbox continue to suppress action events as before.
-Automation and release-check URLs also suppress the beacon on these three tools.
+Automation and release-check URLs also suppress the beacon on these six tools.
 
 For an intentional end-to-end collector test, use built-in samples. If custom
 input is necessary, record its exact stored signatures and purpose in

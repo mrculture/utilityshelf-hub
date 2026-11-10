@@ -1,17 +1,21 @@
 // No request headers, IPs, filenames, prefixes or arbitrary strings are persisted.
 const productionOrigin = 'https://filename-cleaner.utilityshelf.site';
 const hubOrigin = 'https://utilityshelf.site';
+const csvOrigin = 'https://csv-import-checker.utilityshelf.site';
 const modes = {
   'filename-cleaner': {ready:['clean','numbered'], copy:['clean','numbered'], mapping_download:['clean','numbered']},
   'image-contact-sheet': {reorder:['sheet'], sheet_download:['sheet'], names_copy:['sheet']},
-  'image-dimension-checker': {check_complete:['custom','ebay'], ebay_preset:['ebay']}
+  'image-dimension-checker': {check_complete:['custom','ebay'], ebay_preset:['ebay']},
+  'csv-import-checker': {check_complete:['passed','issues'], corrected_download:['passed']},
+  'csv-column-mapper': {build_complete:['mapped'], mapped_download:['mapped']},
+  'csv-formula-checker': {scan_complete:['clear','warnings']}
 };
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin');
-    const allowed = [productionOrigin, hubOrigin].includes(origin);
+    const allowed = [productionOrigin, hubOrigin, csvOrigin].includes(origin);
     const reply = (status, text = '') => new Response(text || null, {status, headers:{
       'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff', 'X-Robots-Tag':'noindex', 'Vary':'Origin',
       ...(allowed ? {'Access-Control-Allow-Origin':origin} : {})
@@ -53,7 +57,7 @@ export default {
       const tool = Object.hasOwn(data, 'tool') ? data.tool : 'filename-cleaner';
       if (![tool, data.event, data.mode, data.source].every(value => typeof value === 'string')) return reply(400);
       if (!Object.hasOwn(modes, tool) || !Object.hasOwn(modes[tool], data.event) || !modes[tool][data.event].includes(data.mode) || !['sample','custom'].includes(data.source)) return reply(400);
-      if (origin !== (tool === 'filename-cleaner' ? productionOrigin : hubOrigin)) return reply(403);
+      if (origin !== (tool === 'filename-cleaner' ? productionOrigin : tool === 'csv-import-checker' ? csvOrigin : hubOrigin)) return reply(403);
       env.USAGE.writeDataPoint({indexes:[tool],blobs:[data.event,data.mode,data.source],doubles:[1]});
       return reply(204);
     } catch { return reply(400); }

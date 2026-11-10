@@ -63,11 +63,20 @@ identifiers, or request headers are written to the dataset.
 | Image Contact Sheet | names_copy | Ordered original filename list copied successfully | sheet |
 | Image Dimension Checker | check_complete | Valid limits evaluated against at least one readable image | custom, ebay |
 | Image Dimension Checker | ebay_preset | Completed image check using the eBay preset | ebay |
+| CSV Import Checker | check_complete | Parsed nonempty CSV and completed header/field-count checks | passed, issues |
+| CSV Import Checker | corrected_download | Exact checked CSV download started after passing structure checks | passed |
+| CSV Column Mapper | build_complete / mapped_download | Mapping built / full CSV download started | mapped |
+| CSV Formula Checker | scan_complete | Parsed nonempty input and completed prefix scan | clear, warnings |
 
 Each action/mode/source combination is counted at most once per page load.
 Counts are not unique people, total clicks, saved files, or necessarily passing
 checks. Image checks settle for 500 ms so intermediate limit edits do not count.
 Invalid/empty batches, failed exports and stale asynchronous results do not count.
+CSV parsing failures and separator warnings do not count as completed checks.
+Editing a built-in CSV sample changes its source category to custom. CSV files
+opened from disk or pasted are custom; owner tests must use test mode regardless.
+The standalone CSV Import Checker ships an identical copy of `utilities/usage.js`
+at `tools/csv-import-checker/usage.js`; a release test guards against drift.
 Opt-out, DNT, GPC, automated browsers, previews and `?release-check` suppress events.
 Sample activity must be excluded when assessing custom use. Tests intercept all
 collector calls; any explicitly performed live sample verification stays sample.

@@ -2,6 +2,8 @@ import { csvRows, encodeRow, attachFileInput } from './csv.js';
 const byId = id => document.getElementById(id);
 const source = byId('source'), target = byId('target'), message = byId('message');
 let records = [], labels = [], controls = [], generated = '';
+let inputSource = 'custom';
+const track = event => window.UtilityShelfUsage?.track('csv-column-mapper', event, 'mapped', inputSource);
 
 function clearResult() {
   generated = '';
@@ -90,15 +92,17 @@ function build() {
   byId('output').value = rows.slice(0, 6).join('\n');
   byId('result').hidden = false;
   message.textContent = 'Ready to download ' + records.length + ' data rows in ' + labels.length + ' destination columns.';
+  track('build_complete');
 }
 
-source.addEventListener('input', reset);
+source.addEventListener('input', () => { inputSource = 'custom'; reset(); });
 target.addEventListener('input', reset);
 byId('prepare').addEventListener('click', () => prepare());
 byId('generate').addEventListener('click', build);
 byId('sample').addEventListener('click', () => {
   source.value = 'Supplier title,Unit cost,Stock code,Internal note\n"Mug, blue",7.50,0012,Spring range\n"Desk frame, 5""",9.25,0013,For review';
   source.dispatchEvent(new Event('input'));
+  inputSource = 'sample';
   target.value = 'SKU,Title,Price';
   prepare([2,0,1]);
   build();
@@ -110,6 +114,7 @@ byId('download').addEventListener('click', () => {
   link.href = url;
   link.download = 'mapped.csv';
   link.click();
+  track('mapped_download');
   setTimeout(() => URL.revokeObjectURL(url), 30000);
 });
 attachFileInput(byId('file'), source, message);

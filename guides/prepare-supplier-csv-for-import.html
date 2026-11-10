@@ -22,12 +22,12 @@ A102,Notebook,6.50
 A103,"Frame, small",15.00,9.50</code></pre>
     <p>It reports two issues: <code>Price</code> repeats in columns 3 and 4, and line 3 has only three fields instead of four. The comma inside <code>"Mug, blue"</code> belongs to the product name because that field is quoted.</p>
     <h2>2. Correct the data using the supplier's meaning</h2>
-    <p>For this example, assume the supplier confirms the fourth column is <code>Cost</code> and the Notebook's missing cost is <code>4.20</code>. Make those corrections in a copy:</p>
+    <p>For this example, assume the supplier confirms the fourth column is <code>Cost</code> and the Notebook's missing cost is <code>4.00</code>. Make those corrections in a copy:</p>
     <pre class="example-block"><code>SKU,Product,Price,Cost
 A101,"Mug, blue",12.00,8.00
-A102,Notebook,6.50,4.20
+A102,Notebook,6.50,4.00
 A103,"Frame, small",15.00,9.50</code></pre>
-    <p>Check the corrected CSV again. It should pass the header and field-count checks with four columns and three data rows. For a real file, confirm missing values with the supplier; do not invent them or insert zero just to make the row pass. A blank field is appropriate only when its meaning and the destination allow it.</p>
+    <p>Check the corrected CSV again. It should pass the header and field-count checks with four columns and three data rows. Select <strong>Download corrected CSV</strong> to save the checked text for the next step. For a real file, confirm missing values with the supplier; do not invent them or insert zero just to make the row pass. A blank field is appropriate only when its meaning and the destination allow it.</p>
     <h2>3. Map columns to the destination</h2>
     <p>Open <a href="/utilities/csv-column-mapper/">CSV Column Mapper</a>. Paste the corrected CSV and use this illustrative destination header:</p>
     <pre class="example-block"><code>SKU,Title,Price</code></pre>

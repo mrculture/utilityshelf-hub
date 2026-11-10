@@ -22,6 +22,7 @@
     textarea { width: 100%; resize: vertical; border: 1px solid #82958c; border-radius: .4rem; padding: .8rem; font: 1rem/1.55 ui-monospace,monospace }
     button { border: 1px solid #a1b7aa; background: #eff4ed; color: #195d49; border-radius: .4rem; padding: .55rem .85rem; font: inherit; font-weight: 650; cursor:pointer }
     button:first-child { background: #195d49; color: white }
+    button:disabled { opacity:.5; cursor:not-allowed }
     .actions { display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.6rem }
     :focus-visible { outline: 3px solid #297ba5; outline-offset: 2px }
     li { padding:.6rem 0; border-top:1px solid #e0e6df; overflow-wrap:anywhere }
@@ -48,6 +49,8 @@
       <h2 id="results-title">Import checks</h2>
       <div id="summary" role="status">Open a file, paste CSV, or try the sample.</div>
       <ul id="issues"></ul>
+      <button id="download" type="button" disabled>Download corrected CSV</button>
+      <p class="hint">Edit the CSV above and run Check CSV. When the header and field-count checks pass, download the exact checked text as a separate file. Values and formula-like fields are not changed automatically.</p>
       <p class="hint">Header comparisons ignore case and outer spaces. Line numbers refer to the pasted text, including the header. Quoted fields may contain commas and line breaks.</p>
     </section>
     <section aria-labelledby="next-step"><h2 id="next-step">Next: match your destination template</h2>
@@ -55,12 +58,18 @@
       <p>Review that export in <a href="https://utilityshelf.site/utilities/csv-formula-checker/">CSV Formula Checker</a> before opening it in a spreadsheet or sharing it. Return here to check the final file's headers and row lengths. Files are not transferred automatically between tools.</p>
       <p><a href="https://utilityshelf.site/guides/prepare-supplier-csv-for-import">Follow the supplier CSV walkthrough</a>. Passing these checks does not validate your destination's required values or product data.</p>
     </section>
+    <label><input type="checkbox" id="usage" checked> Share anonymous action counts. No filenames, headings or CSV contents are sent. <a href="https://utilityshelf.site/privacy">Privacy details</a></label>
     <footer><a href="https://utilityshelf.site/privacy">Privacy</a> · <a href="https://utilityshelf.site/terms">Terms</a> · <a href="https://utilityshelf.site/contact">Contact</a></footer>
   </main>
+  <script src="./usage.js?v=20261110-csv"></script>
   <script>
     const source = document.getElementById('source');
     const summary = document.getElementById('summary');
     const issues = document.getElementById('issues');
+    const download = document.getElementById('download');
+    let checkedText = null, inputSource = 'custom';
+    const track = (event, mode) => window.UtilityShelfUsage?.track('csv-import-checker', event, mode, inputSource);
+    function invalidateDownload() { checkedText = null; download.disabled = true; }
     const sample = 'SKU,Product,Price,Price\nA101,"Mug, blue",12.00,8.00\nA102,Notebook,6.50\nA103,"Frame, small",15.00,9.50';
     // Yield each logical record with the physical line on which it starts.
     function* records(text, delimiter = ',') {
@@ -119,6 +128,7 @@
       return '';
     }
     function check() {
+      invalidateDownload();
       issues.replaceChildren();
       if (!source.value.trim()) { summary.textContent = 'Enter CSV with a header on line 1.'; return; }
       const separator = likelySeparator(source.value);
@@ -159,19 +169,37 @@
       summary.textContent = (count ? count + (count === 1 ? ' issue' : ' issues') + ' found.' : 'Header and field-count checks passed.') +
         ' Checked ' + width + (width === 1 ? ' column and ' : ' columns and ') + dataRows + (dataRows === 1 ? ' data row.' : ' data rows.') +
         (count > 100 ? ' Showing the first 100 issues.' : '');
+      if (!count && width) { checkedText = source.value; download.disabled = false; }
+      track('check_complete', count ? 'issues' : 'passed');
     }
     let revision = 0;
     source.addEventListener('input', () => {
       revision++;
+      inputSource = 'custom';
+      invalidateDownload();
       issues.replaceChildren();
       summary.textContent = 'Select Check CSV to check the edited text.';
     });
     document.getElementById('check').addEventListener('click', check);
-    document.getElementById('sample').addEventListener('click', () => { revision++; source.value = sample; check(); });
+    document.getElementById('sample').addEventListener('click', () => { revision++; inputSource = 'sample'; source.value = sample; check(); });
+    download.addEventListener('click', () => {
+      if (download.disabled || checkedText === null || checkedText !== source.value) return;
+      const url = URL.createObjectURL(new Blob([checkedText], {type:'text/csv;charset=utf-8'}));
+      const link = document.createElement('a');
+      link.href = url; link.download = 'corrected.csv'; link.click();
+      track('corrected_download', 'passed');
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    });
     document.getElementById('file').addEventListener('change', async event => {
       const file = event.target.files[0];
       if (!file) return;
       const request = ++revision;
+      inputSource = 'custom';
+      invalidateDownload();
+      source.value = '';
+      issues.replaceChildren();
+      summary.textContent = 'Reading CSV…';
+      event.target.value = '';
       try {
         const text = await file.text();
         if (request !== revision) return;
@@ -183,8 +211,7 @@
         summary.textContent = 'Could not read the file. Paste its contents below the file picker.';
       }
     });
-    if (location.hash === "#inventory-example") { source.value = sample; check(); }
+    if (location.hash === "#inventory-example") { inputSource = 'sample'; source.value = sample; check(); }
   </script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "104d69dafb54484bbb4e18e34d50c835"}'></script>
 </body>
 </html>
