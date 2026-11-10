@@ -67,12 +67,14 @@ identifiers, or request headers are written to the dataset.
 | CSV Import Checker | corrected_download | Exact checked CSV download started after passing structure checks | passed |
 | CSV Column Mapper | build_complete / mapped_download | Mapping built / full CSV download started | mapped |
 | CSV Formula Checker | scan_complete | Parsed nonempty input and completed prefix scan | clear, warnings |
+| CSV Import Checker / CSV Formula Checker | report_download | Plain-text report download started for the current check | passed, issues, incomplete |
 
 Each action/mode/source combination is counted at most once per page load.
 Counts are not unique people, total clicks, saved files, or necessarily passing
 checks. Image checks settle for 500 ms so intermediate limit edits do not count.
 Invalid/empty batches, failed exports and stale asynchronous results do not count.
 CSV parsing failures and separator warnings do not count as completed checks.
+Both checkers offer plain-text reports with a passed, issues found, or check incomplete status. Reports list at most 100 findings, state when more were detected, and distinguish partial checks from completed checks. Editing input, changing the formula checker separator, or starting a file read invalidates the previous report. Reports are created locally; report text and CSV contents are never sent with usage events.
 Editing a built-in CSV sample changes its source category to custom. CSV files
 opened from disk or pasted are custom; owner tests must use test mode regardless.
 The standalone CSV Import Checker ships an identical copy of `utilities/usage.js`

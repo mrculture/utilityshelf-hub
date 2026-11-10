@@ -65,7 +65,17 @@ test('CSV actions require the correct production origin and fixed payload schema
   assert.equal((await w.fetch(request({...payload,csv:'private'},{Origin:from}),env)).status,400);
  }
  assert.equal(points.length,cases.length);
+ for(const [tool,from] of [['csv-import-checker',csv],['csv-formula-checker',hub]]){
+  for(const mode of ['passed','issues','incomplete']){
+   const payload={tool,event:'report_download',mode,source:'custom'};
+   assert.equal((await w.fetch(request(payload,{Origin:from}),env)).status,204);
+   assert.equal((await w.fetch(request(payload,{Origin:from===hub?csv:hub}),env)).status,403);
+   assert.equal((await w.fetch(request({...payload,report:'private'},{Origin:from}),env)).status,400);
+  }
+  assert.equal((await w.fetch(request({tool,event:'report_download',mode:'unknown',source:'custom'},{Origin:from}),env)).status,400);
+ }
+ assert.equal(points.length,cases.length+6);
  const pre=await w.fetch(new Request(origin+'/usage',{method:'OPTIONS',headers:{Origin:csv,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'}}),env);
  assert.equal(pre.status,204);assert.equal(pre.headers.get('Access-Control-Allow-Origin'),csv);
- assert.equal(points.length,cases.length);
+ assert.equal(points.length,cases.length+6);
 });

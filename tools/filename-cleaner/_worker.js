@@ -6,9 +6,9 @@ const modes = {
   'filename-cleaner': {ready:['clean','numbered'], copy:['clean','numbered'], mapping_download:['clean','numbered']},
   'image-contact-sheet': {reorder:['sheet'], sheet_download:['sheet'], names_copy:['sheet']},
   'image-dimension-checker': {check_complete:['custom','ebay'], ebay_preset:['ebay']},
-  'csv-import-checker': {check_complete:['passed','issues'], corrected_download:['passed']},
+  'csv-import-checker': {check_complete:['passed','issues'], corrected_download:['passed'], report_download:['passed','issues','incomplete']},
   'csv-column-mapper': {build_complete:['mapped'], mapped_download:['mapped']},
-  'csv-formula-checker': {scan_complete:['clear','warnings']}
+  'csv-formula-checker': {scan_complete:['clear','warnings'], report_download:['passed','issues','incomplete']}
 };
 
 export default {

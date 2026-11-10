@@ -112,6 +112,9 @@ for(const tool of tools)for(const setting of ['testMode','optout','dnt','gpc','a
  if(setting==='optout')await page.locator('#usage').uncheck();
  if(['testMode','dnt','gpc'].includes(setting))await expect(page.locator('#usage')).toBeDisabled();
  await runCustom(page,tool);
+ if(tool!=='csv-column-mapper'){
+  const pending=page.waitForEvent('download');await page.locator('#downloadReport').click();await pending;
+ }
  await page.waitForTimeout(150);expect(events).toEqual([]);
  if(['testMode','release','automated'].includes(setting))expect(requests.filter(url=>url.includes('cloudflareinsights'))).toEqual([]);
  if(setting==='testMode') {
@@ -119,4 +122,20 @@ for(const tool of tools)for(const setting of ['testMode','optout','dnt','gpc','a
   const links=await page.locator('a[href]').evaluateAll(nodes=>nodes.map(n=>n.href).filter(h=>h.includes('csv-import-checker.utilityshelf.site/')||h.includes('/utilities/csv-column-mapper/')||h.includes('/utilities/csv-formula-checker/')));
   expect(links.length).toBeGreaterThan(0);for(const link of links)expect(new URL(link).searchParams.get('test-mode')).toBe('1');
  }
+});
+
+for(const tool of ['csv-import-checker','csv-formula-checker'])test(tool+' report downloads count only fixed status labels and separate sample input',async({page})=>{
+ const {events}=await open(page,tool);
+ const run=tool==='csv-import-checker'?'#check':'#scan';
+ async function save(){const pending=page.waitForEvent('download');await page.locator('#downloadReport').click();await pending;}
+ await page.locator('#sample').click();await save();await save();
+ for(const text of [corrected,tool==='csv-import-checker'?'PRIVATE,PRIVATE\n1,2':'Note\n=PRIVATE','A\n"broken']){
+  await page.locator('#source').fill(text);await page.locator(run).click();await save();await save();
+ }
+ await expect.poll(()=>events.filter(e=>e.event==='report_download').length).toBe(4);
+ expect(events.filter(e=>e.event==='report_download')).toEqual([
+  {tool,event:'report_download',mode:'issues',source:'sample'},
+  ...['passed','issues','incomplete'].map(mode=>({tool,event:'report_download',mode,source:'custom'}))
+ ]);
+ expect(JSON.stringify(events)).not.toMatch(/PRIVATE|SKU|Price|broken/);
 });

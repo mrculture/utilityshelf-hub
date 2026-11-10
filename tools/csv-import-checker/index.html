@@ -49,7 +49,9 @@
       <h2 id="results-title">Import checks</h2>
       <div id="summary" role="status">Open a file, paste CSV, or try the sample.</div>
       <ul id="issues"></ul>
-      <button id="download" type="button" disabled>Download corrected CSV</button>
+      <div class="actions"><button id="download" type="button" disabled>Download corrected CSV</button><button id="downloadReport" type="button" disabled>Download check report (.txt)</button></div>
+      <p id="reportStatus">Run a check to create a report.</p>
+      <p class="hint">The report includes the result, issue locations and suggested fixes. It lists up to 100 issues and states when more were found. Review issue details before sharing.</p>
       <p class="hint">Edit the CSV above and run Check CSV. When the header and field-count checks pass, download the exact checked text as a separate file. Values and formula-like fields are not changed automatically.</p>
       <p class="hint">Header comparisons ignore case and outer spaces. Line numbers refer to the pasted text, including the header. Quoted fields may contain commas and line breaks.</p>
     </section>
@@ -61,15 +63,35 @@
     <label><input type="checkbox" id="usage" checked> Share anonymous action counts. No filenames, headings or CSV contents are sent. <a href="https://utilityshelf.site/privacy">Privacy details</a></label>
     <footer><a href="https://utilityshelf.site/privacy">Privacy</a> · <a href="https://utilityshelf.site/terms">Terms</a> · <a href="https://utilityshelf.site/contact">Contact</a></footer>
   </main>
-  <script src="./usage.js?v=20261110-csv"></script>
+  <script src="./usage.js?v=20261110-reports"></script>
   <script>
     const source = document.getElementById('source');
     const summary = document.getElementById('summary');
     const issues = document.getElementById('issues');
     const download = document.getElementById('download');
+    const downloadReport = document.getElementById('downloadReport');
+    const reportStatus = document.getElementById('reportStatus');
+    let reportText = null, reportInput = null, reportMode = null;
     let checkedText = null, inputSource = 'custom';
     const track = (event, mode) => window.UtilityShelfUsage?.track('csv-import-checker', event, mode, inputSource);
-    function invalidateDownload() { checkedText = null; download.disabled = true; }
+    function invalidateDownload() {
+      checkedText = null; download.disabled = true;
+      reportText = null; reportInput = null; reportMode = null; downloadReport.disabled = true;
+      reportStatus.textContent = 'Run a check to create a report.';
+    }
+    function prepareReport(status, details) {
+      reportInput = source.value;
+      reportMode = status === 'Passed' ? 'passed' : status === 'Issues found' ? 'issues' : 'incomplete';
+      // Escape embedded controls so source headers cannot look like report headings.
+      const lines = details.map((line, index) => (index + 1) + '. ' + JSON.stringify(line).slice(1, -1));
+      reportText = ['UtilityShelf - CSV Import Checker report', 'Status: ' + status,
+        'Separator: Comma', summary.textContent, '', 'Details:', ...lines, '',
+        'Scope: header names, CSV quoting and field counts only. Product values and formula safety are not validated.',
+        'Line numbers include the header and refer to physical lines in the checked text.',
+        'Correct the source, run Check CSV again and download a fresh report.'].join('\r\n') + '\r\n';
+      reportStatus.textContent = 'Report status: ' + status + '.';
+      downloadReport.disabled = false;
+    }
     const sample = 'SKU,Product,Price,Price\nA101,"Mug, blue",12.00,8.00\nA102,Notebook,6.50\nA103,"Frame, small",15.00,9.50';
     // Yield each logical record with the physical line on which it starts.
     function* records(text, delimiter = ',') {
@@ -135,12 +157,15 @@
       if (separator) {
         summary.textContent = 'Check the separator: these rows appear to use ' + separator +
           ' between columns. If you expected multiple columns, export the sheet again as CSV with a comma separator. If you intended one text column, quote each field containing punctuation.';
+        prepareReport('Check incomplete', ['The comma-separated structure check was not completed. Confirm the separator and check the file again.']);
         return;
       }
       let width = 0, dataRows = 0, count = 0;
+      const findings = [];
       function report(message) {
         count++;
         if (count > 100) return;
+        findings.push(message);
         const item = document.createElement('li');
         item.textContent = message;
         issues.append(item);
@@ -164,12 +189,16 @@
       } catch (err) {
         report(err.message);
         summary.textContent = 'CSV parsing stopped. Fix the quoting and check again.';
+        prepareReport('Check incomplete', ['Parsed data rows before stopping: ' + dataRows + '. Remaining records were not checked.',
+          'Issues detected before stopping: ' + count + '. Listing ' + findings.length + '.',
+          ...findings, ...(count > 100 ? ['Stopping error: ' + err.message] : [])]);
         return;
       }
       summary.textContent = (count ? count + (count === 1 ? ' issue' : ' issues') + ' found.' : 'Header and field-count checks passed.') +
         ' Checked ' + width + (width === 1 ? ' column and ' : ' columns and ') + dataRows + (dataRows === 1 ? ' data row.' : ' data rows.') +
         (count > 100 ? ' Showing the first 100 issues.' : '');
       if (!count && width) { checkedText = source.value; download.disabled = false; }
+      prepareReport(count ? 'Issues found' : 'Passed', count ? findings : ['No header or field-count issues found.']);
       track('check_complete', count ? 'issues' : 'passed');
     }
     let revision = 0;
@@ -188,6 +217,14 @@
       const link = document.createElement('a');
       link.href = url; link.download = 'corrected.csv'; link.click();
       track('corrected_download', 'passed');
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    });
+    downloadReport.addEventListener('click', () => {
+      if (downloadReport.disabled || reportText === null || reportInput !== source.value) return;
+      const url = URL.createObjectURL(new Blob([reportText], {type:'text/plain;charset=utf-8'}));
+      const link = document.createElement('a');
+      link.href = url; link.download = 'csv-import-check-report.txt'; link.click();
+      track('report_download', reportMode);
       setTimeout(() => URL.revokeObjectURL(url), 30000);
     });
     document.getElementById('file').addEventListener('change', async event => {

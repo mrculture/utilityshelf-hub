@@ -8,8 +8,8 @@
   <link rel="canonical" href="https://utilityshelf.site/utilities/csv-formula-checker/">
   <link rel="stylesheet" href="/utilities/shared.css">
 
-  <script defer src="/utilities/usage.js?v=20261110-csv"></script>
-  <script type="module" src="./app.js?v=20261110-csv"></script>
+  <script defer src="/utilities/usage.js?v=20261110-reports"></script>
+  <script type="module" src="./app.js?v=20261110-reports"></script>
 </head>
 <body>
   <header><a href="/#companions">UtilityShelf tools</a></header>
@@ -32,6 +32,9 @@
     <section class="panel" aria-labelledby="flags">
       <h2 id="flags">Fields to review</h2>
       <ol id="issues"></ol>
+      <button id="downloadReport" type="button" disabled>Download check report (.txt)</button>
+      <p id="reportStatus">Run a check to create a report.</p>
+      <p>The report includes issue locations and field previews, with up to 100 findings. It states when the scan was incomplete or more findings were found. Review these details before sharing.</p>
       <p>Locations count the header as record 1. The line number is the start of that record in the file. Tabs and line breaks appear as escape sequences in each preview.</p>
     </section>
     <section>
