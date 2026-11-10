@@ -8,7 +8,7 @@
   <script src="/utilities/usage.js?v=20261110-resize" defer></script>
   <script src="./zip.js?v=20261110-resize" defer></script>
   <script src="./resize.js?v=20261110-resize" defer></script>
-  <script src="./tool.js?v=20261110-batch30" defer></script>
+  <script src="./tool.js?v=20261110-photo-edit" defer></script>
 </head>
 <body>
   <header><a href="/">UtilityShelf</a><nav aria-label="Main"><a href="/#companions">Browse tools</a></nav></header>
@@ -30,7 +30,10 @@
       <p class="hint">Enter the limits for your destination. One MB is 1,000,000 bytes. Choose up to 30 JPEG, PNG or WebP photos, each up to 32 MB and 100 MB combined. Batches above 30 photos or 100 MB are rejected in full; split them before continuing.</p>
       <button id="demo" type="button">Try two example photos</button>
     </section>
-    <section class="panel" aria-label="Results"><h2>Image checks</h2><p id="status" role="status">Choose photos or try the example.</p><div class="table-wrap" id="output"></div>
+    <section class="panel" aria-label="Results"><h2>Image checks</h2><p id="status" role="status">Choose photos or try the example.</p>
+      <p class="hint">Use Replace to check a different file in the same position, or Remove to leave a photo out of this batch. Original files stay untouched. The results below show your current batch; choosing photos above starts a new batch. Changes refresh the report and clear any prepared resized download.</p>
+      <input id="replacementFile" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Replacement photo" hidden>
+      <p id="batchStatus" role="status"></p><div class="table-wrap" id="output"></div>
       <div class="actions"><button id="downloadReport" type="button" disabled>Download photo report (.txt)</button></div>
       <p id="reportStatus">Choose photos and valid limits to create a report.</p>
       <p class="hint">The report lists photos needing attention first, with filenames, dimensions, exact file sizes and reasons, followed by passing photos. Unreadable files are marked as incomplete checks. It updates when you change valid limits and is unavailable while photos are loading or limits are invalid. Review filenames before sharing; the report contains no photo contents.</p>

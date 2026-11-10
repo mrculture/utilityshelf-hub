@@ -1,5 +1,8 @@
 const byId = id => document.getElementById(id);
 const input = byId('files');
+const replacementInput = byId('replacementFile');
+const batchStatus = byId('batchStatus');
+let replacementTarget = null;
 const status = byId('status');
 let generation = 0;
 let inputSource = 'custom';
@@ -78,7 +81,7 @@ function evaluatePhotos() {
   const [minWidth, minHeight, maxSize] = limits.map(field => field.valueAsNumber);
   const table = document.createElement('table');
   const heading = table.createTHead().insertRow();
-  for (const label of ['Filename', 'Dimensions', 'File size', 'Result']) {
+  for (const label of ['Filename', 'Dimensions', 'File size', 'Result', 'Change photo']) {
     const cell = document.createElement('th');
     cell.scope = 'col';
     cell.textContent = label;
@@ -107,6 +110,33 @@ function evaluatePhotos() {
       item.bytes.toLocaleString() + ' bytes', problems.join('; ') || 'Pass']) {
       row.insertCell().textContent = text;
     }
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    for (const action of ['Replace', 'Remove']) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = action;
+      button.setAttribute('aria-label', action + ' photo ' + (index + 1) + ': ' + item.name);
+      button.addEventListener('click', () => {
+        if (measurements[index] !== item) return;
+        if (action === 'Replace') {
+          replacementTarget = { item, index, generation };
+          replacementInput.value = '';
+          replacementInput.click();
+        } else {
+          ++generation;
+          replacementTarget = null;
+          input.value = '';
+          measurements.splice(index, 1);
+          evaluatePhotos();
+          if (!measurements.length) status.textContent = 'No photos remain. Choose photos to start a new batch.';
+          batchStatus.textContent = 'Removed ' + item.name + ' from this batch. Your original file is unchanged.';
+          focusPhoto(Math.min(index, measurements.length - 1));
+        }
+      });
+      actions.append(button);
+    }
+    row.insertCell().append(actions);
   }
   output.append(table);
   status.textContent = passes + ' of ' + measurements.length +
@@ -130,7 +160,56 @@ function evaluatePhotos() {
   scheduleUsage();
 }
 
+function focusPhoto(index) {
+  const button = output.querySelectorAll('tbody tr')[index]?.querySelector('button');
+  (button || input).focus();
+}
+
+async function measurePhoto(file) {
+  const item = { name: file.name, bytes: file.size, file };
+  try {
+    const image = await openPhoto(file);
+    item.width = image.width;
+    item.height = image.height;
+    image.close();
+  } catch (err) {
+    item.error = err.name === 'Error' ? err.message : 'Image could not be decoded';
+  }
+  return item;
+}
+
+replacementInput.addEventListener('cancel', () => { replacementTarget = null; });
+replacementInput.addEventListener('change', async () => {
+  const target = replacementTarget, file = replacementInput.files[0];
+  replacementTarget = null;
+  replacementInput.value = '';
+  if (!file || !target || target.generation !== generation || measurements[target.index] !== target.item) return;
+  if (measurements.reduce((total, item) => total + item.bytes, 0) - target.item.bytes + file.size > 100000000) {
+    batchStatus.textContent = 'Replacement not added: the batch would exceed 100 MB. The previous photo and results are unchanged. Choose a smaller file or remove another photo.';
+    focusPhoto(target.index);
+    return;
+  }
+  const id = ++generation, next = [...measurements];
+  clearTimeout(usageTimer);
+  invalidateReport();
+  measurements = [];
+  output.replaceChildren();
+  input.value = '';
+  status.textContent = 'Checking replacement photo…';
+  batchStatus.textContent = 'Replacing ' + target.item.name + ' with ' + file.name + '.';
+  const item = await measurePhoto(file);
+  if (id !== generation) return;
+  next[target.index] = item;
+  measurements = next;
+  inputSource = 'custom';
+  evaluatePhotos();
+  batchStatus.textContent = 'Replaced ' + target.item.name + ' with ' + file.name + '. Review the new result and download a fresh report. Original files are unchanged.';
+  focusPhoto(target.index);
+});
+
 async function load(files, id, source = 'custom') {
+  replacementTarget = null;
+  batchStatus.textContent = '';
   clearTimeout(usageTimer);
   invalidateReport();
   inputSource = source;
@@ -148,15 +227,7 @@ async function load(files, id, source = 'custom') {
   status.textContent = 'Reading photos…';
   const next = [];
   for (const file of files) {
-    const item = { name: file.name, bytes: file.size, file };
-    try {
-      const image = await openPhoto(file);
-      item.width = image.width;
-      item.height = image.height;
-      image.close();
-    } catch (err) {
-      item.error = err.name === 'Error' ? err.message : 'Image could not be decoded';
-    }
+    const item = await measurePhoto(file);
     if (id !== generation) return;
     next.push(item);
   }
@@ -171,6 +242,8 @@ for (const id of ['width', 'height', 'size']) byId(id).addEventListener('input',
 });
 byId('demo').addEventListener('click', async () => {
   const id = ++generation;
+  replacementTarget = null;
+  batchStatus.textContent = '';
   clearTimeout(usageTimer);
   invalidateReport();
   measurements = [];
