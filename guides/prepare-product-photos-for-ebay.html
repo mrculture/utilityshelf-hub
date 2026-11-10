@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Prepare Product Photos for an eBay Listing | UtilityShelf</title>
-  <meta name="description" content="A six-photo walkthrough: check image dimensions, arrange a contact sheet, copy the chosen order, and create SKU filenames with an original-to-new mapping.">
+  <meta name="description" content="A six-photo walkthrough: save a photo size report, arrange a contact sheet, copy the chosen order, and create SKU filenames with an original-to-new mapping.">
   <link rel="canonical" href="https://utilityshelf.site/guides/prepare-product-photos-for-ebay">
   <link rel="stylesheet" href="/styles.css?v=20261110-workflows">
 </head>
@@ -14,13 +14,18 @@
     <h1>How to prepare product photos for an eBay listing</h1>
     <p>A useful listing photo set needs clear views, suitable image sizes and a predictable order. This walkthrough takes six illustrative photos through three UtilityShelf tools. Keep your originals and work with copies when you apply the final names.</p>
     <div class="tool-callout"><h2>Start with the original photos</h2><p>These tools check, arrange and name your files locally. They do not upload pictures to eBay or rename files on your device.</p><a class="button" href="/utilities/image-dimension-checker/">Check photo dimensions</a></div>
-    <h2>1. Check dimensions and file sizes</h2>
-    <p>After checking a batch, select <strong>Download photo report (.txt)</strong> to save the photos needing attention, their dimensions, file sizes and reasons. Passing photos are listed separately. The report uses your current limits; unreadable files are marked as incomplete checks. Review filenames before sharing it.</p>
+    <h2>1. Check sizes and download the photo report</h2>
     <p>Choose your JPEG, PNG or WebP photos in Image Dimension Checker. Select <strong>eBay — recommended size</strong>. UtilityShelf checks for at least 1600 pixels in both dimensions and a maximum of 12 MB per photo; a rectangular image can pass without a square crop.</p>
     <p>For example, a 4000 × 2992 JPEG at 2.8 MB passes these size checks. A 1600 × 900 image falls short of this preset's height target. That result does not, by itself, mean eBay will reject it: this is a recommended-size check, not a complete acceptance test.</p>
+    <ol class="checklist">
+      <li>Wait for the results, then select <strong>Download photo report (.txt)</strong>. Save <code>image-dimension-report.txt</code> with your listing notes. It records the current limits and puts photos needing attention first, with original filenames, dimensions, exact file sizes and reasons; passing photos appear separately.</li>
+      <li>Review every flagged photo. An unreadable file makes the report <strong>Check incomplete</strong>; it is not a pass. Choose a readable replacement or resolve the issue, then check the final batch again.</li>
+      <li>Download a fresh report after replacing photos or changing limits. For a practice check, a 2.8 MB photo exceeds a custom 2.5 MB limit even though it passes the eBay size preset. Restore the limits you intend to use before saving your final report.</li>
+    </ol>
+    <p>The report button is unavailable while photos are loading or limits are invalid. It does not resize images. Review filenames before sharing the report; it contains no photo contents.</p>
     <p>Inspect focus, glare, colour and whether the photo accurately shows the item. Check the current <a href="https://www.ebay.co.uk/help/listings/default/adding-pictures-listings?id=4148">eBay photo guidance</a> for its own requirements and tips. Guidance checked 10 November 2026.</p>
     <h2>2. Choose the listing order</h2>
-    <p>Open <a href="/utilities/image-contact-sheet/">Image Contact Sheet</a> and choose the same original files again. Use <strong>Move earlier</strong> and <strong>Move later</strong> to put a clear main view first. Supporting views should explain what is included, show useful details and reveal any defects. The best order depends on the item.</p>
+    <p>Open <a href="/utilities/image-contact-sheet/">Image Contact Sheet</a> and choose the final checked files again, including any replacements. Use <strong>Move earlier</strong> and <strong>Move later</strong> to put a clear main view first. Supporting views should explain what is included, show useful details and reveal any defects. The best order depends on the item.</p>
     <p>Here is an illustrative six-photo order. The filenames below are examples, not a required naming format.</p>
     <div class="article-table-wrap"><table class="article-table"><thead><tr><th>Order</th><th>Original filename</th><th>View</th><th>Planned name</th></tr></thead><tbody>
       <tr><td>1</td><td><code>front.jpg</code></td><td>Whole item and included accessories</td><td><code>sku-1042-001.jpg</code></td></tr>
@@ -40,10 +45,11 @@
       <li>Copy the final list and download the filename mapping. Reordering the contact sheet later means copying its updated list and generating a fresh mapping.</li>
     </ol>
     <h2>4. Rename copies and verify the listing</h2>
+    <p>Keep three downloads together: the latest <strong>photo report</strong> for size findings, the <strong>contact-sheet PNG</strong> for the chosen view order, and the <strong>filename mapping</strong> connecting original names to SKU names. The report uses the original names and selection order; use the mapping to identify the renamed copies, not matching row numbers. Changing only the listing order needs a fresh contact sheet and mapping, while changed photos or size limits also need a fresh report.</p>
     <p>Create a separate listing folder. Use the mapping to match each original to its planned name in your file manager or renaming application; do not assume that the file manager's sort order matches the contact sheet. Open the renamed copies and check each pairing. Neither the copied list nor the mapping download renames anything automatically.</p>
     <p>Upload the full-size copies to your listing and verify the main photo and order in eBay's editor. Numbered filenames help you organise the set, but the uploader may choose a different order. Review the completed listing before publishing.</p>
     <p><a href="/#product-photos">Back to the product-photo workflow</a> · <a href="/guides/prepare-supplier-csv-for-import">Prepare a supplier CSV</a></p>
   </article></main>
   <footer><div class="footer-inner"><p>UtilityShelf · Practical browser tools</p><nav aria-label="Footer"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a></nav></div></footer>
-  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"104d69dafb54484bbb4e18e34d50c835"}'></script>
+  <script src="/utilities/usage.js?v=20261110-photo-report-flow" defer></script>
 </body></html>

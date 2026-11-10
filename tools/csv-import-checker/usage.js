@@ -11,7 +11,7 @@
     for (const link of document.querySelectorAll('a[href]')) {
       const destination = new URL(link.href);
       if ((['https://filename-cleaner.utilityshelf.site', 'https://csv-import-checker.utilityshelf.site'].includes(destination.origin) && destination.pathname === '/') ||
-          (destination.origin === 'https://utilityshelf.site' && ['/utilities/image-contact-sheet/', '/utilities/image-dimension-checker/', '/utilities/csv-column-mapper/', '/utilities/csv-formula-checker/'].includes(destination.pathname))) {
+          ((destination.origin === 'https://utilityshelf.site' || destination.origin === location.origin) && ['/', '/guides/prepare-product-photos-for-ebay', '/utilities/image-contact-sheet/', '/utilities/image-dimension-checker/', '/utilities/csv-column-mapper/', '/utilities/csv-formula-checker/'].includes(destination.pathname))) {
         destination.searchParams.set('test-mode', '1'); link.href = destination.href;
       }
     }
