@@ -6,8 +6,9 @@ Canonical reports:
 - [Known owner-test exclusions](../analytics/known-tests.json)
 
 Run these SQL files in Cloudflare Analytics Engine Studio against
-`utilityshelf_tool_usage`. Both exclude all sample events and the six owner test
-records from 2026-11-10 14:47:39–14:48:04 UTC, matching timestamp, tool, action,
+`utilityshelf_tool_usage`. Both exclude all sample events and seven known owner-test records: the six
+photo-test records from 2026-11-10 14:47:39–14:48:04 UTC and the controlled
+workflow entry at 2026-11-10 20:16:19 UTC, matching timestamp, tool, action,
 mode and source. Raw records are retained; this does not delete data or alter
 Cloudflare's default raw totals. No broad time window is discarded.
 
@@ -16,7 +17,11 @@ customer activity. They are capped once per action/mode/source per page load.
 An unmarked owner test can still be included, and the public collector can be
 spoofed. No visitor/session/event IDs exist. A legitimate event with the exact
 same signature and second as a known test cannot be distinguished retrospectively.
-The reviewed export contained exactly the six known custom records.
+The controlled workflow event was submitted once to the production collector
+and observed in Analytics Engine as `product-photo-workflow / entry / home / custom`
+with count 1. Its stored timestamp, rather than the client clock, controls the
+exclusion. This verifies collector ingestion; browser click emission and test-mode
+suppression are covered separately by the browser tests.
 
 Schema: index1=tool, blob1=action, blob2=fixed mode, blob3=sample/custom,
 double1=1; `_sample_interval` supplies the sampling weight. SUM of the product

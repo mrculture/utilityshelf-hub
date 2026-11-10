@@ -15,14 +15,19 @@ test('filtered reports exclude known signatures and samples while preserving nea
  write({...events[0],blob3:'sample'});
  write({...events[0],timestamp:'2026-11-10 14:48:05'},2);
  write({...events[0],blob1:'reorder'});
+ const workflow=events.find(e=>e.index1==='product-photo-workflow');
+ assert.ok(workflow,'Controlled workflow test signature must remain excluded');
+ const nextSecond=new Date(Date.parse(workflow.timestamp.replace(' ','T')+'Z')+1000).toISOString().slice(0,19).replace('T',' ');
+ write({...workflow,timestamp:nextSecond},3);
+ write({...workflow,blob2:'guide'});
  for(const summary of [false,true]) {
   const sql=query(7,summary);
   assert.equal(fs.readFileSync(path.resolve(__dirname,'../../analytics',summary?'visitor-total.sql':'visitor-usage.sql'),'utf8'),sql);
   // Adapt only the rolling-window syntax; execute the exclusion predicate unchanged.
   const rows=db.prepare(sql.replace("NOW() - INTERVAL '7' DAY","'2026-11-03 00:00:00'")).all();
   const count=summary?rows[0].filtered_custom_events:rows.reduce((n,row)=>n+row.events,0);
-  assert.equal(count,3);
+  assert.equal(count,7);
  }
- assert.equal(db.prepare('SELECT COUNT(*) AS n FROM utilityshelf_tool_usage').get().n,9);
+ assert.equal(db.prepare('SELECT COUNT(*) AS n FROM utilityshelf_tool_usage').get().n,events.length+5);
  db.close();
 });

@@ -92,7 +92,7 @@ Analytics failures do not block the tools. No cookies or persistent IDs are used
 
 Use the maintained [filtered usage report](.github/analytics/visitor-usage.sql)
 and [filtered total](.github/analytics/visitor-total.sql), not a bare custom-source
-filter. They exclude samples and the six exact known owner-test event signatures.
+filter. They exclude samples and the seven exact known owner-test event signatures.
 See [report definitions and test links](.github/release/USAGE.md). Raw events remain
 available for diagnosis. Future owner tests must use `?test-mode=1` on these tools.
 

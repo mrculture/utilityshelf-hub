@@ -1,5 +1,5 @@
 {
-  "reason": "Owner six-photo verification on 2026-11-10; not visitor adoption",
+  "reason": "Owner six-photo verification and one authorized workflow collector test on 2026-11-10; not visitor adoption. The controlled workflow test uses its exact Cloudflare-stored timestamp.",
   "events": [
     {
       "timestamp": "2026-11-10 14:48:04",
@@ -41,6 +41,13 @@
       "index1": "image-dimension-checker",
       "blob1": "check_complete",
       "blob2": "ebay",
+      "blob3": "custom"
+    },
+    {
+      "timestamp": "2026-11-10 20:16:19",
+      "index1": "product-photo-workflow",
+      "blob1": "entry",
+      "blob2": "home",
       "blob3": "custom"
     }
   ]
