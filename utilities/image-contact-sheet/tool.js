@@ -131,9 +131,17 @@ byId('columns').addEventListener('change', render);
 byId('demo').addEventListener('click', async () => {
   const id = ++generation;
   input.value = '';
-  const files = await Promise.all([examplePhoto('front.png', 640, 480, '#2d5845'),
-    examplePhoto('side.png', 400, 600, '#b16a36'), examplePhoto('detail.png', 600, 400, '#416781')]);
-  if (id === generation) load(files, id);
+  photos = [];
+  errors = [];
+  render();
+  status.textContent = 'Preparing example photos…';
+  try {
+    const files = await Promise.all([examplePhoto('front.png', 640, 480, '#2d5845'),
+      examplePhoto('side.png', 400, 600, '#b16a36'), examplePhoto('detail.png', 600, 400, '#416781')]);
+    if (id === generation) await load(files, id);
+  } catch {
+    if (id === generation) status.textContent = 'Could not prepare the example. Try again or choose your own photos.';
+  }
 });
 download.addEventListener('click', () => {
   const id = generation;

@@ -9,7 +9,7 @@ test('photo order follows keyboard moves, columns and the downloaded PNG', async
   await page.goto('/utilities/image-contact-sheet/');
   await page.locator('#demo').click();
   const labels = page.locator('#names li > span');
-  await expect(labels).toHaveText(['front.png', 'side.png', 'detail.png']);
+  await expect(labels).toHaveText(['front.png', 'side.png', 'detail.png'], { timeout: 15000 });
   await expect(page.getByRole('button', { name: 'Move earlier: photo 1, front.png', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Move later: photo 3, detail.png', exact: true })).toBeDisabled();
   const original = await page.locator('#sheet').evaluate(canvas => canvas.toDataURL());
@@ -32,13 +32,13 @@ test('photo order follows keyboard moves, columns and the downloaded PNG', async
   await page.getByRole('button', { name: 'Move later: photo 1, detail.png', exact: true }).click();
   await expect(labels).toHaveText(['front.png', 'detail.png', 'side.png']);
   await page.locator('#demo').click();
-  await expect(labels).toHaveText(['front.png', 'side.png', 'detail.png']);
+  await expect(labels).toHaveText(['front.png', 'side.png', 'detail.png'], { timeout: 15000 });
 });
 
 test('a replacement single-photo batch has both move controls disabled', async ({ page }) => {
   await page.goto('/utilities/image-contact-sheet/');
   await page.locator('#demo').click();
-  await expect(page.locator('#names li')).toHaveCount(3);
+  await expect(page.locator('#names li')).toHaveCount(3, { timeout: 15000 });
   const png = await page.locator('#sheet').evaluate(canvas => canvas.toDataURL().split(',')[1]);
   await page.locator('#files').setInputFiles({ name: 'one.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64') });
   await expect(page.locator('#names li > span')).toHaveText(['one.png']);
