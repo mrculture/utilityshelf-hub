@@ -8,7 +8,8 @@
   <script src="/utilities/usage.js?v=20261110-resize" defer></script>
   <script src="./zip.js?v=20261110-resize" defer></script>
   <script src="./resize.js?v=20261110-resize" defer></script>
-  <script src="./tool.js?v=20261110-photo-edit" defer></script>
+  <script src="./tool.js?v=20261110-settings" defer></script>
+  <script src="./settings.js?v=20261110-settings" defer></script>
 </head>
 <body>
   <header><a href="/">UtilityShelf</a><nav aria-label="Main"><a href="/#companions">Browse tools</a></nav></header>
@@ -44,6 +45,10 @@
       <label for="maxEdge">Maximum long edge (px, optional)</label>
       <input id="maxEdge" type="number" min="16" max="8000" step="1" placeholder="For example, 2400" aria-describedby="resizeHelp">
       <p id="resizeHelp" class="hint">Leave blank to reduce file size only. Modified copies are JPEGs: proportions and display orientation are preserved, with no crop or enlargement. Transparent areas become white. JPEG encoding can reduce detail and does not copy original EXIF metadata. Unchanged files retain their metadata. Originals stay untouched.</p>
+      <div class="actions"><button id="saveSettings" type="button">Save settings</button><button id="loadSettings" type="button">Load settings</button></div>
+      <input id="settingsFile" type="file" accept=".json,application/json" aria-label="Saved photo settings" hidden>
+      <p id="settingsStatus" role="status">Save your current limits to reuse them with another batch.</p>
+      <p class="hint">Save settings downloads a small JSON file containing the preset, minimum width and height, maximum file size and optional maximum long edge. It contains no photos or filenames. Load settings restores these limits and rechecks any current photos; prepared resize downloads are cleared. Select your photos separately. Invalid settings leave your current limits and results unchanged.</p>
       <p class="hint">Up to 30 photos and 100 MB combined, each up to 32 MB and 40 megapixels. Resizing renders at most 16 megapixels at once. If the maximum conflicts with your minimum dimensions, or the file cannot fit without going below them, no ZIP is offered. The tool never treats a failed resize as a pass.</p>
       <div class="actions"><button id="prepareResize" type="button" disabled>Prepare smaller copies</button><button id="downloadResized" type="button" disabled>Download checked copies (.zip)</button></div>
       <p id="resizeStatus" role="status">Choose photos and valid limits first.</p>

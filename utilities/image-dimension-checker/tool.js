@@ -58,6 +58,10 @@ const preset = byId('preset');
 function showPreset() {
   byId('ebayHelp').hidden = preset.value !== 'ebay';
 }
+document.addEventListener('photo-settings-loaded', () => {
+  showPreset();
+  evaluatePhotos();
+});
 preset.addEventListener('change', () => {
   if (preset.value === 'ebay') {
     byId('width').value = 1600;
