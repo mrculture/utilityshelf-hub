@@ -39,6 +39,11 @@
       <p>The checker reads the header and every field as text in this tab. It flags formula prefixes, including full-width variants and leading controls. Spreadsheet behaviour varies with application, locale and import settings. A clear report only means this prefix check found no matches.</p>
       <p><a href="https://community.owasp.org/attacks/CSV_Injection">OWASP's explanation of CSV formula injection</a> · <a href="/utilities/csv-column-mapper/">Rearrange CSV columns</a></p>
     </section>
+    <section class="panel" aria-labelledby="next-step"><h2 id="next-step">Next: verify your final CSV</h2>
+      <p>This checker flags values; it does not change the file. Review each flag in the source, save any corrections, and check the saved CSV again. A refund such as <code>-12.50</code> may be legitimate: confirm its intended meaning before changing it.</p>
+      <p>Use <a href="https://csv-import-checker.utilityshelf.site/">CSV Import Checker</a> for a final header and field-count check. If your destination needs different columns, use <a href="/utilities/csv-column-mapper/">CSV Column Mapper</a> and check its downloaded export again.</p>
+      <p><a href="/guides/prepare-supplier-csv-for-import">Read the supplier CSV walkthrough</a>. A clear report is not a guarantee that a spreadsheet or importer will accept the file safely.</p>
+    </section>
   </main>
   <footer><a href="/#companions">More utilities</a> · <a href="https://csv-import-checker.utilityshelf.site/">CSV Import Checker</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "104d69dafb54484bbb4e18e34d50c835"}'></script>

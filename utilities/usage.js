@@ -26,7 +26,7 @@
   const privateBrowser = () => navigator.doNotTrack === '1' || navigator.globalPrivacyControl;
   if (choice && (usageTestMode || privateBrowser())) { choice.checked = false; choice.disabled = true; }
   const modes = {
-    'image-contact-sheet': {reorder: ['sheet'], sheet_download: ['sheet']},
+    'image-contact-sheet': {reorder: ['sheet'], sheet_download: ['sheet'], names_copy: ['sheet']},
     'image-dimension-checker': {check_complete: ['custom', 'ebay'], ebay_preset: ['ebay']}
   };
   window.UtilityShelfUsage = {

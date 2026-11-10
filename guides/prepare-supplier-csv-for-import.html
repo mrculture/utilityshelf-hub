@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prepare a Supplier CSV for Import | UtilityShelf</title>
+  <meta name="description" content="Fix duplicate headers and uneven rows, map supplier columns to a destination template, and check formula-like values before importing a CSV.">
+  <link rel="canonical" href="https://utilityshelf.site/guides/prepare-supplier-csv-for-import">
+  <link rel="stylesheet" href="/styles.css?v=20261110-workflows">
+</head>
+<body>
+  <header class="site-header"><a class="brand" href="/"><span class="brand-mark">U</span><span><strong>UtilityShelf</strong><small>Practical browser tools</small></span></a><nav aria-label="Main"><a href="/#tools">Tools</a><a href="/guides">Guides</a></nav></header>
+  <main class="article-page"><article class="article-card">
+    <p class="eyebrow">Supplier data · Updated 10 November 2026</p>
+    <h1>How to prepare a supplier CSV for import</h1>
+    <p>A CSV can look tidy in a spreadsheet while still having repeated headers, a short row or columns in the wrong order. Work on a copy of the supplier file and get the destination's current import template before editing. The examples here are invented inventory data.</p>
+    <div class="tool-callout"><h2>Start with the file structure</h2><p>Use CSV Import Checker to find repeated headers, quoting problems and unexpected field counts. These checks do not verify prices, stock levels or your importer's business rules.</p><a class="button" href="https://csv-import-checker.utilityshelf.site/">Check a CSV before importing</a></div>
+    <h2>1. Find the duplicate header and short row</h2>
+    <p>Paste this comma-separated example into the checker and select <strong>Check CSV</strong>:</p>
+    <pre class="example-block"><code>SKU,Product,Price,Price
+A101,"Mug, blue",12.00,8.00
+A102,Notebook,6.50
+A103,"Frame, small",15.00,9.50</code></pre>
+    <p>It reports two issues: <code>Price</code> repeats in columns 3 and 4, and line 3 has only three fields instead of four. The comma inside <code>"Mug, blue"</code> belongs to the product name because that field is quoted.</p>
+    <h2>2. Correct the data using the supplier's meaning</h2>
+    <p>For this example, assume the supplier confirms the fourth column is <code>Cost</code> and the Notebook's missing cost is <code>4.20</code>. Make those corrections in a copy:</p>
+    <pre class="example-block"><code>SKU,Product,Price,Cost
+A101,"Mug, blue",12.00,8.00
+A102,Notebook,6.50,4.20
+A103,"Frame, small",15.00,9.50</code></pre>
+    <p>Check the corrected CSV again. It should pass the header and field-count checks with four columns and three data rows. For a real file, confirm missing values with the supplier; do not invent them or insert zero just to make the row pass. A blank field is appropriate only when its meaning and the destination allow it.</p>
+    <h2>3. Map columns to the destination</h2>
+    <p>Open <a href="/utilities/csv-column-mapper/">CSV Column Mapper</a>. Paste the corrected CSV and use this illustrative destination header:</p>
+    <pre class="example-block"><code>SKU,Title,Price</code></pre>
+    <p>Select <strong>Set up mapping</strong>, then map <code>SKU → SKU</code>, <code>Product → Title</code> and <code>Price → Price</code>. The <code>Cost</code> column is deliberately excluded. Select <strong>Build mapped CSV</strong>; the first data row should be:</p>
+    <pre class="example-block"><code>A101,"Mug, blue",12.00</code></pre>
+    <p>Use the exact header from your actual destination rather than assuming these three example fields are sufficient. Review every selection, including any <strong>Use empty values</strong> choice. Download the full CSV: the preview shows only the first five data rows. The mapper accepts UTF-8 comma-separated CSV input up to 2 MiB.</p>
+    <h2>4. Review formula-like values in the export</h2>
+    <p>Open the downloaded file in <a href="/utilities/csv-formula-checker/">CSV Formula Checker</a>. A value such as <code>"=SUM(2,3)"</code> can become a formula when opened in a spreadsheet even though the CSV quotes are correct. A flag may also be legitimate data, such as a negative amount.</p>
+    <p>The checker flags prefixes; it does not sanitise the file. Review the intended values and your spreadsheet's text-import settings. Do not assume that adding quotes makes a CSV safe. See <a href="https://community.owasp.org/attacks/CSV_Injection">OWASP's CSV formula-injection guidance</a> for application-specific limitations.</p>
+    <h2>5. Check the final saved file</h2>
+    <ol class="checklist">
+      <li>Run CSV Import Checker on the exact export you intend to import, especially after making corrections.</li>
+      <li>Confirm required fields, currencies, decimal separators, identifiers and stock values against the destination's specification.</li>
+      <li>Keep identifiers such as <code>0012</code> as text if opening the file in a spreadsheet, so leading zeros are not lost.</li>
+      <li>Use the destination's preview or a small test import first and compare its results with your source records.</li>
+    </ol>
+    <p>Choose or paste the file in each tool separately; the tools do not transfer data between tabs. A passing structure check and no formula-prefix flags do not guarantee a successful import.</p>
+    <p><a href="/utilities/csv-column-mapper/">Map supplier columns</a> · <a href="/guides/prepare-product-photos-for-ebay">Prepare listing photos</a></p>
+  </article></main>
+  <footer><div class="footer-inner"><p>UtilityShelf · Practical browser tools</p><nav aria-label="Footer"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a></nav></div></footer>
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"104d69dafb54484bbb4e18e34d50c835"}'></script>
+</body></html>

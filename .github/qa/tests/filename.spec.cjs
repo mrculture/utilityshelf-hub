@@ -188,5 +188,6 @@ test('owner test mode suppresses filename events and beacon while downloads stil
  await page.waitForTimeout(1700);
  expect(events).toEqual([]);
  expect(requests.filter(url=>url.includes('cloudflareinsights'))).toEqual([]);
- await expect(page.getByRole('link',{name:'Next: check your product photos’ dimensions and file sizes'})).toHaveAttribute('href',/test-mode=1/);
+ await expect(page.getByRole('link',{name:'check your product photos’ dimensions and file sizes'})).toHaveAttribute('href',/test-mode=1/);
+ await expect(page.getByRole('link',{name:'Arrange photos and copy their original filenames'})).toHaveAttribute('href',/test-mode=1/);
 });

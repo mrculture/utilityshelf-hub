@@ -60,6 +60,7 @@ identifiers, or request headers are written to the dataset.
 | Filename Cleaner | mapping_download | Browser download started | clean, numbered |
 | Image Contact Sheet | reorder | A photo moved successfully | sheet |
 | Image Contact Sheet | sheet_download | PNG generated and browser download started | sheet |
+| Image Contact Sheet | names_copy | Ordered original filename list copied successfully | sheet |
 | Image Dimension Checker | check_complete | Valid limits evaluated against at least one readable image | custom, ebay |
 | Image Dimension Checker | ebay_preset | Completed image check using the eBay preset | ebay |
 

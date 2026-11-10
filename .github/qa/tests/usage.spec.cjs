@@ -34,6 +34,7 @@ async function download(page){const pending=page.waitForEvent('download');await 
 test('contact events follow successful reorder and export, deduplicate, separate sample/custom and omit filenames',async({page})=>{
  const requests=[];page.on('request',r=>requests.push(r.url()));
  const events=await open(page,'image-contact-sheet');
+ await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{value:{writeText:async()=>{}}}));
  expect(requests.some(url=>url.includes('static.cloudflareinsights.com/beacon.min.js'))).toBe(true);
  await page.locator('#demo').click();
  await expect(page.locator('#names li')).toHaveCount(3,{timeout:15000});
@@ -41,12 +42,14 @@ test('contact events follow successful reorder and export, deduplicate, separate
  await page.getByRole('button',{name:'Move later: photo 1, front.png',exact:true}).click();
  await page.getByRole('button',{name:'Move earlier: photo 2, front.png',exact:true}).click();
  await download(page);await download(page);
+ await page.locator('#copyNames').click();await page.locator('#copyNames').click();
  await customPhotos(page);
  await expect(page.locator('#names li')).toHaveCount(2);
  await page.locator('#names li').first().getByRole('button',{name:/Move later/}).click();
  await download(page);
- await expect.poll(()=>events.length).toBe(4);
- expect(events).toEqual(['sample','custom'].flatMap(source=>['reorder','sheet_download'].map(event=>({tool:'image-contact-sheet',event,mode:'sheet',source}))));
+ await page.locator('#copyNames').click();
+ await expect.poll(()=>events.length).toBe(6);
+ expect(events).toEqual(['sample','custom'].flatMap(source=>['reorder','sheet_download','names_copy'].map(event=>({tool:'image-contact-sheet',event,mode:'sheet',source}))));
  expect(JSON.stringify(events)).not.toMatch(/PRIVATE|SKU|png/);
 });
 
@@ -116,9 +119,12 @@ for(const tool of ['image-contact-sheet','image-dimension-checker'])test('owner 
  await expect(page.locator('#usage')).toBeDisabled();
  await customPhotos(page);
  if(tool==='image-contact-sheet') {
+  await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{value:{writeText:async()=>{}}}));
   await expect(page.locator('#names li')).toHaveCount(2);
   await page.locator('#names li').first().getByRole('button',{name:/Move later/}).click();
   await download(page);
+  await page.locator('#copyNames').click();
+  await expect(page.getByRole('link',{name:'Open Filename Cleaner',exact:true})).toHaveAttribute('href',/test-mode=1/);
  } else {
   await page.locator('#preset').selectOption('ebay');
   await expect(page.locator('#status')).toContainText('0 of 2');

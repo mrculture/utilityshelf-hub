@@ -50,6 +50,12 @@ function render() {
   names.replaceChildren();
   sheet.hidden = !photos.length;
   download.disabled = !photos.length;
+  byId('filenameOrder').hidden = !photos.length;
+  byId('orderedNames').value = photos.map(photo => photo.name).join('\n');
+  const multilineName = photos.some(photo => /[\r\n]/.test(photo.name));
+  byId('copyNames').disabled = !photos.length || multilineName;
+  byId('selectNames').disabled = multilineName;
+  byId('namesCopyStatus').textContent = multilineName ? 'A filename contains a line break. Rename that file on your device and choose the photos again before copying a one-name-per-line list.' : '';
   if (!photos.length) return;
   const cols = Math.min(Number(byId('columns').value), photos.length);
   sheet.width = cols * tileWidth;
@@ -131,6 +137,28 @@ async function load(files, id, source = 'custom') {
   if (!photos.length) status.textContent = 'No readable photos. Check the file type and size for ' + skipped.join(', ') + '.';
 }
 input.addEventListener('change', () => load(Array.from(input.files), ++generation));
+byId('selectNames').addEventListener('click', () => {
+  byId('orderedNames').focus();
+  byId('orderedNames').select();
+  byId('namesCopyStatus').textContent = 'All filenames selected. Press Ctrl+C or ⌘C, then paste into Filename Cleaner.';
+});
+byId('copyNames').addEventListener('click', async () => {
+  if (byId('copyNames').disabled || !photos.length) return;
+  const version = renderVersion;
+  const source = inputSource;
+  const text = byId('orderedNames').value;
+  try {
+    await navigator.clipboard.writeText(text);
+    if (version !== renderVersion) return;
+    byId('namesCopyStatus').textContent = 'Copied ' + photos.length + ' filenames in sheet order. Paste them into Filename Cleaner.';
+    track('names_copy', source);
+  } catch {
+    if (version !== renderVersion) return;
+    byId('orderedNames').focus();
+    byId('orderedNames').select();
+    byId('namesCopyStatus').textContent = 'Automatic copy is unavailable. The filenames are selected: press Ctrl+C or ⌘C.';
+  }
+});
 byId('columns').addEventListener('change', render);
 byId('demo').addEventListener('click', async () => {
   const id = ++generation;
