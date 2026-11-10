@@ -65,6 +65,7 @@ identifiers, or request headers are written to the dataset.
 | Image Dimension Checker | check_complete | Valid limits evaluated against at least one readable image | custom, ebay |
 | Image Dimension Checker | ebay_preset | Completed image check using the eBay preset | ebay |
 | Image Dimension Checker | report_download | Current photo report download started, including reports with unreadable files | custom, ebay |
+| Image Dimension Checker | resize_complete / resize_download | Complete batch meets all limits / checked-copy ZIP download started | custom, ebay |
 | CSV Import Checker | check_complete | Parsed nonempty CSV and completed header/field-count checks | passed, issues |
 | CSV Import Checker | corrected_download | Exact checked CSV download started after passing structure checks | passed |
 | CSV Column Mapper | build_complete / mapped_download | Mapping built / full CSV download started | mapped |
@@ -92,3 +93,5 @@ and [filtered total](.github/analytics/visitor-total.sql), not a bare custom-sou
 filter. They exclude samples and the six exact known owner-test event signatures.
 See [report definitions and test links](.github/release/USAGE.md). Raw events remain
 available for diagnosis. Future owner tests must use `?test-mode=1` on these tools.
+
+Photo resizing runs locally, never enlarges or crops, and changes only photos above the selected byte or optional long-edge limits. Modified copies are JPEGs with a white background and no source EXIF; passing files retain exact bytes. The complete ZIP includes a before/after report. Limits: 30 photos, 100 MB combined, 32 MB per source, 40 MP per source and 16 MP per rendered copy. Failed or superseded processing cannot enable a partial download.

@@ -5,7 +5,7 @@ const csvOrigin = 'https://csv-import-checker.utilityshelf.site';
 const modes = {
   'filename-cleaner': {ready:['clean','numbered'], copy:['clean','numbered'], mapping_download:['clean','numbered'], zip_download:['clean','numbered']},
   'image-contact-sheet': {reorder:['sheet'], sheet_download:['sheet'], names_copy:['sheet']},
-  'image-dimension-checker': {check_complete:['custom','ebay'], ebay_preset:['ebay'], report_download:['custom','ebay']},
+  'image-dimension-checker': {check_complete:['custom','ebay'], ebay_preset:['ebay'], report_download:['custom','ebay'], resize_complete:['custom','ebay'], resize_download:['custom','ebay']},
   'csv-import-checker': {check_complete:['passed','issues'], corrected_download:['passed'], report_download:['passed','issues','incomplete']},
   'csv-column-mapper': {build_complete:['mapped'], mapped_download:['mapped']},
   'csv-formula-checker': {scan_complete:['clear','warnings'], report_download:['passed','issues','incomplete']}

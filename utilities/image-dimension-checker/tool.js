@@ -8,6 +8,7 @@ const downloadReport = byId('downloadReport');
 let reportText = null, reportKey = null;
 const currentReportKey = () => JSON.stringify([generation, byId('preset').value, ...['width', 'height', 'size'].map(id => byId(id).value)]);
 function invalidateReport() {
+  window.UtilityShelfResize?.reset();
   reportText = null; reportKey = null; downloadReport.disabled = true;
   byId('reportStatus').textContent = 'Choose photos and valid limits to create a report.';
 }
@@ -125,6 +126,7 @@ function evaluatePhotos() {
   reportKey = currentReportKey();
   downloadReport.disabled = false;
   byId('reportStatus').textContent = 'Report status: ' + result + '.';
+  window.UtilityShelfResize?.setBatch(measurements, {minWidth, minHeight, maxBytes:maxSize * 1000000}, preset.value, inputSource);
   scheduleUsage();
 }
 
@@ -141,7 +143,7 @@ async function load(files, id, source = 'custom') {
   status.textContent = 'Reading photos…';
   const next = [];
   for (const file of files) {
-    const item = { name: file.name, bytes: file.size };
+    const item = { name: file.name, bytes: file.size, file };
     try {
       const image = await openPhoto(file);
       item.width = image.width;

@@ -102,3 +102,16 @@ test('image report collector accepts preset labels only and rejects report conte
  }
  assert.deepEqual(points.map(p=>p.blobs),[['report_download','custom','custom'],['report_download','ebay','custom']]);
 });
+
+test('resize ZIP writer stays identical to the verified filename ZIP writer',()=>{
+ const root=path.resolve(__dirname,'../../..');assert.equal(fs.readFileSync(path.join(root,'utilities/image-dimension-checker/zip.js'),'utf8'),fs.readFileSync(path.join(root,'tools/filename-cleaner/zip.js'),'utf8'));
+});
+test('resize events accept only fixed labels from the hub origin',async()=>{
+ const points=[],env={USAGE:{writeDataPoint:p=>points.push(p)}},w=await worker,hub='https://utilityshelf.site';
+ for(const action of ['resize_complete','resize_download'])for(const mode of ['custom','ebay']){
+ const data={tool:'image-dimension-checker',event:action,mode,source:'custom'};
+ assert.equal((await w.fetch(request(data,{Origin:hub}),env)).status,204);
+ assert.equal((await w.fetch(request({...data,filename:'private.jpg'},{Origin:hub}),env)).status,400);
+ assert.equal((await w.fetch(request(data),env)).status,403);
+ }assert.equal(points.length,4);
+});

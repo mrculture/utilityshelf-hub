@@ -5,8 +5,10 @@
   <meta name="description" content="Check a batch of product photos against minimum pixel dimensions and a maximum file size. See exactly which photos need attention before publishing.">
   <link rel="canonical" href="https://utilityshelf.site/utilities/image-dimension-checker/">
   <link rel="stylesheet" href="/utilities/shared.css">
-  <script src="/utilities/usage.js?v=20261110-image-report" defer></script>
-  <script src="./tool.js?v=20261110-image-report" defer></script>
+  <script src="/utilities/usage.js?v=20261110-resize" defer></script>
+  <script src="./zip.js?v=20261110-resize" defer></script>
+  <script src="./resize.js?v=20261110-resize" defer></script>
+  <script src="./tool.js?v=20261110-resize" defer></script>
 </head>
 <body>
   <header><a href="/">UtilityShelf</a><nav aria-label="Main"><a href="/#companions">Browse tools</a></nav></header>
@@ -32,6 +34,18 @@
       <div class="actions"><button id="downloadReport" type="button" disabled>Download photo report (.txt)</button></div>
       <p id="reportStatus">Choose photos and valid limits to create a report.</p>
       <p class="hint">The report lists photos needing attention first, with filenames, dimensions, exact file sizes and reasons, followed by passing photos. Unreadable files are marked as incomplete checks. It updates when you change valid limits and is unavailable while photos are loading or limits are invalid. Review filenames before sharing; the report contains no photo contents.</p>
+    </section>
+    <section class="panel" aria-labelledby="resizeTitle">
+      <h2 id="resizeTitle">Make smaller photo copies</h2>
+      <p>Use the minimum width, minimum height and maximum file size above. Optionally limit the longest edge below. Only photos exceeding a maximum are changed; photos already within all limits keep their original bytes in the ZIP.</p>
+      <label for="maxEdge">Maximum long edge (px, optional)</label>
+      <input id="maxEdge" type="number" min="16" max="8000" step="1" placeholder="For example, 2400" aria-describedby="resizeHelp">
+      <p id="resizeHelp" class="hint">Leave blank to reduce file size only. Modified copies are JPEGs: proportions and display orientation are preserved, with no crop or enlargement. Transparent areas become white. JPEG encoding can reduce detail and does not copy original EXIF metadata. Unchanged files retain their metadata. Originals stay untouched.</p>
+      <p class="hint">Up to 30 photos and 100 MB combined, each up to 32 MB and 40 megapixels. Resizing renders at most 16 megapixels at once. If the maximum conflicts with your minimum dimensions, or the file cannot fit without going below them, no ZIP is offered. The tool never treats a failed resize as a pass.</p>
+      <div class="actions"><button id="prepareResize" type="button" disabled>Prepare smaller copies</button><button id="downloadResized" type="button" disabled>Download checked copies (.zip)</button></div>
+      <p id="resizeStatus" role="status">Choose photos and valid limits first.</p>
+      <div id="resizeResults"></div>
+      <p class="hint">Review the previews and measurements, then download the full checked batch and resize-report.txt. Copies receive numbered filenames to prevent collisions. Changing photos, limits or the preset clears the prepared download. Extract into a new folder and use these copies in the contact sheet and Filename Cleaner.</p>
     </section>
     <section class="panel"><h2>Which photo needs another look?</h2><p>The example resets to Custom limits with an 800 × 800 pixel minimum and an 8 MB maximum. The front view is 1000 × 1000. The detail view is 1000 × 600, so its height falls short by 200 pixels. Select the eBay preset to recheck the same photos against the recommended-size target.</p><p>Dimensions describe the decoded image in its display orientation. Passing the size checks says nothing about focus, compression quality or a marketplace's other listing rules.</p><p>Next, <a href="/utilities/image-contact-sheet/">make a contact sheet</a> to review the views together.</p></section>
     <label class="hint usage-choice"><input id="usage" type="checkbox" checked> Share anonymous action counts. No filenames or photo contents are sent. <a href="/privacy">Privacy details</a></label>

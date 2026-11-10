@@ -149,3 +149,14 @@ test('photo report download events use fixed mode labels, separate samples and o
  expect(events.filter(e=>e.event==='report_download')).toEqual(['custom','sample'].flatMap(source=>['custom','ebay'].map(mode=>({tool:'image-dimension-checker',event:'report_download',mode,source}))));
  expect(JSON.stringify(events)).not.toMatch(/PRIVATE|SKU|png|1600|filename/);
 });
+
+async function resizeDownload(page){await page.locator('#prepareResize').click();await expect(page.locator('#downloadResized')).toBeEnabled();const d=page.waitForEvent('download');await page.locator('#downloadResized').click();await d;}
+test('resize events follow a complete valid batch, deduplicate and omit image details',async({page})=>{
+ const events=await open(page,'image-dimension-checker');await customPhotos(page);await page.locator('#prepareResize').click();await expect(page.locator('#resizeStatus')).toContainText('No ZIP prepared');expect(events.filter(e=>e.event.startsWith('resize'))).toEqual([]);
+ await page.locator('#width').fill('10');await page.locator('#height').fill('10');await page.locator('#maxEdge').fill('20');await resizeDownload(page);await resizeDownload(page);
+ expect(events.filter(e=>e.event.startsWith('resize'))).toEqual(['resize_complete','resize_download'].map(event=>({tool:'image-dimension-checker',event,mode:'custom',source:'custom'})));
+ expect(JSON.stringify(events)).not.toMatch(/PRIVATE|SKU|png|jpg/);
+});
+for(const setting of ['testMode','optout','dnt','gpc'])test('resize actions remain available without analytics for '+setting,async({page})=>{
+ const events=await open(page,'image-dimension-checker',{[setting]:true});if(setting==='optout')await page.locator('#usage').uncheck();await page.locator('#width').fill('10');await page.locator('#height').fill('10');await customPhotos(page);await page.locator('#maxEdge').fill('20');await resizeDownload(page);expect(events).toEqual([]);
+});
