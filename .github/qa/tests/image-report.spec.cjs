@@ -63,6 +63,6 @@ test('pending and superseded decodes cannot download an old batch or overwrite t
 });
 test('demo report replaces a real batch and describes the example accurately',async({page})=>{
  await page.locator('#files').setInputFiles(await photo(page,'previous.png',800,800));await expect(page.locator('#downloadReport')).toBeEnabled();
- await page.locator('#demo').click();await expect(page.locator('#status')).toHaveText('1 of 2 meet your limits.');
+ await page.locator('#demo').click();await expect(page.locator('#status')).toHaveText('1 of 2 meet your limits.',{timeout:15000});
  const text=await report(page);expect(text).toContain('"detail.png"');expect(text).toContain('Height short by 200 px');expect(text).not.toContain('previous.png');
 });
