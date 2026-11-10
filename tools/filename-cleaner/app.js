@@ -127,6 +127,39 @@
       update();
     }
     names.addEventListener('input', () => { inputSource = 'custom'; rebuild(); });
+    const listPicker = byId('filenameListFile'), listStatus = byId('filenameListStatus');
+    let listReadRevision = 0, readingList = false;
+    function cancelListRead() {
+      listReadRevision++;
+      if (readingList) listStatus.textContent = 'List loading cancelled because you made another change. Choose the list again if needed.';
+      readingList = false;
+    }
+    for (const event of ['input','change']) document.addEventListener(event, e => {
+      if (e.target !== listPicker) cancelListRead();
+    });
+    byId('sample').addEventListener('click', cancelListRead);
+    byId('loadFilenameList').addEventListener('click', () => { listPicker.value = ''; listPicker.click(); });
+    listPicker.addEventListener('change', async () => {
+      const file = listPicker.files[0]; listPicker.value = '';
+      if (!file) return;
+      const revision = ++listReadRevision;
+      readingList = true; listStatus.textContent = 'Reading filename list…';
+      try {
+        if (!file.size || file.size > 131072) throw new Error('Choose a non-empty text file no larger than 128 KiB.');
+        let bytes;
+        try { bytes = await file.arrayBuffer(); } catch { throw new Error('The file could not be read. Select it again.'); }
+        if (revision !== listReadRevision) return;
+        let text;
+        try { text = new TextDecoder('utf-8', {fatal:true}).decode(bytes); } catch { throw new Error('Save the list as UTF-8 text and try again.'); }
+        const lines = text.replace(/^\uFEFF/, '').split(/\r\n|\r|\n/).filter(line => line.trim());
+        if (!lines.length || lines.length > 1000) throw new Error('Use between 1 and 1,000 filenames, one per line.');
+        if (lines.some(line => /[\\/\u0000-\u001f\u007f]/.test(line))) throw new Error('Use filenames only, without folder paths or control characters.');
+        names.value = lines.join('\n'); inputSource = 'custom'; rebuild(true);
+        listStatus.textContent = 'Loaded ' + lines.length + ' filenames in file order. Review the proposed names and select the matching photos for the ZIP.';
+      } catch (error) {
+        if (revision === listReadRevision) listStatus.textContent = 'List not loaded. ' + error.message + ' Your previous list and results are unchanged.';
+      } finally { if (revision === listReadRevision) readingList = false; }
+    });
     style.addEventListener('change', () => rebuild(true));
     mode.addEventListener('change', () => { byId('numbering').hidden = mode.value !== 'numbered'; rebuild(true); });
     prefix.addEventListener('input', () => rebuild(true));

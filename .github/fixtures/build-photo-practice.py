@@ -82,8 +82,9 @@ No private photos, executable scripts or external downloads are included.
 7. Recheck those FIVE extracted photos and download a fresh photo report.
    Expect 5 of 5 pass. Do not select resize-report.txt as a photo.
 8. Use the same five checked copies in Image Contact Sheet. Reorder them,
-   download the contact sheet and copy the ordered filenames.
-9. In Filename Cleaner paste those names, choose Product / SKU + numbers,
+   download the contact sheet and use Download ordered filenames (.txt).
+9. In Filename Cleaner use Load filename list to open ordered-filenames.txt
+   (or copy and paste the names), then choose Product / SKU + numbers,
    prefix PRACTICE-1042, start 1, and 3 digits. Select the same checked files.
    Download the renamed ZIP and mapping. Expect five named photos; extension
    types are preserved. Do not assume every file will be JPEG.

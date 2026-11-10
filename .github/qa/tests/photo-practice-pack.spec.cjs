@@ -47,8 +47,9 @@ test('real practice ZIP repairs from 3/6 to 5/5 and finishes with correct contac
  await page.getByRole('link',{name:'make a contact sheet',exact:true}).click();await page.locator('#files').setInputFiles(images);await expect(page.locator('#names li')).toHaveCount(5);
  await page.locator('#names li').first().getByRole('button',{name:/Move later/}).click();
  const order=[images[1],images[0],...images.slice(2)];await expect(page.locator('#orderedNames')).toHaveValue(order.map(f=>f.name).join('\n'));
+ const listDownload=await download(page,page.locator('#downloadNames'));expect(listDownload.suggestedFilename()).toBe('ordered-filenames.txt');const listPath=await listDownload.path();expect(fs.readFileSync(listPath,'utf8')).toBe(order.map(f=>f.name).join('\r\n')+'\r\n');
  const sheet=fs.readFileSync(await (await download(page,page.locator('#download'))).path());expect(sheet.subarray(0,8)).toEqual(Buffer.from([137,80,78,71,13,10,26,10]));expect([sheet.readUInt32BE(16),sheet.readUInt32BE(20)]).toEqual([900,464]);
- await page.goto('/tools/filename-cleaner/?test-mode=1');await page.locator('#names').fill(order.map(f=>f.name).join('\n'));await page.locator('#mode').selectOption('numbered');await page.locator('#prefix').fill('PRACTICE-1042');
+ await page.goto('/tools/filename-cleaner/?test-mode=1');const listChooser=page.waitForEvent('filechooser');await page.locator('#loadFilenameList').click();await (await listChooser).setFiles(listPath);await expect(page.locator('#names')).toHaveValue(order.map(f=>f.name).join('\n'));await page.locator('#mode').selectOption('numbered');await page.locator('#prefix').fill('PRACTICE-1042');
  const expected=order.map((f,i)=>'practice-1042-'+String(i+1).padStart(3,'0')+path.extname(f.name));await expect(page.locator('#result')).toHaveValue(expected.join('\n'));
  await page.locator('#photoFiles').setInputFiles([...images].reverse());await expect(page.locator('#zipStatus')).toContainText('5 photos matched by original filename');
  const renamed=unzip(await (await download(page,page.locator('#downloadZip'))).path());expect(Object.keys(renamed)).toEqual([...expected,'filename-mapping.txt']);

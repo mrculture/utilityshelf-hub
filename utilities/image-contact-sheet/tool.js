@@ -52,10 +52,11 @@ function render() {
   download.disabled = !photos.length;
   byId('filenameOrder').hidden = !photos.length;
   byId('orderedNames').value = photos.map(photo => photo.name).join('\n');
-  const multilineName = photos.some(photo => /[\r\n]/.test(photo.name));
+  const multilineName = photos.some(photo => /[\u0000-\u001f\u007f]/.test(photo.name));
   byId('copyNames').disabled = !photos.length || multilineName;
+  byId('downloadNames').disabled = !photos.length || multilineName;
   byId('selectNames').disabled = multilineName;
-  byId('namesCopyStatus').textContent = multilineName ? 'A filename contains a line break. Rename that file on your device and choose the photos again before copying a one-name-per-line list.' : '';
+  byId('namesCopyStatus').textContent = multilineName ? 'A filename contains a line break or control character. Rename that file on your device and choose the photos again before copying or downloading a one-name-per-line list.' : '';
   if (!photos.length) return;
   const cols = Math.min(Number(byId('columns').value), photos.length);
   sheet.width = cols * tileWidth;
@@ -141,6 +142,14 @@ async function load(files, id, source = 'custom') {
   if (!photos.length) status.textContent = 'No readable photos. Check the file type and size for ' + skipped.join(', ') + '.';
 }
 input.addEventListener('change', () => load(Array.from(input.files), ++generation));
+byId('downloadNames').addEventListener('click', () => {
+  if (byId('downloadNames').disabled || !photos.length) return;
+  const url = URL.createObjectURL(new Blob([photos.map(photo => photo.name).join('\r\n') + '\r\n'], {type:'text/plain;charset=utf-8'}));
+  const link = document.createElement('a');
+  link.href = url; link.download = 'ordered-filenames.txt'; link.click();
+  byId('namesCopyStatus').textContent = 'Downloaded ' + photos.length + ' filenames in sheet order. Use Load filename list in Filename Cleaner, then select the matching photos separately.';
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+});
 byId('selectNames').addEventListener('click', () => {
   byId('orderedNames').focus();
   byId('orderedNames').select();

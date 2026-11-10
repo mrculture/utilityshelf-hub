@@ -44,6 +44,10 @@
       <div class="controls"><div>
         <label for="names">Original filenames</label>
         <textarea id="names" rows="5" spellcheck="false" placeholder="Front View.JPG&#10;front_view.jpg"></textarea>
+        <button id="loadFilenameList" type="button">Load filename list</button>
+        <input id="filenameListFile" type="file" accept=".txt,text/plain" aria-label="Filename list file" hidden>
+        <p id="filenameListStatus" role="status"></p>
+        <p class="hint">Load ordered-filenames.txt from Contact Sheet, or a UTF-8 text file with one filename per line (up to 1,000 names and 128 KiB). Blank lines are ignored; spelling, case and order are preserved. Loading replaces the original list and regenerates suggestions using your current naming settings. Select matching photos separately for the ZIP.</p>
         <div class="bar"><span class="hint">One filename per line. Paste names without folder paths.</span><button id="sample">Try five photo names</button></div>
       </div><div>
         <label for="mode">What would you like to do?</label>
@@ -87,11 +91,11 @@
     <p class="hint">You can use the filename list and mapping without selecting files, or select photos to download renamed copies. Originals stay untouched.</p>
     <label class="choice hint"><input id="usage" type="checkbox" checked><span>Share anonymous usage counts (list ready, list copied, mapping and ZIP download started). No filenames, prefixes or file contents are sent. <a href="https://utilityshelf.site/privacy">Privacy details</a></span></label>
     <section class="panel" aria-labelledby="how"><h2 id="how">Prepare product-photo filenames in four steps</h2>
-      <ol><li>Paste the original filenames, one per line, in the order you want to use. Leave out folder paths.</li><li>Choose <strong>Clean existing names</strong> to keep descriptive words, or <strong>Product / SKU + numbers</strong> for an ordered photo set. For example, use the prefix <code>SKU-1042</code>, start at 1 and choose three digits.</li><li>Review the suggestions. Resolve highlighted duplicates or invalid names; the final list appears only when every name is ready.</li><li>Copy or select the final list and download the filename mapping. Use the numbered original/new pairs to match each file when applying the names in your file manager or renaming tool.</li></ol>
+      <ol><li>Use Load filename list to open the ordered text file from Contact Sheet, or paste the original filenames one per line. Leave out folder paths.</li><li>Choose <strong>Clean existing names</strong> to keep descriptive words, or <strong>Product / SKU + numbers</strong> for an ordered photo set. For example, use the prefix <code>SKU-1042</code>, start at 1 and choose three digits.</li><li>Review the suggestions. Resolve highlighted duplicates or invalid names; the final list appears only when every name is ready.</li><li>Copy or select the final list and download the filename mapping. Use the numbered original/new pairs to match each file when applying the names in your file manager or renaming tool.</li></ol>
       <p>For five photos of one product, numbering separates front, side, rear and packaging views even if their original names collide. Use a new batch and prefix for each product.</p>
       <table class="examples"><thead><tr><th>Original filename</th><th>Clean existing names</th><th>Prefix + numbers</th></tr></thead><tbody><tr><td><code>Front View.JPG</code></td><td><code>front-view.JPG</code></td><td><code>sku-1042-001.JPG</code></td></tr><tr><td><code>front_view.jpg</code></td><td><code>front-view.jpg</code> (duplicate)</td><td><code>sku-1042-002.jpg</code></td></tr><tr><td><code>Side (Left).png</code></td><td><code>side-left.png</code></td><td><code>sku-1042-003.png</code></td></tr></tbody></table>
       <p class="hint">Example settings: lowercase with hyphens, prefix SKU-1042, start 1, minimum three digits. Extensions keep their original case.</p>
-      <p>Need to choose the order first? <a href="https://utilityshelf.site/utilities/image-contact-sheet/">Arrange photos and copy their original filenames</a>, then paste that list above. You can also <a href="https://utilityshelf.site/utilities/image-dimension-checker/">check your product photos’ dimensions and file sizes</a>.</p>
+      <p>Need to choose the order first? <a href="https://utilityshelf.site/utilities/image-contact-sheet/">Arrange photos and copy their original filenames</a>, then load or paste that list above. You can also <a href="https://utilityshelf.site/utilities/image-dimension-checker/">check your product photos’ dimensions and file sizes</a>.</p>
       <p><a href="https://utilityshelf.site/guides/prepare-product-photos-for-ebay">Follow the six-photo listing walkthrough</a> to check sizes, order your views and apply the mapping to copies of your files.</p>
     </section>
     <section class="panel" aria-labelledby="questions"><h2 id="questions">Filename questions</h2>
@@ -103,7 +107,7 @@
     <footer><a href="https://utilityshelf.site/privacy">Privacy</a> · <a href="https://utilityshelf.site/terms">Terms</a> · <a href="https://utilityshelf.site/contact">Contact</a></footer>
   </main>
   <script src="zip.js?v=20261110-photo-zip" defer></script>
-  <script src="app.js?v=20261110-batch30" defer></script>
+  <script src="app.js?v=20261110-list-file" defer></script>
 
 </body>
 </html>
