@@ -108,8 +108,12 @@ async function load(files, id, source = 'custom') {
   photos = [];
   errors = [];
   render();
-  if (!files.length || files.length > 24) {
-    status.textContent = 'Choose between 1 and 24 photos.';
+  if (!files.length || files.length > 30) {
+    status.textContent = files.length > 30 ? 'You selected ' + files.length + ' photos. Choose between 1 and 30 photos. No photos were processed; split the batch and try again.' : 'Choose between 1 and 30 photos.';
+    return;
+  }
+  if (files.reduce((total, file) => total + file.size, 0) > 100000000) {
+    status.textContent = 'Keep the combined photo size at or below 100 MB. No photos were processed; split the batch and try again.';
     return;
   }
   status.textContent = 'Preparing thumbnails…';

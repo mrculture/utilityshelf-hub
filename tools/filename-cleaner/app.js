@@ -195,7 +195,7 @@
       const files = Array.from(photoFiles.files);
       if (byId('downloadMapping').disabled) return 'Finish reviewing a valid filename list first.';
       if (!files.length) return 'Select the original photos that match your reviewed list.';
-      if (files.length > 30 || batch.length > 30) return 'Choose no more than 30 photos per ZIP.';
+      if (files.length > 30 || batch.length > 30) return 'Batch too large: ' + Math.max(files.length, batch.length) + ' photos. Choose no more than 30 photos per ZIP. No ZIP was created; split the batch and try again.';
       if (files.some(file => !file.size || file.size > 32000000)) return 'Each photo must contain data and be no larger than 32 MB.';
       if (files.reduce((total,file) => total + file.size, 0) > 100000000) return 'Keep the combined photo size at or below 100 MB.';
       if (new Set(batch.map(item => key(item.original))).size !== batch.length || new Set(files.map(file => key(file.name))).size !== files.length) return 'Ambiguous original filenames: use one uniquely named file for each list entry, including case and Unicode differences.';

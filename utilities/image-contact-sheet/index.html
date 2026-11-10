@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="/utilities/shared.css">
   <link rel="stylesheet" href="./tool.css">
   <script src="/utilities/usage.js?v=20261110-photo-flow" defer></script>
-  <script src="./tool.js?v=20261110-photo-flow" defer></script>
+  <script src="./tool.js?v=20261110-batch30" defer></script>
 </head>
 <body>
   <header><a href="/">UtilityShelf</a><nav aria-label="Main"><a href="/#companions">Browse tools</a></nav></header>
@@ -18,7 +18,7 @@
     <section class="panel"><h2>Photos to review</h2>
       <div class="controls"><div><label for="files">Choose photos</label><input id="files" type="file" accept="image/png,image/jpeg,image/webp" multiple></div>
       <div><label for="columns">Columns</label><select id="columns"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select></div></div>
-      <p class="hint">Select up to 24 JPEG, PNG or WebP files, up to 32 MB each. Use Move earlier and Move later below the preview to choose your listing order. The preview, numbered captions and downloaded PNG update together.</p><button id="demo" type="button">Try three product views</button>
+      <p class="hint">Select up to 30 JPEG, PNG or WebP files, up to 32 MB each and 100 MB combined (1 MB = 1,000,000 bytes). Batches above 30 photos or 100 MB are rejected in full; split them before continuing. Use Move earlier and Move later below the preview to choose your listing order. The preview, numbered captions and downloaded PNG update together.</p><button id="demo" type="button">Try three product views</button>
     </section>
     <section class="panel" aria-label="Results"><h2>Contact sheet preview</h2><p role="status" id="status">Choose photos or try the example.</p><canvas id="sheet" hidden aria-label="Contact sheet preview, with filename list below"></canvas><div class="actions"><button id="download" type="button" disabled>Download PNG</button></div><ol id="names" aria-label="Filenames in sheet order"></ol></section>
     <section class="panel" id="filenameOrder" hidden aria-labelledby="filenameOrderTitle">
