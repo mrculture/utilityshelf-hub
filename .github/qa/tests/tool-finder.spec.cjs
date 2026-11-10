@@ -58,6 +58,8 @@ test('search and category controls work by keyboard without submitting or sendin
  await expect(page).toHaveURL('http://127.0.0.1:4179/');expect(await names(page)).toEqual(csv);
  await page.keyboard.press('Tab');await expect(page.locator('#tool-category')).toBeFocused();
  await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');await expect(page.locator('#tool-category')).toHaveValue('data');
+ // Enter may open the native select popup on Linux. Close it before testing Tab order.
+ await page.keyboard.press('Escape');await expect(page.locator('#tool-category')).toBeFocused();
  await page.keyboard.press('Tab');await expect(page.getByRole('button',{name:'Clear filters',exact:true})).toBeFocused();
  await page.keyboard.press('Enter');await expect(page.locator('.tool-card:visible')).toHaveCount(17);
  expect(requests).toEqual([]);
