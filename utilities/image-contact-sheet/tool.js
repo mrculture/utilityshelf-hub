@@ -33,6 +33,7 @@ const download = byId('download');
 const names = byId('names');
 let photos = [];
 let errors = [];
+let renderVersion = 0;
 const tileWidth = 300, tileHeight = 232;
 
 function shorten(ctx, name, width) {
@@ -43,6 +44,7 @@ function shorten(ctx, name, width) {
 }
 
 function render() {
+  renderVersion++;
   names.replaceChildren();
   sheet.hidden = !photos.length;
   download.disabled = !photos.length;
@@ -61,7 +63,31 @@ function render() {
     const prefix = String(index + 1).padStart(2, '0') + '  ';
     ctx.fillText(shorten(ctx, prefix + photo.name, tileWidth - 20), x + 10, y + 215);
     const item = document.createElement('li');
-    item.textContent = photo.name;
+    const label = document.createElement('span');
+    label.textContent = photo.name;
+    item.append(label);
+    const controls = document.createElement('div');
+    controls.className = 'order-actions';
+    for (const [direction, title] of [[-1, 'Move earlier'], [1, 'Move later']]) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = title;
+      button.dataset.direction = direction;
+      button.setAttribute('aria-label', title + ': photo ' + (index + 1) + ', ' + photo.name);
+      button.disabled = index + direction < 0 || index + direction >= photos.length;
+      button.addEventListener('click', () => {
+        const destination = index + direction;
+        if (destination < 0 || destination >= photos.length) return;
+        [photos[index], photos[destination]] = [photos[destination], photos[index]];
+        render();
+        status.textContent += ' Moved ' + photo.name + ' to position ' + (destination + 1) + '.';
+        const buttons = names.children[destination].querySelectorAll('button');
+        const sameDirection = Array.from(buttons).find(control => control.dataset.direction === String(direction));
+        (sameDirection.disabled ? Array.from(buttons).find(control => !control.disabled) : sameDirection)?.focus();
+      });
+      controls.append(button);
+    }
+    item.append(controls);
     names.append(item);
   });
   status.textContent = photos.length + ' photos on sheet · ' + sheet.width + ' × ' + sheet.height + ' px.' +
@@ -111,8 +137,9 @@ byId('demo').addEventListener('click', async () => {
 });
 download.addEventListener('click', () => {
   const id = generation;
+  const version = renderVersion;
   sheet.toBlob(blob => {
-    if (id !== generation) return;
+    if (id !== generation || version !== renderVersion) return;
     if (!blob) { status.textContent = 'PNG export failed. Try again with fewer photos.'; return; }
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
