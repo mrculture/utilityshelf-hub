@@ -15,28 +15,41 @@
     <p>A CSV can look tidy in a spreadsheet while still having repeated headers, a short row or columns in the wrong order. Work on a copy of the supplier file and get the destination's current import template before editing. The examples here are invented inventory data.</p>
     <div class="tool-callout"><h2>Start with the file structure</h2><p>Use CSV Import Checker to find repeated headers, quoting problems and unexpected field counts. These checks do not verify prices, stock levels or your importer's business rules.</p><a class="button" href="https://csv-import-checker.utilityshelf.site/">Check a CSV before importing</a></div>
     <h2>1. Find the duplicate header and short row</h2>
+    <p><a href="/guides/samples/supplier-inventory-original.csv" download>Download the original sample CSV (2 deliberate issues)</a>. Use <strong>Open a CSV file</strong> in the checker, or paste the example below. These samples contain invented data and are for practice.</p>
     <p>Paste this comma-separated example into the checker and select <strong>Check CSV</strong>:</p>
     <pre class="example-block"><code>SKU,Product,Price,Price
 A101,"Mug, blue",12.00,8.00
 A102,Notebook,6.50
 A103,"Frame, small",15.00,9.50</code></pre>
     <p>It reports two issues: <code>Price</code> repeats in columns 3 and 4, and line 3 has only three fields instead of four. The comma inside <code>"Mug, blue"</code> belongs to the product name because that field is quoted.</p>
+    <p>Select <strong>Download check report (.txt)</strong> to keep the issue locations and suggested fixes. The report should say <strong>Issues found</strong>. It records the check; it does not repair the source file.</p>
     <h2>2. Correct the data using the supplier's meaning</h2>
+    <p><a href="/guides/samples/supplier-inventory-corrected.csv" download>Download the corrected sample CSV</a> to compare it with your edits.</p>
     <p>For this example, assume the supplier confirms the fourth column is <code>Cost</code> and the Notebook's missing cost is <code>4.00</code>. Make those corrections in a copy:</p>
     <pre class="example-block"><code>SKU,Product,Price,Cost
 A101,"Mug, blue",12.00,8.00
 A102,Notebook,6.50,4.00
 A103,"Frame, small",15.00,9.50</code></pre>
     <p>Check the corrected CSV again. It should pass the header and field-count checks with four columns and three data rows. Select <strong>Download corrected CSV</strong> to save the checked text for the next step. For a real file, confirm missing values with the supplier; do not invent them or insert zero just to make the row pass. A blank field is appropriate only when its meaning and the destination allow it.</p>
+    <p>Download a fresh check report after rechecking: its status should now be <strong>Passed</strong>. Editing the CSV invalidates the previous download until you run the check again.</p>
     <h2>3. Map columns to the destination</h2>
     <p>Open <a href="/utilities/csv-column-mapper/">CSV Column Mapper</a>. Paste the corrected CSV and use this illustrative destination header:</p>
     <pre class="example-block"><code>SKU,Title,Price</code></pre>
     <p>Select <strong>Set up mapping</strong>, then map <code>SKU → SKU</code>, <code>Product → Title</code> and <code>Price → Price</code>. The <code>Cost</code> column is deliberately excluded. Select <strong>Build mapped CSV</strong>; the first data row should be:</p>
     <pre class="example-block"><code>A101,"Mug, blue",12.00</code></pre>
     <p>Use the exact header from your actual destination rather than assuming these three example fields are sufficient. Review every selection, including any <strong>Use empty values</strong> choice. Download the full CSV: the preview shows only the first five data rows. The mapper accepts UTF-8 comma-separated CSV input up to 2 MiB.</p>
+    <h3>Save the mapping for your next supplier file</h3>
+    <ol class="checklist">
+      <li>Once all source choices are selected, choose <strong>Save mapping</strong> to download <code>utilityshelf-column-mapping.json</code>. It contains source and destination headings and your selections, with no product rows.</li>
+      <li>Next time, open or paste the new supplier CSV, select <strong>Load mapping</strong>, and choose that JSON file. The destination headings are restored.</li>
+      <li>Review every source choice and select <strong>Build mapped CSV</strong>. Loading a mapping does not automatically create an export.</li>
+    </ol>
+    <p>Columns may change order: the mapper follows their exact header names. If a header is added, removed, renamed or changed in case or spacing, loading stops and asks you to set up a fresh mapping. Duplicate or blank source headers cannot be used in reusable mappings. This protects against silently selecting a different column. Header matches do not prove that a supplier has kept the same field meanings or units.</p>
     <h2>4. Review formula-like values in the export</h2>
     <p>Open the downloaded file in <a href="/utilities/csv-formula-checker/">CSV Formula Checker</a>. A value such as <code>"=SUM(2,3)"</code> can become a formula when opened in a spreadsheet even though the CSV quotes are correct. A flag may also be legitimate data, such as a negative amount.</p>
     <p>The checker flags prefixes; it does not sanitise the file. Review the intended values and your spreadsheet's text-import settings. Do not assume that adding quotes makes a CSV safe. See <a href="https://community.owasp.org/attacks/CSV_Injection">OWASP's CSV formula-injection guidance</a> for application-specific limitations.</p>
+    <p>Select <strong>Download check report (.txt)</strong> to save the formula review. The mapped corrected example has three columns and three data rows: expect <strong>0 fields to review out of 12 checked</strong>, including the header. For a deliberate warning, change the Notebook title in a practice copy to <code>=SUM(2)</code> and rescan; the report should identify record 3, line 3, column 2.</p>
+    <p>Both reports use <strong>Passed</strong>, <strong>Issues found</strong> or <strong>Check incomplete</strong>. An incomplete check, for example from a missing closing quote, is not a pass. Reports list up to 100 findings and state when more were found. They can include header names or field previews, so review them before sharing. Keep reports alongside the exact CSV you checked and rerun after changes.</p>
     <h2>5. Check the final saved file</h2>
     <ol class="checklist">
       <li>Run CSV Import Checker on the exact export you intend to import, especially after making corrections.</li>

@@ -1,8 +1,11 @@
 import { csvRows, encodeRow, attachFileInput } from './csv.js';
+import { reusableHeaders, validateMapping, resolveMapping } from './mapping.js';
 const byId = id => document.getElementById(id);
 const source = byId('source'), target = byId('target'), message = byId('message');
 let records = [], labels = [], controls = [], generated = '';
 let inputSource = 'custom';
+let sourceHeaders = [], mappingRevision = 0;
+const mappingLimit = 64 * 1024;
 const track = event => window.UtilityShelfUsage?.track('csv-column-mapper', event, 'mapped', inputSource);
 
 function clearResult() {
@@ -11,6 +14,9 @@ function clearResult() {
   byId('output').value = '';
 }
 function reset() {
+  mappingRevision++;
+  sourceHeaders = [];
+  byId('saveMapping').disabled = true;
   records = [];
   labels = [];
   controls = [];
@@ -36,6 +42,7 @@ function prepare(sampleColumns) {
     const uneven = parsed.find(row => row.cells.length !== columns.length);
     if (uneven) throw new Error('Line ' + uneven.start + ' has ' + uneven.cells.length + ' fields. The source header has ' + columns.length + '. Fix that row first.');
     records = parsed.slice(1);
+    sourceHeaders = columns;
     labels = headings;
     const fields = document.createDocumentFragment();
     controls = headings.map((heading, i) => {
@@ -51,7 +58,9 @@ function prepare(sampleColumns) {
       if (sampleColumns) select.value = String(sampleColumns[i]);
       else if (matches.length === 1) select.value = String(matches[0]);
       select.addEventListener('change', () => {
+        mappingRevision++;
         clearResult();
+        updateSave();
         message.textContent = 'Select Build mapped CSV to apply the revised mapping.';
       });
       fields.append(label, select);
@@ -60,10 +69,55 @@ function prepare(sampleColumns) {
     byId('choices').append(fields);
     byId('mapping').hidden = false;
     message.textContent = 'Read ' + records.length + ' data rows. Review the source chosen for each destination column.';
+    updateSave();
+    return true;
   } catch (err) {
     message.textContent = err.message;
+    return false;
   }
 }
+function updateSave() {
+  byId('saveMapping').disabled = !reusableHeaders(sourceHeaders) || !controls.length || controls.some(s => s.value === '');
+}
+function saveMapping() {
+  if (byId('saveMapping').disabled) return;
+  const saved = {format:'utilityshelf-column-mapping', version:1, sourceHeaders,
+    destinationHeaders:labels, columns:controls.map(s => s.value === 'empty' ? null : Number(s.value))};
+  const blob = new Blob([JSON.stringify(saved, null, 2) + '\n'], {type:'application/json;charset=utf-8'});
+  if (blob.size > mappingLimit) { message.textContent = 'Mapping exceeds 64 KiB. Use shorter headers before saving.'; return; }
+  const url = URL.createObjectURL(blob), link = document.createElement('a');
+  link.href = url; link.download = 'utilityshelf-column-mapping.json'; link.click();
+  message.textContent = 'Mapping download started. It contains headers and column choices, with no data rows.';
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+byId('saveMapping').addEventListener('click', saveMapping);
+byId('loadMapping').addEventListener('click', () => byId('mappingFile').click());
+byId('mappingFile').addEventListener('change', async event => {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  reset();
+  const request = mappingRevision;
+  message.textContent = 'Reading saved mapping…';
+  try {
+    if (file.size > mappingLimit) throw new Error('Choose a mapping file no larger than 64 KiB.');
+    const text = await file.text();
+    if (request !== mappingRevision) return;
+    let saved;
+    try { saved = validateMapping(JSON.parse(text.replace(/^\uFEFF/, ''))); }
+    catch { throw new Error('Choose a valid UtilityShelf mapping file (version 1). The file was not applied.'); }
+    if (!source.value.trim()) throw new Error('Open or paste your current source CSV before loading its mapping.');
+    if (source.value.length > 2097152) throw new Error('Use a smaller CSV extract (up to 2 million characters).');
+    const currentHeaders = csvRows(source.value).next().value.cells;
+    const selections = resolveMapping(saved, currentHeaders);
+    const destination = encodeRow(saved.destinationHeaders);
+    if (destination.length > 8192) throw new Error('The saved destination header exceeds the supported limit.');
+    target.value = destination;
+    if (prepare(selections)) message.textContent = 'Mapping loaded by exact header name. Review every choice, then select Build mapped CSV. No export has been created yet.';
+  } catch (err) {
+    if (request === mappingRevision) message.textContent = err.message;
+  }
+});
 function build() {
   clearResult();
   const mapping = controls.map(s => s.value);

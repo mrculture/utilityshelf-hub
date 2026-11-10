@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/utilities/shared.css">
 
   <script defer src="/utilities/usage.js?v=20261110-csv"></script>
-  <script type="module" src="./app.js?v=20261110-csv"></script>
+  <script type="module" src="./app.js?v=20261110-mappings"></script>
 </head>
 <body>
   <header><a href="/#companions">UtilityShelf tools</a></header>
@@ -28,12 +28,18 @@
       <textarea id="target" rows="2" spellcheck="false" placeholder="SKU,Title,Price"></textarea>
       <div class="actions"><button id="prepare" type="button">Set up mapping</button> <button id="sample" type="button">Try supplier inventory</button></div>
       <p role="status" id="message">Enter both headers to begin.</p>
+      <h3>Reuse a saved mapping</h3>
+      <p>Open or paste the current CSV first, then load your saved mapping to restore the destination headings and column choices. Review the choices before building the export.</p>
+      <input type="file" id="mappingFile" accept=".json,application/json" hidden>
+      <button id="loadMapping" type="button">Load mapping</button>
+      <p class="hint">Mapping files are read locally (up to 64 KiB). Reordered columns are matched by exact header name. Added, missing or renamed headers require a new mapping; case and spaces must match.</p>
     </section>
     <section class="panel" id="mapping" hidden>
       <h2>Choose source columns</h2>
       <p>Each destination column needs a selection. Select “Use empty values” only when your importer accepts a blank column. Source columns you leave unused are excluded.</p>
       <div id="choices"></div>
-      <button id="generate" type="button">Build mapped CSV</button>
+      <div class="actions"><button id="generate" type="button">Build mapped CSV</button><button id="saveMapping" type="button" disabled>Save mapping</button></div>
+      <p class="hint">Choose every destination column to save a mapping. Reusable mappings require distinct, nonblank source headers. The downloaded JSON contains headers and column choices only, not data rows. Keep it on your device and review its headings before sharing.</p>
     </section>
     <section class="panel" id="result" hidden>
       <h2>Mapped CSV</h2>

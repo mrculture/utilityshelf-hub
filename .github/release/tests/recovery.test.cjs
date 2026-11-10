@@ -74,13 +74,13 @@ test('public packages exclude CI, credentials, untracked data and sibling tools'
  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'utilityshelf-package-test-'));
  try {
   execFileSync('git',['init'],{cwd:temp,stdio:'ignore'});
-  for(const file of ['index.html','styles.css','.env','.github/qa/package.json','README.md','tools/other/index.html','_headers','guides/guide.html']) {
+  for(const file of ['index.html','styles.css','.env','.github/qa/package.json','README.md','tools/other/index.html','_headers','guides/guide.html','guides/samples/supplier-inventory-original.csv','guides/samples/supplier-inventory-corrected.csv','private.csv']) {
    fs.mkdirSync(path.dirname(path.join(temp,file)),{recursive:true});fs.writeFileSync(path.join(temp,file),'fixture');
   }
   execFileSync('git',['add','.'],{cwd:temp});fs.writeFileSync(path.join(temp,'untracked.html'),'must not publish');
   const sha='a'.repeat(40),{directory}=packageSite(temp,{name:'hub',source:''},sha,path.join(temp,'out'));
-  for(const file of ['index.html','styles.css','guides/guide.html','_headers','release.json'])assert.ok(fs.existsSync(path.join(directory,file)),file);
-  for(const file of ['.env','.github/qa/package.json','README.md','tools/other/index.html','untracked.html'])assert.equal(fs.existsSync(path.join(directory,file)),false,file);
+  for(const file of ['index.html','styles.css','guides/guide.html','_headers','release.json','guides/samples/supplier-inventory-original.csv','guides/samples/supplier-inventory-corrected.csv'])assert.ok(fs.existsSync(path.join(directory,file)),file);
+  for(const file of ['.env','.github/qa/package.json','README.md','tools/other/index.html','untracked.html','private.csv'])assert.equal(fs.existsSync(path.join(directory,file)),false,file);
   assert.equal(JSON.parse(fs.readFileSync(path.join(directory,'release.json'))).commit,sha);
  } finally {
   const resolved=path.resolve(temp),parent=path.resolve(os.tmpdir())+path.sep;

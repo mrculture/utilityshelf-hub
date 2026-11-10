@@ -75,6 +75,7 @@ checks. Image checks settle for 500 ms so intermediate limit edits do not count.
 Invalid/empty batches, failed exports and stale asynchronous results do not count.
 CSV parsing failures and separator warnings do not count as completed checks.
 Both checkers offer plain-text reports with a passed, issues found, or check incomplete status. Reports list at most 100 findings, state when more were detected, and distinguish partial checks from completed checks. Editing input, changing the formula checker separator, or starting a file read invalidates the previous report. Reports are created locally; report text and CSV contents are never sent with usage events.
+CSV Column Mapper saves versioned JSON mapping files (up to 64 KiB) containing headers and column indices only. Loading resolves the indices against exact source names, supports reordered columns, rejects any changed header set or ambiguous headers, and requires review and an explicit build. A failed or superseded mapping read cannot restore an old export. The supplier guide includes downloadable original/corrected CSV examples and report instructions.
 Editing a built-in CSV sample changes its source category to custom. CSV files
 opened from disk or pasted are custom; owner tests must use test mode regardless.
 The standalone CSV Import Checker ships an identical copy of `utilities/usage.js`
