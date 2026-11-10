@@ -63,8 +63,10 @@
     <section class="panel" aria-labelledby="review"><h2 id="review">Review proposed names</h2>
       <p class="hint">Edit any suggestion. Changing naming settings regenerates the suggestions and replaces your edits. Numbered names follow the order of the original list.</p>
       <div id="rows"></div>
-      <div class="bar foot"><span id="summary" role="status"></span><button id="copy" class="primary" disabled>Copy final list</button></div>
+      <div class="bar foot"><span id="summary" role="status"></span><button id="copy" class="primary" disabled>Copy final list</button><button id="downloadMapping" type="button" disabled>Download filename mapping (.txt)</button></div>
       <span id="copyStatus" role="status"></span>
+      <p class="hint">The mapping pairs each original filename with its final name, in the order shown above. It includes your edits and opens as plain text. Download a fresh copy after changing the list.</p>
+      <p id="mappingStatus" role="status"></p>
       <div id="manual" hidden>
         <label for="result">Final filename list</label>
         <textarea readonly id="result" rows="5" spellcheck="false"></textarea>
@@ -75,7 +77,7 @@
     <p class="hint">Filename processing happens in this browser tab. Your files stay untouched: this tool creates a naming list, not renamed files.</p>
     <label class="choice hint"><input id="usage" type="checkbox" checked><span>Share anonymous usage counts (list ready and list copied). No filenames, prefixes or file contents are sent. <a href="https://utilityshelf.site/privacy">Privacy details</a></span></label>
     <section class="panel" aria-labelledby="how"><h2 id="how">Prepare product-photo filenames in four steps</h2>
-      <ol><li>Paste the original filenames, one per line, in the order you want to use. Leave out folder paths.</li><li>Choose <strong>Clean existing names</strong> to keep descriptive words, or <strong>Product / SKU + numbers</strong> for an ordered photo set. For example, use the prefix <code>SKU-1042</code>, start at 1 and choose three digits.</li><li>Review the suggestions. Resolve highlighted duplicates or invalid names; the final list appears only when every name is ready.</li><li>Copy or select the final list. Apply the names using your file manager or a renaming tool, checking that each name matches the correct original file.</li></ol>
+      <ol><li>Paste the original filenames, one per line, in the order you want to use. Leave out folder paths.</li><li>Choose <strong>Clean existing names</strong> to keep descriptive words, or <strong>Product / SKU + numbers</strong> for an ordered photo set. For example, use the prefix <code>SKU-1042</code>, start at 1 and choose three digits.</li><li>Review the suggestions. Resolve highlighted duplicates or invalid names; the final list appears only when every name is ready.</li><li>Copy or select the final list and download the filename mapping. Use the numbered original/new pairs to match each file when applying the names in your file manager or renaming tool.</li></ol>
       <p>For five photos of one product, numbering separates front, side, rear and packaging views even if their original names collide. Use a new batch and prefix for each product.</p>
       <table class="examples"><thead><tr><th>Original filename</th><th>Clean existing names</th><th>Prefix + numbers</th></tr></thead><tbody><tr><td><code>Front View.JPG</code></td><td><code>front-view.JPG</code></td><td><code>sku-1042-001.JPG</code></td></tr><tr><td><code>front_view.jpg</code></td><td><code>front-view.jpg</code> (duplicate)</td><td><code>sku-1042-002.jpg</code></td></tr><tr><td><code>Side (Left).png</code></td><td><code>side-left.png</code></td><td><code>sku-1042-003.png</code></td></tr></tbody></table>
       <p class="hint">Example settings: lowercase with hyphens, prefix SKU-1042, start 1, minimum three digits. Extensions keep their original case.</p>

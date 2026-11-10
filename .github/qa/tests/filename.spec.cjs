@@ -55,6 +55,38 @@ test('SKU numbering preserves extensions, order, Unicode and configurable paddin
  await expect(page.locator('#result')).toHaveValue('side_left.png\nfront_view.JPG');
 });
 
+test('mapping download preserves original order, Unicode and manual edits; invalid lists block export',async({page})=>{
+ await openTool(page);
+ const button=page.locator('#downloadMapping');
+ await expect(button).toBeDisabled();
+ await page.locator('#names').fill('Café, "front".JPG\n=1+1.png\nRear.jpg');
+ await page.locator('#mode').selectOption('numbered');
+ await page.locator('#prefix').fill('PROD1');
+ await page.locator('#name-2').fill('prod1-detail.png');
+ const pending=page.waitForEvent('download');
+ await button.click();
+ const download=await pending;
+ expect(download.suggestedFilename()).toBe('filename-mapping.txt');
+ expect(fs.readFileSync(await download.path(),'utf8')).toBe('\uFEFFUtilityShelf filename mapping\r\nMatch each original file to its new name. This list does not rename files.\r\n\r\n1.\r\nOriginal: Café, "front".JPG\r\nNew: prod1-001.JPG\r\n\r\n2.\r\nOriginal: =1+1.png\r\nNew: prod1-detail.png\r\n\r\n3.\r\nOriginal: Rear.jpg\r\nNew: prod1-003.jpg\r\n');
+ await expect(page.locator('#mappingStatus')).toContainText('3 pairs');
+ await page.locator('#name-3').fill('prod1-001.JPG');
+ await expect(button).toBeDisabled();
+ await expect(page.locator('#mappingStatus')).toBeEmpty();
+ await page.locator('#names').fill('Single.JPG');
+ await page.locator('#start').fill('0');
+ await expect(button).toBeDisabled();
+ await page.locator('#start').fill('1');
+ await page.locator('#mode').selectOption('clean');
+ const secondPending=page.waitForEvent('download');
+ await button.click();
+ const second=await secondPending;
+ const text=fs.readFileSync(await second.path(),'utf8');
+ expect(text).toContain('1.\r\nOriginal: Single.JPG\r\nNew: single.JPG\r\n');
+ expect(text).not.toContain('Rear.jpg');
+ await page.locator('#names').fill('');
+ await expect(button).toBeDisabled();
+});
+
 test('invalid settings, paths, edited duplicates and extension changes block final output',async({page})=>{
  await openTool(page);
  await page.locator('#names').fill('A.JPG\nB.png');

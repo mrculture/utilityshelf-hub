@@ -71,6 +71,8 @@
       if (settingError && batch.length) byId('summary').textContent = 'Check the numbering settings before copying.';
       const ready = batch.length > 0 && problems === 0 && !settingError;
       byId('copy').disabled = !ready;
+      byId('downloadMapping').disabled = !ready;
+      byId('mappingStatus').textContent = '';
       byId('result').value = ready ? batch.map(item => item.value).join('\n') : '';
       byId('manual').hidden = !ready;
       byId('copyStatus').textContent = '';
@@ -113,6 +115,30 @@
       byId('result').select();
     }
     byId('selectList').addEventListener('click', selectList);
+    byId('downloadMapping').addEventListener('click', () => {
+      if (byId('downloadMapping').disabled || !batch.length) return;
+      const pairs = batch.map((item, index) =>
+        (index + 1) + '.\r\nOriginal: ' + item.original + '\r\nNew: ' + item.value);
+      const text = 'UtilityShelf filename mapping\r\n' +
+        'Match each original file to its new name. This list does not rename files.\r\n\r\n' +
+        pairs.join('\r\n\r\n') + '\r\n';
+      let url;
+      const link = document.createElement('a');
+      try {
+        url = URL.createObjectURL(new Blob(['\uFEFF', text], { type: 'text/plain;charset=utf-8' }));
+        link.href = url;
+        link.download = 'filename-mapping.txt';
+        document.body.append(link);
+        link.click();
+        byId('mappingStatus').textContent = 'Filename mapping download started: ' + batch.length +
+          (batch.length === 1 ? ' pair.' : ' pairs.');
+      } catch {
+        byId('mappingStatus').textContent = 'The download could not start. Try again, or use the original and proposed names above.';
+      } finally {
+        link.remove();
+        if (url) setTimeout(() => URL.revokeObjectURL(url), 30000);
+      }
+    });
     byId('result').addEventListener('copy', event => {
       const result = byId('result');
       if (result.value && result.selectionStart === 0 && result.selectionEnd === result.value.length) {
