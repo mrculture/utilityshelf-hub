@@ -5,4 +5,4 @@
   Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://filename-cleaner.utilityshelf.site https://cloudflareinsights.com https://static.cloudflareinsights.com; base-uri 'self'; form-action 'self'
 
 /
-  Link: </styles.css?v=20261104-companions>; rel=preload; as=style
+  Link: </styles.css?v=20261110-finder>; rel=preload; as=style

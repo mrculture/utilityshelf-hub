@@ -19,6 +19,8 @@
   box-sizing: border-box;
 }
 
+[hidden] { display: none !important; }
+
 html {
   scroll-behavior: smooth;
 }
@@ -286,6 +288,24 @@ h1 {
 .tools {
   scroll-margin-top: 110px;
 }
+
+.tool-finder { padding: clamp(20px, 3vw, 30px); margin-bottom: 28px; border: 1px solid var(--line); border-top: 4px solid var(--teal); border-radius: 8px; background: var(--panel); box-shadow: var(--soft-shadow); }
+.tool-finder h2 { margin-bottom: 8px; font-size: clamp(1.8rem, 3vw, 2.6rem); }
+.tool-finder p { color: var(--muted); }
+.finder-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; }
+.finder-query { flex: 1 1 260px; }
+.finder-controls label { display: block; font-weight: 750; margin-bottom: 6px; }
+.finder-controls input, .finder-controls select, .finder-controls button { font: inherit; min-height: 46px; max-width: 100%; padding: 10px 12px; border: 1px solid #82958c; border-radius: 6px; background: white; color: var(--ink); }
+.finder-controls input { width: 100%; }
+.finder-controls button { background: var(--teal-dark); color: white; font-weight: 750; cursor: pointer; }
+.finder-controls button:hover { background: var(--ink); }
+:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+#tool-count { margin: 16px 0 8px; font-weight: 750; color: var(--ink); }
+.finder-workflows { margin-bottom: 0; }
+.finder-workflows a { color: var(--teal-dark); font-weight: 650; text-underline-offset: 3px; }
+.tool-empty { padding: 24px; background: var(--panel-soft); border: 1px solid var(--line); border-radius: 8px; }
+#product-photos, #supplier-csv { scroll-margin-top: 110px; }
+#product-photos { margin-top: 48px; }
 
 .section-heading {
   align-items: end;

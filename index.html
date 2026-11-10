@@ -16,7 +16,8 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://utilityshelf.site/">
     <link rel="canonical" href="https://utilityshelf.site/">
-    <link rel="stylesheet" href="/styles.css?v=20261110-workflows">
+    <link rel="stylesheet" href="/styles.css?v=20261110-finder">
+    <script defer src="/tool-finder.js?v=20261110-finder"></script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -80,6 +81,196 @@
         </div>
       </section>
 
+      <section class="tools" id="tools" aria-labelledby="tools-title">
+        <form class="tool-finder" id="tool-finder" role="search" aria-label="Find a UtilityShelf tool" hidden>
+          <h2>Find a tool</h2>
+          <p>Search by name or task across the whole shelf, including companion tools and the Windows beta.</p>
+          <div class="finder-controls">
+            <div class="finder-query"><label for="tool-query">Search tools</label><input id="tool-query" type="search" placeholder="Try CSV, photo, SKU or links" autocomplete="off" aria-describedby="tool-count"></div>
+            <div><label for="tool-category">Category</label><select id="tool-category">
+              <option value="all">All categories</option>
+              <option value="data">CSV &amp; data</option>
+              <option value="photos">Photos &amp; files</option>
+              <option value="text">Text &amp; publishing</option>
+              <option value="links">Links</option>
+              <option value="email">Email</option>
+              <option value="windows">Windows</option>
+            </select></div>
+            <button type="button" id="tool-reset">Clear filters</button>
+          </div>
+          <p id="tool-count" role="status" aria-live="polite" aria-atomic="true"></p>
+          <p class="finder-workflows">Need a walkthrough? <a href="#product-photos">Prepare product photos</a> · <a href="#supplier-csv">Prepare a supplier CSV</a></p>
+        </form>
+        <p id="tool-fallback">Browse all available tools below.</p>
+        <p class="tool-empty" id="tool-empty" hidden>No tools match these filters. Try fewer words, choose All categories, or select Clear filters.</p>
+        <div class="section-heading">
+          <p class="eyebrow">Live shelf</p>
+          <h2 id="tools-title">Available tools</h2>
+        </div>
+
+        <div class="tool-grid">
+          <article class="tool-card tool-card-text" data-categories="text" data-keywords="text cleanup invisible characters whitespace redact paste formatting">
+            <span class="tool-icon" aria-hidden="true">T</span>
+            <p class="tag">Text cleanup</p>
+            <h3>CleanText Shelf</h3>
+            <p>
+              Remove hidden characters, tidy formatting, clean tracking links, and redact
+              sensitive details before pasting text elsewhere.
+            </p>
+            <a class="button" href="https://cleantext.utilityshelf.site/">Open CleanText</a>
+            <p><a href="/utilities/list-difference/">Compare two cleaned lists</a></p>
+          </article>
+
+          <article class="tool-card tool-card-link" data-categories="links" data-keywords="links url utm tracking trackers clean">
+            <span class="tool-icon" aria-hidden="true">L</span>
+            <p class="tag">Link cleanup</p>
+            <h3>LinkClean Shelf</h3>
+            <p>
+              Remove common tracking parameters from copied URLs while keeping useful
+              destination parameters intact.
+            </p>
+            <a class="button" href="https://linkclean.utilityshelf.site/">Open LinkClean</a>
+            <p><a href="/utilities/utm-link-builder/">Build a campaign link</a></p>
+          </article>
+
+          <article class="tool-card tool-card-meta" data-categories="text" data-keywords="seo web website meta title description canonical robots publishing">
+            <span class="tool-icon" aria-hidden="true">M</span>
+            <p class="tag">Metadata checks</p>
+            <h3>Metadata Checker</h3>
+            <p>
+              Audit titles, descriptions, canonical tags, robots directives, Open Graph
+              cards, and Twitter metadata before publishing a page.
+            </p>
+            <a class="button" href="https://metadata-checker.utilityshelf.site/">Open Metadata Checker</a>
+            <p><a href="/utilities/heading-outline-checker/">Review an HTML heading outline</a></p>
+            <p><a href="https://metadata-checker.utilityshelf.site/#launch-example">Find a leftover noindex tag before launch</a></p>
+          </article>
+
+          <article class="tool-card tool-card-text" data-categories="photos" data-keywords="photo photos image images product ebay sku numbering numbered rename filename mapping files">
+            <span class="tool-icon" aria-hidden="true">F</span>
+            <p class="tag">File preparation</p>
+            <h3>Filename Cleaner</h3>
+            <p>Clean a batch of filenames, preserve extensions, and resolve duplicates before copying the final list.</p>
+            <a class="button" href="https://filename-cleaner.utilityshelf.site/">Clean filenames</a>
+            <p><a href="/utilities/image-dimension-checker/">Check photo dimensions</a></p>
+            <p><a href="https://filename-cleaner.utilityshelf.site/#five-photo-example">Try the five-photo example</a></p>
+          </article>
+
+          <article class="tool-card tool-card-text" data-categories="data" data-keywords="csv spreadsheet supplier inventory headers duplicate rows fields import">
+            <span class="tool-icon" aria-hidden="true">C</span>
+            <p class="tag">Spreadsheet imports</p>
+            <h3>CSV Import Checker</h3>
+            <p>Find duplicate headings, unexpected separators, and rows with missing or extra fields before importing a file.</p>
+            <a class="button" href="https://csv-import-checker.utilityshelf.site/">Check a CSV before importing</a>
+            <p><a href="/utilities/csv-column-mapper/">Map columns to a template</a></p>
+            <p><a href="https://csv-import-checker.utilityshelf.site/#inventory-example">Try the inventory example</a></p>
+          </article>
+
+          <article class="tool-card tool-card-script" data-categories="windows" data-keywords="windows pc computer disk cleanup powershell script safe preview beta recycle bin">
+            <span class="tool-icon" aria-hidden="true">S</span>
+            <p class="tag">Windows Safe cleanup beta</p>
+            <h3>System Care Script Builder</h3>
+            <p>
+              Preview Windows cleanup tasks or opt in to a live Safe PowerShell script. Emptying the Recycle Bin is a separate choice.
+            </p>
+            <a class="button" href="https://system-care-script-builder.utilityshelf.site/">Open preview</a>
+          </article>
+
+          <article class="tool-card tool-card-mail" data-categories="email" data-keywords="email disposable temporary domain address mail">
+            <span class="tool-icon" aria-hidden="true">@</span>
+            <p class="tag">Disposable email checks</p>
+            <h3>TempMail Checker</h3>
+            <p>
+              Check emails, domains, and URLs against a bundled disposable-mail domain
+              list with local allow and block overrides.
+            </p>
+            <a class="button" href="https://tempmail.utilityshelf.site/">Open TempMail Checker</a>
+            <p><a href="/utilities/list-difference/">Compare two domain lists</a></p>
+            <p><a href="https://tempmail.utilityshelf.site/#domain-example">Compare three disposable email check results</a></p>
+          </article>
+        </div>
+      </section>
+
+      <section class="tools" id="companions" aria-labelledby="companions-title">
+        <div class="section-heading">
+          <p class="eyebrow">File, import and publishing tasks</p>
+          <h2 id="companions-title">One-page companion tools</h2>
+          <p>Pick the step you need. Each tool includes a sample you can try before using your own files or text.</p>
+        </div>
+        <div class="tool-grid">
+          <article class="tool-card tool-card-text" data-categories="photos" data-keywords="photo photos image images product ebay picture pictures width height size dimensions resolution">
+            <span class="tool-icon" aria-hidden="true">I</span>
+            <p class="tag">Files and photos</p>
+            <h3>Image Dimension Checker</h3>
+            <p>Find product photos outside a width, height or file-size limit.</p>
+            <a class="button" href="/utilities/image-dimension-checker/">Check photo dimensions</a>
+          </article>
+          <article class="tool-card tool-card-link" data-categories="photos" data-keywords="photo photos image images product ebay picture pictures arrange order reorder grid contact sheet">
+            <span class="tool-icon" aria-hidden="true">P</span>
+            <p class="tag">Files and photos</p>
+            <h3>Image Contact Sheet</h3>
+            <p>Make a labelled image grid to review or share.</p>
+            <a class="button" href="/utilities/image-contact-sheet/">Make a contact sheet</a>
+          </article>
+          <article class="tool-card tool-card-meta" data-categories="photos" data-keywords="file files sha256 sha-256 hash digest verify checksum">
+            <span class="tool-icon" aria-hidden="true">#</span>
+            <p class="tag">Files and photos</p>
+            <h3>File Checksum</h3>
+            <p>Compare a file’s SHA-256 fingerprint with an expected digest.</p>
+            <a class="button" href="/utilities/file-checksum/">Check a file</a>
+          </article>
+          <article class="tool-card tool-card-text" data-categories="data" data-keywords="csv spreadsheet supplier inventory columns map mapping saved template reorder rename">
+            <span class="tool-icon" aria-hidden="true">C</span>
+            <p class="tag">Data imports</p>
+            <h3>CSV Column Mapper</h3>
+            <p>Rename and reorder supplier columns to match an import template.</p>
+            <a class="button" href="/utilities/csv-column-mapper/">Map CSV columns</a>
+          </article>
+          <article class="tool-card tool-card-link" data-categories="data" data-keywords="csv spreadsheet supplier inventory formula injection warnings safety">
+            <span class="tool-icon" aria-hidden="true">ƒ</span>
+            <p class="tag">Data imports</p>
+            <h3>CSV Formula Checker</h3>
+            <p>Find cells a spreadsheet might interpret as formulas.</p>
+            <a class="button" href="/utilities/csv-formula-checker/">Check CSV formulas</a>
+          </article>
+          <article class="tool-card tool-card-meta" data-categories="data text" data-keywords="list compare differences duplicates identifiers text">
+            <span class="tool-icon" aria-hidden="true">≠</span>
+            <p class="tag">Data imports</p>
+            <h3>List Difference</h3>
+            <p>Compare expected and actual lists of identifiers.</p>
+            <a class="button" href="/utilities/list-difference/">Compare lists</a>
+          </article>
+          <article class="tool-card tool-card-text" data-categories="data" data-keywords="json jsonl ndjson newline data records import">
+            <span class="tool-icon" aria-hidden="true">J</span>
+            <p class="tag">Data imports</p>
+            <h3>JSON Lines Import Checker</h3>
+            <p>Locate invalid records in a newline-delimited JSON file.</p>
+            <a class="button" href="/utilities/jsonl-import-checker/">Check JSON Lines</a>
+          </article>
+          <article class="tool-card tool-card-link" data-categories="text" data-keywords="html headings outline seo web publishing accessibility">
+            <span class="tool-icon" aria-hidden="true">H</span>
+            <p class="tag">Publishing</p>
+            <h3>Heading Outline Checker</h3>
+            <p>Review the heading order in an HTML draft.</p>
+            <a class="button" href="/utilities/heading-outline-checker/">Check headings</a>
+          </article>
+          <article class="tool-card tool-card-meta" data-categories="links" data-keywords="links url campaign utm marketing tracking builder">
+            <span class="tool-icon" aria-hidden="true">U</span>
+            <p class="tag">Publishing</p>
+            <h3>UTM Link Builder</h3>
+            <p>Add campaign tags while preserving the destination of a link.</p>
+            <a class="button" href="/utilities/utm-link-builder/">Build a campaign link</a>
+          </article>
+          <article class="tool-card tool-card-text" data-categories="text links" data-keywords="url slug seo web publishing title paths collisions">
+            <span class="tool-icon" aria-hidden="true">S</span>
+            <p class="tag">Publishing</p>
+            <h3>Batch Slug Generator</h3>
+            <p>Plan URL paths for a batch of titles and catch collisions.</p>
+            <a class="button" href="/utilities/slug-generator/">Generate URL slugs</a>
+          </article>
+        </div>
+      </section>
+
       <section class="photo-workflow" id="product-photos" aria-labelledby="photo-workflow-title">
         <p class="eyebrow">For online sellers</p>
         <h2 id="photo-workflow-title">Prepare product photos</h2>
@@ -104,175 +295,6 @@
         </ol>
         <p class="workflow-note">Files stay in your browser. Choose the file separately in each tool. After making changes, recheck the final export's structure and your destination's required fields.</p>
         <a class="button" href="/guides/prepare-supplier-csv-for-import">Follow the supplier CSV walkthrough</a>
-      </section>
-
-      <section class="tools" id="tools" aria-labelledby="tools-title">
-        <div class="section-heading">
-          <p class="eyebrow">Live shelf</p>
-          <h2 id="tools-title">Available tools</h2>
-        </div>
-
-        <div class="tool-grid">
-          <article class="tool-card tool-card-text">
-            <span class="tool-icon" aria-hidden="true">T</span>
-            <p class="tag">Text cleanup</p>
-            <h3>CleanText Shelf</h3>
-            <p>
-              Remove hidden characters, tidy formatting, clean tracking links, and redact
-              sensitive details before pasting text elsewhere.
-            </p>
-            <a class="button" href="https://cleantext.utilityshelf.site/">Open CleanText</a>
-            <p><a href="/utilities/list-difference/">Compare two cleaned lists</a></p>
-          </article>
-
-          <article class="tool-card tool-card-link">
-            <span class="tool-icon" aria-hidden="true">L</span>
-            <p class="tag">Link cleanup</p>
-            <h3>LinkClean Shelf</h3>
-            <p>
-              Remove common tracking parameters from copied URLs while keeping useful
-              destination parameters intact.
-            </p>
-            <a class="button" href="https://linkclean.utilityshelf.site/">Open LinkClean</a>
-            <p><a href="/utilities/utm-link-builder/">Build a campaign link</a></p>
-          </article>
-
-          <article class="tool-card tool-card-meta">
-            <span class="tool-icon" aria-hidden="true">M</span>
-            <p class="tag">Metadata checks</p>
-            <h3>Metadata Checker</h3>
-            <p>
-              Audit titles, descriptions, canonical tags, robots directives, Open Graph
-              cards, and Twitter metadata before publishing a page.
-            </p>
-            <a class="button" href="https://metadata-checker.utilityshelf.site/">Open Metadata Checker</a>
-            <p><a href="/utilities/heading-outline-checker/">Review an HTML heading outline</a></p>
-            <p><a href="https://metadata-checker.utilityshelf.site/#launch-example">Find a leftover noindex tag before launch</a></p>
-          </article>
-
-          <article class="tool-card tool-card-text">
-            <span class="tool-icon" aria-hidden="true">F</span>
-            <p class="tag">File preparation</p>
-            <h3>Filename Cleaner</h3>
-            <p>Clean a batch of filenames, preserve extensions, and resolve duplicates before copying the final list.</p>
-            <a class="button" href="https://filename-cleaner.utilityshelf.site/">Clean filenames</a>
-            <p><a href="/utilities/image-dimension-checker/">Check photo dimensions</a></p>
-            <p><a href="https://filename-cleaner.utilityshelf.site/#five-photo-example">Try the five-photo example</a></p>
-          </article>
-
-          <article class="tool-card tool-card-text">
-            <span class="tool-icon" aria-hidden="true">C</span>
-            <p class="tag">Spreadsheet imports</p>
-            <h3>CSV Import Checker</h3>
-            <p>Find duplicate headings, unexpected separators, and rows with missing or extra fields before importing a file.</p>
-            <a class="button" href="https://csv-import-checker.utilityshelf.site/">Check a CSV before importing</a>
-            <p><a href="/utilities/csv-column-mapper/">Map columns to a template</a></p>
-            <p><a href="https://csv-import-checker.utilityshelf.site/#inventory-example">Try the inventory example</a></p>
-          </article>
-
-          <article class="tool-card tool-card-script">
-            <span class="tool-icon" aria-hidden="true">S</span>
-            <p class="tag">Windows Safe cleanup beta</p>
-            <h3>System Care Script Builder</h3>
-            <p>
-              Preview Windows cleanup tasks or opt in to a live Safe PowerShell script. Emptying the Recycle Bin is a separate choice.
-            </p>
-            <a class="button" href="https://system-care-script-builder.utilityshelf.site/">Open preview</a>
-          </article>
-
-          <article class="tool-card tool-card-mail">
-            <span class="tool-icon" aria-hidden="true">@</span>
-            <p class="tag">Disposable email checks</p>
-            <h3>TempMail Checker</h3>
-            <p>
-              Check emails, domains, and URLs against a bundled disposable-mail domain
-              list with local allow and block overrides.
-            </p>
-            <a class="button" href="https://tempmail.utilityshelf.site/">Open TempMail Checker</a>
-            <p><a href="/utilities/list-difference/">Compare two domain lists</a></p>
-            <p><a href="https://tempmail.utilityshelf.site/#domain-example">Compare three disposable email check results</a></p>
-          </article>
-        </div>
-      </section>
-
-      <section class="tools" id="companions" aria-labelledby="companions-title">
-        <div class="section-heading">
-          <p class="eyebrow">File, import and publishing tasks</p>
-          <h2 id="companions-title">One-page companion tools</h2>
-          <p>Pick the step you need. Each tool includes a sample you can try before using your own files or text.</p>
-        </div>
-        <div class="tool-grid">
-          <article class="tool-card tool-card-text">
-            <span class="tool-icon" aria-hidden="true">I</span>
-            <p class="tag">Files and photos</p>
-            <h3>Image Dimension Checker</h3>
-            <p>Find product photos outside a width, height or file-size limit.</p>
-            <a class="button" href="/utilities/image-dimension-checker/">Check photo dimensions</a>
-          </article>
-          <article class="tool-card tool-card-link">
-            <span class="tool-icon" aria-hidden="true">P</span>
-            <p class="tag">Files and photos</p>
-            <h3>Image Contact Sheet</h3>
-            <p>Make a labelled image grid to review or share.</p>
-            <a class="button" href="/utilities/image-contact-sheet/">Make a contact sheet</a>
-          </article>
-          <article class="tool-card tool-card-meta">
-            <span class="tool-icon" aria-hidden="true">#</span>
-            <p class="tag">Files and photos</p>
-            <h3>File Checksum</h3>
-            <p>Compare a file’s SHA-256 fingerprint with an expected digest.</p>
-            <a class="button" href="/utilities/file-checksum/">Check a file</a>
-          </article>
-          <article class="tool-card tool-card-text">
-            <span class="tool-icon" aria-hidden="true">C</span>
-            <p class="tag">Data imports</p>
-            <h3>CSV Column Mapper</h3>
-            <p>Rename and reorder supplier columns to match an import template.</p>
-            <a class="button" href="/utilities/csv-column-mapper/">Map CSV columns</a>
-          </article>
-          <article class="tool-card tool-card-link">
-            <span class="tool-icon" aria-hidden="true">ƒ</span>
-            <p class="tag">Data imports</p>
-            <h3>CSV Formula Checker</h3>
-            <p>Find cells a spreadsheet might interpret as formulas.</p>
-            <a class="button" href="/utilities/csv-formula-checker/">Check CSV formulas</a>
-          </article>
-          <article class="tool-card tool-card-meta">
-            <span class="tool-icon" aria-hidden="true">≠</span>
-            <p class="tag">Data imports</p>
-            <h3>List Difference</h3>
-            <p>Compare expected and actual lists of identifiers.</p>
-            <a class="button" href="/utilities/list-difference/">Compare lists</a>
-          </article>
-          <article class="tool-card tool-card-text">
-            <span class="tool-icon" aria-hidden="true">J</span>
-            <p class="tag">Data imports</p>
-            <h3>JSON Lines Import Checker</h3>
-            <p>Locate invalid records in a newline-delimited JSON file.</p>
-            <a class="button" href="/utilities/jsonl-import-checker/">Check JSON Lines</a>
-          </article>
-          <article class="tool-card tool-card-link">
-            <span class="tool-icon" aria-hidden="true">H</span>
-            <p class="tag">Publishing</p>
-            <h3>Heading Outline Checker</h3>
-            <p>Review the heading order in an HTML draft.</p>
-            <a class="button" href="/utilities/heading-outline-checker/">Check headings</a>
-          </article>
-          <article class="tool-card tool-card-meta">
-            <span class="tool-icon" aria-hidden="true">U</span>
-            <p class="tag">Publishing</p>
-            <h3>UTM Link Builder</h3>
-            <p>Add campaign tags while preserving the destination of a link.</p>
-            <a class="button" href="/utilities/utm-link-builder/">Build a campaign link</a>
-          </article>
-          <article class="tool-card tool-card-text">
-            <span class="tool-icon" aria-hidden="true">S</span>
-            <p class="tag">Publishing</p>
-            <h3>Batch Slug Generator</h3>
-            <p>Plan URL paths for a batch of titles and catch collisions.</p>
-            <a class="button" href="/utilities/slug-generator/">Generate URL slugs</a>
-          </article>
-        </div>
       </section>
 
       <section class="guide-band" aria-labelledby="guide-band-title">
