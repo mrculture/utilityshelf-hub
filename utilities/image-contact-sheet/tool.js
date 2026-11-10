@@ -35,8 +35,23 @@ const download = byId('download');
 const names = byId('names');
 let photos = [];
 let errors = [];
+let removed = null;
+let replacementTarget = null;
+let replacementRevision = 0;
 let renderVersion = 0;
 const tileWidth = 300, tileHeight = 232;
+
+function makePhoto(file, image) {
+  const thumb = document.createElement('canvas');
+  thumb.width = tileWidth - 16; thumb.height = tileHeight - 48;
+  const ctx = thumb.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, thumb.width, thumb.height);
+  const zoom = Math.min(thumb.width / image.width, thumb.height / image.height);
+  const width = image.width * zoom, height = image.height * zoom;
+  ctx.drawImage(image, (thumb.width - width) / 2, (thumb.height - height) / 2, width, height);
+  return { name: file.name, size: file.size, thumb };
+}
 
 function shorten(ctx, name, width) {
   if (ctx.measureText(name).width <= width) return name;
@@ -57,7 +72,12 @@ function render() {
   byId('downloadNames').disabled = !photos.length || multilineName;
   byId('selectNames').disabled = multilineName;
   byId('namesCopyStatus').textContent = multilineName ? 'A filename contains a line break or control character. Rename that file on your device and choose the photos again before copying or downloading a one-name-per-line list.' : '';
-  if (!photos.length) return;
+  byId('undoRemoval').disabled = !removed;
+  byId('undoHint').textContent = removed ? 'Undo restores ' + removed.photo.name + ' to position ' + (Math.min(removed.index, photos.length) + 1) + '. Only the most recent removal can be undone.' : '';
+  if (!photos.length) {
+    status.textContent = 'No photos on sheet. Choose photos' + (removed ? ' or undo the last removal.' : '.');
+    return;
+  }
   const cols = Math.min(Number(byId('columns').value), photos.length);
   sheet.width = cols * tileWidth;
   sheet.height = Math.ceil(photos.length / cols) * tileHeight;
@@ -97,6 +117,31 @@ function render() {
       });
       controls.append(button);
     }
+    for (const action of ['Replace photo', 'Remove photo']) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = action;
+      button.setAttribute('aria-label', action + ': photo ' + (index + 1) + ', ' + photo.name);
+      button.addEventListener('click', () => {
+        if (action === 'Replace photo') {
+          replacementRevision++;
+          replacementTarget = photo;
+          byId('editStatus').textContent = 'Choose a replacement for ' + photo.name + '. Cancelling keeps the existing photo.';
+          byId('replacementFile').value = '';
+          byId('replacementFile').click();
+          return;
+        }
+        const position = photos.indexOf(photo);
+        if (position < 0) return;
+        photos.splice(position, 1);
+        removed = { photo, index: position };
+        if (replacementTarget === photo) { replacementTarget = null; replacementRevision++; }
+        render();
+        byId('editStatus').textContent = 'Removed ' + photo.name + ' from the sheet. The original file is unchanged.';
+        byId('undoRemoval').focus();
+      });
+      controls.append(button);
+    }
     item.append(controls);
     names.append(item);
   });
@@ -106,6 +151,7 @@ function render() {
 
 async function load(files, id, source = 'custom') {
   inputSource = source;
+  resetEdits();
   photos = [];
   errors = [];
   render();
@@ -123,15 +169,7 @@ async function load(files, id, source = 'custom') {
     try {
       const image = await openPhoto(file);
       try {
-        const thumb = document.createElement('canvas');
-        thumb.width = tileWidth - 16; thumb.height = tileHeight - 48;
-        const ctx = thumb.getContext('2d');
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(0, 0, thumb.width, thumb.height);
-        const zoom = Math.min(thumb.width / image.width, thumb.height / image.height);
-        const width = image.width * zoom, height = image.height * zoom;
-        ctx.drawImage(image, (thumb.width - width) / 2, (thumb.height - height) / 2, width, height);
-        next.push({ name: file.name, thumb });
+        next.push(makePhoto(file, image));
       } finally { image.close(); }
     } catch { skipped.push(file.name); }
     if (id !== generation) return;
@@ -141,6 +179,61 @@ async function load(files, id, source = 'custom') {
   render();
   if (!photos.length) status.textContent = 'No readable photos. Check the file type and size for ' + skipped.join(', ') + '.';
 }
+function resetEdits() {
+  removed = null;
+  replacementTarget = null;
+  replacementRevision++;
+  byId('replacementFile').value = '';
+  byId('editStatus').textContent = '';
+}
+byId('undoRemoval').addEventListener('click', () => {
+  if (!removed) return;
+  if (photos.length >= 30 || photos.reduce((sum, photo) => sum + photo.size, removed.photo.size) > 100000000) {
+    byId('editStatus').textContent = 'Cannot undo: restoring this photo would exceed the 30-photo or 100 MB combined limit. Your current sheet is unchanged.';
+    return;
+  }
+  const { photo, index } = removed;
+  const position = Math.min(index, photos.length);
+  photos.splice(position, 0, photo);
+  removed = null;
+  render();
+  byId('editStatus').textContent = 'Restored ' + photo.name + ' to position ' + (position + 1) + '.';
+  names.children[position].querySelector('button:not(:disabled)')?.focus();
+});
+byId('replacementFile').addEventListener('cancel', () => {
+  replacementTarget = null;
+  replacementRevision++;
+  byId('editStatus').textContent = 'Replacement cancelled. The sheet is unchanged.';
+});
+byId('replacementFile').addEventListener('change', async event => {
+  const file = event.target.files[0];
+  const target = replacementTarget;
+  if (!file || !target) return;
+  const revision = ++replacementRevision;
+  const batch = generation;
+  const current = () => batch === generation && revision === replacementRevision && photos.includes(target);
+  byId('editStatus').textContent = 'Reading replacement for ' + target.name + '…';
+  try {
+    if (photos.reduce((sum, photo) => sum + (photo === target ? 0 : photo.size), file.size) > 100000000)
+      throw new Error('Keep the combined photo size at or below 100 MB');
+    const image = await openPhoto(file);
+    let replacement;
+    try { replacement = makePhoto(file, image); } finally { image.close(); }
+    if (!current()) return;
+    if (photos.reduce((sum, photo) => sum + (photo === target ? 0 : photo.size), file.size) > 100000000)
+      throw new Error('Keep the combined photo size at or below 100 MB');
+    const position = photos.indexOf(target);
+    photos[position] = replacement;
+    inputSource = 'custom';
+    replacementTarget = null;
+    render();
+    byId('editStatus').textContent = 'Replaced ' + target.name + ' with ' + file.name + ' at position ' + (position + 1) + '. Check the replacement in Image Dimension Checker before using it in your listing.';
+    names.children[position].querySelector('button:not(:disabled)')?.focus();
+  } catch (error) {
+    if (current()) byId('editStatus').textContent = 'Replacement failed. The existing photo and order are unchanged. ' + (error.message || 'Could not read this photo') + '.';
+  }
+});
+
 input.addEventListener('change', () => load(Array.from(input.files), ++generation));
 byId('downloadNames').addEventListener('click', () => {
   if (byId('downloadNames').disabled || !photos.length) return;
@@ -175,6 +268,7 @@ byId('copyNames').addEventListener('click', async () => {
 byId('columns').addEventListener('change', render);
 byId('demo').addEventListener('click', async () => {
   const id = ++generation;
+  resetEdits();
   input.value = '';
   photos = [];
   errors = [];
