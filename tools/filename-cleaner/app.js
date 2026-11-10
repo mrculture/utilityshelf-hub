@@ -5,8 +5,30 @@
     let batch = [];
     let inputSource = 'custom', readyTimer;
     const recorded = new Set();
+    const usageTestMode = new URLSearchParams(location.search).has('test-mode');
+    const releaseTestMode = new URLSearchParams(location.search).has('release-check');
+    if (usageTestMode) {
+      const notice = document.createElement('p');
+      notice.id = 'testModeNotice'; notice.setAttribute('role', 'status');
+      notice.textContent = 'Test mode: action counts and page-view tracking are off for this page.';
+      document.querySelector('h1').after(notice);
+      for (const link of document.querySelectorAll('a[href]')) {
+        const destination = new URL(link.href);
+        if ((destination.origin === 'https://filename-cleaner.utilityshelf.site' && destination.pathname === '/') ||
+            (destination.origin === 'https://utilityshelf.site' && ['/utilities/image-contact-sheet/', '/utilities/image-dimension-checker/'].includes(destination.pathname))) {
+          destination.searchParams.set('test-mode', '1'); link.href = destination.href;
+        }
+      }
+    }
+    if (!usageTestMode && !releaseTestMode && !navigator.webdriver) {
+      const beacon = document.createElement('script');
+      beacon.type = 'module'; beacon.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+      beacon.dataset.cfBeacon = JSON.stringify({token:'104d69dafb54484bbb4e18e34d50c835'});
+      document.head.append(beacon);
+    }
+
     // Only fixed categories leave the browser. Never pass input values to this function.
-    const trackingAllowed = () => byId('usage').checked && navigator.doNotTrack !== '1' && !navigator.globalPrivacyControl;
+    const trackingAllowed = () => !usageTestMode && byId('usage').checked && navigator.doNotTrack !== '1' && !navigator.globalPrivacyControl;
     if (!trackingAllowed()) { byId('usage').checked = false; byId('usage').disabled = true; }
     function track(event, eventMode = mode.value, source = inputSource) {
       if (!trackingAllowed() || location.hostname !== 'filename-cleaner.utilityshelf.site' || navigator.webdriver || new URLSearchParams(location.search).has('release-check')) return;

@@ -4,7 +4,7 @@ const path=require('node:path');
 const root=path.resolve(__dirname,'../../../tools/filename-cleaner');
 const origin='https://filename-cleaner.utilityshelf.site';
 
-async function openTool(page,{tracking=false,clipboardFails=false,dnt=false}={}) {
+async function openTool(page,{tracking=false,clipboardFails=false,dnt=false,testMode=false}={}) {
  const events=[];
  await page.addInitScript(({tracking,clipboardFails,dnt})=>{
   Object.defineProperty(navigator,'webdriver',{value:!tracking});
@@ -19,7 +19,7 @@ async function openTool(page,{tracking=false,clipboardFails=false,dnt=false}={})
   if(!['index.html','app.js'].includes(file))return route.fulfill({status:404});
   return route.fulfill({body:fs.readFileSync(path.join(root,file)),contentType:file.endsWith('.js')?'text/javascript':'text/html'});
  });
- await page.goto(origin);
+ await page.goto(origin+(testMode?'/?test-mode=1':''));
  return events;
 }
 
@@ -173,4 +173,20 @@ test('mapping downloads track started exports only, once per mode/source and res
  await page.locator('#downloadMapping').click();
  await expect(page.locator('#mappingStatus')).toContainText('could not start');
  expect(events.filter(e=>e.event==='mapping_download').length).toBe(1);
+});
+
+
+test('owner test mode suppresses filename events and beacon while downloads still work',async({page})=>{
+ const requests=[];page.on('request',r=>requests.push(r.url()));
+ const events=await openTool(page,{tracking:true,testMode:true});
+ await expect(page.locator('#testModeNotice')).toBeVisible();
+ await expect(page.locator('#usage')).toBeDisabled();
+ await page.locator('#names').fill('Owner photo.jpg');
+ await page.locator('#mode').selectOption('numbered');
+ await page.locator('#copy').click();
+ const pending=page.waitForEvent('download');await page.locator('#downloadMapping').click();await pending;
+ await page.waitForTimeout(1700);
+ expect(events).toEqual([]);
+ expect(requests.filter(url=>url.includes('cloudflareinsights'))).toEqual([]);
+ await expect(page.getByRole('link',{name:'Next: check your product photos’ dimensions and file sizes'})).toHaveAttribute('href',/test-mode=1/);
 });

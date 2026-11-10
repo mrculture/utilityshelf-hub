@@ -72,13 +72,8 @@ Sample activity must be excluded when assessing custom use. Tests intercept all
 collector calls; any explicitly performed live sample verification stays sample.
 Analytics failures do not block the tools. No cookies or persistent IDs are used.
 
-Example seven-day custom-use query (sampling-adjusted):
-
-```sql
-SELECT index1 AS tool, blob1 AS action, blob2 AS mode,
-       SUM(_sample_interval * double1) AS events
-FROM utilityshelf_tool_usage
-WHERE timestamp >= NOW() - INTERVAL '7' DAY AND blob3 = 'custom'
-GROUP BY tool, action, mode
-ORDER BY events DESC
-```
+Use the maintained [filtered usage report](.github/analytics/visitor-usage.sql)
+and [filtered total](.github/analytics/visitor-total.sql), not a bare custom-source
+filter. They exclude samples and the six exact known owner-test event signatures.
+See [report definitions and test links](.github/release/USAGE.md). Raw events remain
+available for diagnosis. Future owner tests must use `?test-mode=1` on these tools.

@@ -1,0 +1,47 @@
+{
+  "reason": "Owner six-photo verification on 2026-11-10; not visitor adoption",
+  "events": [
+    {
+      "timestamp": "2026-11-10 14:48:04",
+      "index1": "image-contact-sheet",
+      "blob1": "sheet_download",
+      "blob2": "sheet",
+      "blob3": "custom"
+    },
+    {
+      "timestamp": "2026-11-10 14:48:03",
+      "index1": "filename-cleaner",
+      "blob1": "mapping_download",
+      "blob2": "numbered",
+      "blob3": "custom"
+    },
+    {
+      "timestamp": "2026-11-10 14:47:59",
+      "index1": "filename-cleaner",
+      "blob1": "ready",
+      "blob2": "numbered",
+      "blob3": "custom"
+    },
+    {
+      "timestamp": "2026-11-10 14:47:54",
+      "index1": "image-contact-sheet",
+      "blob1": "reorder",
+      "blob2": "sheet",
+      "blob3": "custom"
+    },
+    {
+      "timestamp": "2026-11-10 14:47:39",
+      "index1": "image-dimension-checker",
+      "blob1": "ebay_preset",
+      "blob2": "ebay",
+      "blob3": "custom"
+    },
+    {
+      "timestamp": "2026-11-10 14:47:39",
+      "index1": "image-dimension-checker",
+      "blob1": "check_complete",
+      "blob2": "ebay",
+      "blob3": "custom"
+    }
+  ]
+}

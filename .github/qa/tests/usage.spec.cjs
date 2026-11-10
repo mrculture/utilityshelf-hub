@@ -22,7 +22,7 @@ async function open(page,tool,options={}) {
   const file=path.join(root,url.pathname.endsWith('/')?url.pathname+'index.html':url.pathname);
   return route.fulfill({body:fs.readFileSync(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html'});
  });
- await page.goto(origin+'/utilities/'+tool+'/'+(options.release?'?release-check=1':''));
+ await page.goto(origin+'/utilities/'+tool+'/'+(options.release?'?release-check=1':options.testMode?'?test-mode=1':''));
  return events;
 }
 async function customPhotos(page,count=2){
@@ -32,7 +32,9 @@ async function customPhotos(page,count=2){
 async function download(page){const pending=page.waitForEvent('download');await page.locator('#download').click();await pending;}
 
 test('contact events follow successful reorder and export, deduplicate, separate sample/custom and omit filenames',async({page})=>{
+ const requests=[];page.on('request',r=>requests.push(r.url()));
  const events=await open(page,'image-contact-sheet');
+ expect(requests.some(url=>url.includes('static.cloudflareinsights.com/beacon.min.js'))).toBe(true);
  await page.locator('#demo').click();
  await expect(page.locator('#names li')).toHaveCount(3,{timeout:15000});
  expect(events).toEqual([]);
@@ -104,4 +106,25 @@ test('failed and stale PNG exports do not count, and unavailable tracking does n
  await page.locator('#names li').first().getByRole('button',{name:/Move later/}).click();
  await expect(page.locator('#names li > span')).toHaveText(['PRIVATE-SKU-1.png','PRIVATE-SKU-0.png']);
  await download(page);
+});
+
+
+for(const tool of ['image-contact-sheet','image-dimension-checker'])test('owner test mode suppresses actions and beacon for '+tool,async({page})=>{
+ const requests=[];page.on('request',r=>requests.push(r.url()));
+ const events=await open(page,tool,{testMode:true});
+ await expect(page.locator('#testModeNotice')).toBeVisible();
+ await expect(page.locator('#usage')).toBeDisabled();
+ await customPhotos(page);
+ if(tool==='image-contact-sheet') {
+  await expect(page.locator('#names li')).toHaveCount(2);
+  await page.locator('#names li').first().getByRole('button',{name:/Move later/}).click();
+  await download(page);
+ } else {
+  await page.locator('#preset').selectOption('ebay');
+  await expect(page.locator('#status')).toContainText('0 of 2');
+ }
+ await page.waitForTimeout(800);
+ expect(events).toEqual([]);expect(requests.filter(url=>url.includes('cloudflareinsights'))).toEqual([]);
+ const other=tool==='image-contact-sheet'?'check the original image dimensions':'make a contact sheet';
+ await expect(page.getByRole('link',{name:other})).toHaveAttribute('href',/test-mode=1/);
 });
