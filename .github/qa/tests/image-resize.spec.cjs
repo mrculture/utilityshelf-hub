@@ -89,3 +89,13 @@ test('a failing second file cannot expose the successfully processed first file'
  await page.locator('#files').setInputFiles([await photo(page,'good.png',200,200),await photo(page,'small.png',50,50)]);
  await page.locator('#prepareResize').click();await expect(page.locator('#resizeStatus')).toContainText('small.png');await expect(page.locator('#downloadResized')).toBeDisabled();await expect(page.locator('#resizeResults')).toBeEmpty();
 });
+
+
+test('checked previews render under the production Content Security Policy',async({page})=>{
+ const policy=fs.readFileSync(require('node:path').resolve(__dirname,'../../../_headers'),'utf8').match(/Content-Security-Policy: (.+)/)[1];
+ await page.route('**/utilities/image-dimension-checker/?test-mode=1',async route=>{const response=await route.fetch();await route.fulfill({response,headers:{...response.headers(),'Content-Security-Policy':policy}});});
+ await page.reload();await page.locator('#width').fill('100');await page.locator('#height').fill('100');
+ await page.locator('#files').setInputFiles(await photo(page,'preview.png',800,600));await page.locator('#maxEdge').fill('400');await ready(page);
+ const preview=page.locator('#resizeResults img');await preview.scrollIntoViewIfNeeded();
+ await expect.poll(()=>preview.evaluate(img=>img.complete&&img.naturalWidth===400&&img.naturalHeight===300)).toBe(true);
+});
