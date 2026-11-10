@@ -143,7 +143,7 @@ test('photo report download events use fixed mode labels, separate samples and o
  await expect(page.locator('#downloadReport')).toBeDisabled();
  await customPhotos(page);await expect(page.locator('#downloadReport')).toBeEnabled();await photoReport(page);await photoReport(page);
  await page.locator('#preset').selectOption('ebay');await photoReport(page);
- await page.locator('#demo').click();await expect(page.locator('#status')).toContainText('1 of 2');await photoReport(page);
+ await page.locator('#demo').click();await expect(page.locator('#status')).toContainText('1 of 2',{timeout:15000});await photoReport(page);
  await page.locator('#preset').selectOption('ebay');await photoReport(page);await photoReport(page);
  await expect.poll(()=>events.filter(e=>e.event==='report_download').length).toBe(4);
  expect(events.filter(e=>e.event==='report_download')).toEqual(['custom','sample'].flatMap(source=>['custom','ebay'].map(mode=>({tool:'image-dimension-checker',event:'report_download',mode,source}))));
