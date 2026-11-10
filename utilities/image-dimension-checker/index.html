@@ -5,7 +5,7 @@
   <meta name="description" content="Check a batch of product photos against minimum pixel dimensions and a maximum file size. See exactly which photos need attention before publishing.">
   <link rel="canonical" href="https://utilityshelf.site/utilities/image-dimension-checker/">
   <link rel="stylesheet" href="/utilities/shared.css">
-  <script src="./tool.js" defer></script>
+  <script src="./tool.js?v=20261110-ebay" defer></script>
 </head>
 <body>
   <header><a href="/">UtilityShelf</a><nav aria-label="Main"><a href="/#companions">Browse tools</a></nav></header>
@@ -14,6 +14,10 @@
     <h1>Image Dimension Checker</h1>
     <p class="intro">Check a batch of product photos against minimum pixel dimensions and a maximum file size. See exactly which photos need attention before publishing.</p>
     <section class="panel"><h2>Photos to review</h2>
+      <label for="preset">Photo size preset</label>
+      <select id="preset" aria-describedby="presetHelp"><option value="custom">Custom limits</option><option value="ebay">eBay — recommended size</option></select>
+      <p class="hint" id="presetHelp">Choose eBay to fill in its recommended-size check, or enter your own limits below.</p>
+      <p class="hint" id="ebayHelp" hidden>This preset checks for at least 1600 pixels in both dimensions and no more than 12 MB per photo. It checks recommended size, not whether eBay will accept a listing: smaller photos may still be accepted. Rectangular photos are supported; no square crop is required. <a href="https://www.ebay.co.uk/help/listings/default/adding-pictures-listings?id=4148">eBay photo guidance</a> (checked 10 November 2026). Editing a limit switches to Custom limits.</p>
       <div class="controls">
         <div><label for="files">Choose photos</label><input id="files" type="file" accept="image/png,image/jpeg,image/webp" multiple></div>
         <div><label for="width">Minimum width (px)</label><input id="width" type="number" min="1" max="100000" step="1" value="800" required></div>
@@ -24,7 +28,7 @@
       <button id="demo" type="button">Try two example photos</button>
     </section>
     <section class="panel" aria-label="Results"><h2>Image checks</h2><p id="status" role="status">Choose photos or try the example.</p><div class="table-wrap" id="output"></div></section>
-    <section class="panel"><h2>Which photo needs another look?</h2><p>The example checks two generated PNGs against an 800 × 800 pixel minimum. The front view is 1000 × 1000. The detail view is 1000 × 600, so its height falls short by 200 pixels.</p><p>Dimensions describe the decoded image in its display orientation. Passing the size checks says nothing about focus, compression quality or a marketplace's other listing rules.</p><p>Next, <a href="/utilities/image-contact-sheet/">make a contact sheet</a> to review the views together.</p></section>
+    <section class="panel"><h2>Which photo needs another look?</h2><p>The example resets to Custom limits with an 800 × 800 pixel minimum and an 8 MB maximum. The front view is 1000 × 1000. The detail view is 1000 × 600, so its height falls short by 200 pixels. Select the eBay preset to recheck the same photos against the recommended-size target.</p><p>Dimensions describe the decoded image in its display orientation. Passing the size checks says nothing about focus, compression quality or a marketplace's other listing rules.</p><p>Next, <a href="/utilities/image-contact-sheet/">make a contact sheet</a> to review the views together.</p></section>
     <p class="hint">Processing takes place on this device. Files you select stay in your browser.</p>
   </main>
   <footer><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer>

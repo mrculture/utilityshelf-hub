@@ -30,6 +30,20 @@ async function examplePhoto(name, width, height, accent) {
 }
 const output = byId('output');
 let measurements = [];
+const preset = byId('preset');
+
+function showPreset() {
+  byId('ebayHelp').hidden = preset.value !== 'ebay';
+}
+preset.addEventListener('change', () => {
+  if (preset.value === 'ebay') {
+    byId('width').value = 1600;
+    byId('height').value = 1600;
+    byId('size').value = 12;
+  }
+  showPreset();
+  evaluatePhotos();
+});
 
 function evaluatePhotos() {
   output.replaceChildren();
@@ -67,7 +81,8 @@ function evaluatePhotos() {
     }
   }
   output.append(table);
-  status.textContent = passes + ' of ' + measurements.length + ' meet your limits.';
+  status.textContent = passes + ' of ' + measurements.length +
+    (preset.value === 'ebay' ? ' meet the eBay recommended-size preset.' : ' meet your limits.');
 }
 
 async function load(files, id) {
@@ -96,10 +111,16 @@ async function load(files, id) {
   evaluatePhotos();
 }
 input.addEventListener('change', () => load(Array.from(input.files), ++generation));
-for (const id of ['width', 'height', 'size']) byId(id).addEventListener('input', evaluatePhotos);
+for (const id of ['width', 'height', 'size']) byId(id).addEventListener('input', () => {
+  preset.value = 'custom';
+  showPreset();
+  evaluatePhotos();
+});
 byId('demo').addEventListener('click', async () => {
   const id = ++generation;
   input.value = '';
+  preset.value = 'custom';
+  showPreset();
   byId('width').value = 800;
   byId('height').value = 800;
   byId('size').value = 8;
