@@ -527,6 +527,15 @@ h1 {
   padding-left: 20px;
 }
 
+.practice-pack {
+  margin: 24px 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-soft);
+  scroll-margin-top: 110px;
+}
+
 .tool-callout {
   background: var(--ink);
   border-radius: 8px;
