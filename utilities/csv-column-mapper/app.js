@@ -6,6 +6,7 @@ let records = [], labels = [], controls = [], generated = '';
 let inputSource = 'custom';
 let sourceHeaders = [], mappingRevision = 0;
 let mappingReport = '';
+let requiredControls = [];
 const mappingLimit = 64 * 1024;
 const track = event => window.UtilityShelfUsage?.track('csv-column-mapper', event, 'mapped', inputSource);
 
@@ -17,6 +18,8 @@ function clearResult() {
   byId('mappingSummary').textContent = '';
   byId('mappingDetails').replaceChildren();
   byId('omittedColumns').replaceChildren();
+  byId('requiredSummary').textContent = '';
+  byId('requiredFindings').replaceChildren();
   byId('result').hidden = true;
   byId('output').value = '';
 }
@@ -27,6 +30,7 @@ function reset() {
   records = [];
   labels = [];
   controls = [];
+  requiredControls = [];
   byId('mapping').hidden = true;
   byId('choices').replaceChildren();
   clearResult();
@@ -70,7 +74,17 @@ function prepare(sampleColumns) {
         updateSave();
         message.textContent = 'Select Build mapped CSV to apply the revised mapping.';
       });
-      fields.append(label, select);
+      const required = document.createElement('input');
+      required.type = 'checkbox'; required.id = 'required-' + i;
+      const requiredLabel = document.createElement('label');
+      requiredLabel.append(required, document.createTextNode(' Required value for ' + heading));
+      required.addEventListener('change', () => {
+        mappingRevision++;
+        clearResult();
+        message.textContent = 'Select Build mapped CSV to check the revised required fields. CSV values will not be changed.';
+      });
+      requiredControls.push(required);
+      fields.append(label, select, requiredLabel);
       return select;
     });
     byId('choices').append(fields);
@@ -137,7 +151,11 @@ function build() {
   const maxCharacters = 4 * 1024 * 1024;
   const rows = [encodeRow(labels)];
   let length = rows[0].length + 2;
-  for (const { cells } of records) {
+  const requiredIndices = requiredControls.flatMap((control,index) => control.checked ? [index] : []);
+  const requiredCheck = {indices:requiredIndices, count:0, affectedRows:0, findings:[]};
+  const lineBreaks = text => (text.match(/\r\n|\r|\n/g) || []).length;
+  let outputLine = lineBreaks(rows[0]) + 2;
+  for (const [rowIndex, { cells, start:sourceLine }] of records.entries()) {
     const values = mapping.map(index => index === 'empty' ? '' : cells[Number(index)]);
     const minimumLength = values.reduce((size, value) => size + value.length, values.length - 1) + 2;
     // A mapping can duplicate the same long source cell many times. Check before joining it.
@@ -148,16 +166,28 @@ function build() {
     }
     rows.push(encoded);
     length += encoded.length + 2;
+    let rowMissing = false;
+    for (const index of requiredIndices) {
+      if (values[index].trim() !== '') continue;
+      requiredCheck.count++; rowMissing = true;
+      if (requiredCheck.findings.length < 100) requiredCheck.findings.push(
+        'Data row ' + (rowIndex + 1) + ' (CSV record ' + (rowIndex + 2) + '), destination column ' + (index + 1) + ' ' + JSON.stringify(labels[index]) +
+        ': ' + (mapping[index] === 'empty' ? 'empty value inserted by mapping' : values[index] === '' ? 'blank cell' : 'whitespace-only value') +
+        '. Source line ' + sourceLine + '; mapped CSV line ' + outputLine + '.');
+    }
+    if (rowMissing) requiredCheck.affectedRows++;
+    outputLine += lineBreaks(encoded) + 1;
   }
   generated = rows.join('\r\n') + '\r\n';
-  summarizeMapping(mapping, rows.length - 1);
+  summarizeMapping(mapping, rows.length - 1, requiredCheck);
   byId('output').value = rows.slice(0, 6).join('\n');
   byId('result').hidden = false;
   message.textContent = 'Ready to download ' + records.length + ' data rows in ' + labels.length + ' destination columns.';
+  if (requiredCheck.count) message.textContent += ' Required-field issues found: review them before importing. CSV values are unchanged.';
   track('build_complete');
 }
 
-function summarizeMapping(mapping, outputRows) {
+function summarizeMapping(mapping, outputRows, requiredCheck) {
   const used = new Set(mapping.filter(index => index !== 'empty').map(Number));
   const omitted = sourceHeaders.flatMap((name, index) => used.has(index) ? [] : [{name, index}]);
   const emptyCount = mapping.filter(index => index === 'empty').length;
@@ -190,12 +220,31 @@ function summarizeMapping(mapping, outputRows) {
     const li = document.createElement('li'); li.textContent = description; byId('omittedColumns').append(li);
     lines.push(description);
   }
+  lines.push('', ...summarizeRequired(requiredCheck, outputRows));
   lines.push('', 'Scope: This describes the prepared mapped.csv export, not importer acceptance or formula safety.',
     'Counts exclude the header. Inserted blanks count only destinations set to Use empty values; existing blank source cells are not counted.',
     'No cell values are transformed or sanitised. Headers are quoted with escaped control characters. This report contains headings and choices, not product-row contents.',
     'Keep this report with its exact CSV. Rebuild and download both again after any input or mapping change.');
   mappingReport = lines.join('\r\n') + '\r\n';
   byId('downloadReport').disabled = false;
+}
+
+function summarizeRequired(check, outputRows) {
+  let summary;
+  if (!check.indices.length) summary = 'Required fields: Not checked — no destination columns selected.';
+  else if (!outputRows) summary = 'Required fields: Not checked — no data rows to check.';
+  else if (check.count) summary = 'Required fields: Issues found — ' + check.count + ' missing values across ' + check.affectedRows + ' data rows.';
+  else summary = 'Required fields: Passed — no missing values in ' + check.indices.length + ' selected columns across ' + outputRows + ' data rows.';
+  const selected = check.indices.length ? check.indices.map(index => (index + 1) + '. ' + JSON.stringify(labels[index])).join(', ') : 'None.';
+  const scope = 'Selected required destination columns: ' + selected;
+  const limit = check.count > 100 ? 'Showing first 100 of ' + check.count + ' findings. All data rows were checked.' : '';
+  byId('requiredSummary').textContent = summary + ' ' + scope + (limit ? ' ' + limit : '');
+  for (const finding of check.findings) {
+    const item = document.createElement('li'); item.textContent = finding; byId('requiredFindings').append(item);
+  }
+  return [summary, scope, ...(limit ? [limit] : []), ...check.findings,
+    'Data rows exclude the header; CSV records include it. Source and mapped CSV line numbers identify the start of each record, including multiline fields.',
+    'Only presence is checked: empty or whitespace-only values are missing; 0 and 0.00 are present. Values are not trimmed, filled or removed. This does not validate numeric ranges, unique IDs or importer-specific rules.'];
 }
 
 byId('downloadReport').addEventListener('click', () => {

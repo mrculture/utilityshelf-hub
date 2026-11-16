@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/utilities/shared.css">
 
   <script defer src="/utilities/usage.js?v=20261110-csv"></script>
-  <script type="module" src="./app.js?v=20261116-mapping-report"></script>
+  <script type="module" src="./app.js?v=20261116-required-fields"></script>
 </head>
 <body>
   <header><a href="/#companions">UtilityShelf tools</a></header>
@@ -37,12 +37,16 @@
     <section class="panel" id="mapping" hidden>
       <h2>Choose source columns</h2>
       <p>Each destination column needs a selection. Select “Use empty values” only when your importer accepts a blank column. Source columns you leave unused are excluded.</p>
+      <p>Tick <strong>Required value</strong> for each destination column that must contain a value, then build the CSV. Empty and whitespace-only values are flagged; <code>0</code> and <code>0.00</code> count as present. These checks do not change the CSV. Required choices start off and reset when you set up a new mapping, change source or destination text, load a file or try the example. They are not included in saved mapping files; select them again after loading a mapping.</p>
       <div id="choices"></div>
       <div class="actions"><button id="generate" type="button">Build mapped CSV</button><button id="saveMapping" type="button" disabled>Save mapping</button></div>
       <p class="hint">Choose every destination column to save a mapping. Reusable mappings require distinct, nonblank source headers. The downloaded JSON contains headers and column choices only, not data rows. Keep it on your device and review its headings before sharing.</p>
     </section>
     <section class="panel" id="result" hidden>
       <h2>Mapped CSV</h2>
+      <h3>Required-field checks</h3>
+      <p id="requiredSummary" role="status"></p><ul id="requiredFindings" aria-label="Missing required values"></ul>
+      <p class="hint">Review flagged values before importing. Downloads stay available so you can save and correct the mapped file. Data rows exclude the header; CSV records include it. Source and mapped CSV line numbers mark the start of each record, allowing for multiline fields. All rows are checked; up to 100 findings are listed here and in the report. Presence checks do not validate prices, unique IDs or your importer's other rules.</p>
       <h3>Mapping summary</h3>
       <p id="mappingSummary" role="status"></p>
       <div class="table-wrap"><table aria-label="Destination column mapping"><thead><tr><th scope="col">Destination</th><th scope="col">Source</th><th scope="col">Change</th></tr></thead><tbody id="mappingDetails"></tbody></table></div>
@@ -52,12 +56,12 @@
       <textarea id="output" rows="7" readonly spellcheck="false"></textarea>
       <div class="actions"><button id="download" type="button">Download full CSV</button><button id="downloadReport" type="button" disabled>Download mapping report (.txt)</button></div>
       <p id="reportStatus" role="status"></p>
-      <p class="hint">The report records column choices and row counts for this export. It includes headings but no product-row contents; review headings before sharing. It does not certify formula safety or importer acceptance. Changing the source, destination or mapping clears the report and export until you build again.</p>
+      <p class="hint">The report records column choices, row counts and selected required-field results for this export. It includes headings and issue locations but no product-row contents; review headings before sharing. It does not certify formula safety or importer acceptance. Changing the source, destination, mapping or required choices clears the report and export until you build again.</p>
     </section>
     <section>
       <h2>Try a supplier feed</h2>
       <p>The example sends <strong>Stock code</strong> to <strong>SKU</strong>, <strong>Supplier title</strong> to <strong>Title</strong> and <strong>Unit cost</strong> to <strong>Price</strong>. The supplier’s internal note drops out. A code such as <code>0012</code> retains its leading zeros in the file; choose a text column when opening it in a spreadsheet.</p>
-      <p>Paste the exact headings from your destination’s own template. The tool checks field counts and quoting; importer-specific required values still need review. Formula-like input values are preserved. <a href="/utilities/csv-formula-checker/">Check formula prefixes</a> before sharing an export.</p>
+      <p>Paste the exact headings from your destination’s own template. The tool checks field counts, quoting and the presence of values in the destination columns you mark required. Importer-specific rules still need review. Formula-like input values are preserved. <a href="/utilities/csv-formula-checker/">Check formula prefixes</a> before sharing an export.</p>
     </section>
     <section class="panel" aria-labelledby="next-step"><h2 id="next-step">Next: check the mapped file</h2>
       <p>Download the full mapped CSV above. Open that downloaded file in <a href="/utilities/csv-formula-checker/">CSV Formula Checker</a> to review formula-like values, then run <a href="https://csv-import-checker.utilityshelf.site/">CSV Import Checker</a> on the same export before importing it.</p>
