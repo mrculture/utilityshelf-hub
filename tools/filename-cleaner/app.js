@@ -224,22 +224,82 @@
     });
     const photoFiles = byId('photoFiles'), zipButton = byId('downloadZip'), zipStatus = byId('zipStatus');
     let zipRevision = 0;
-    function photoZipIssue() {
+    function photoMatching() {
+      const expected = batch.map(item => item.original);
+      const selected = Array.from(photoFiles.files, file => file.name);
+      const groups = values => {
+        const result = new Map();
+        for (const name of values) {
+          const id = key(name);
+          if (!result.has(id)) result.set(id, []);
+          result.get(id).push(name);
+        }
+        return result;
+      };
+      const expectedGroups = groups(expected), selectedGroups = groups(selected);
+      const missing = [...new Set(expected)].filter(name => !selected.includes(name));
+      const extra = [...new Set(selected)].filter(name => !expected.includes(name));
+      return {
+        missing, extra,
+        repeatedEntries: [...expectedGroups.values()].filter(group => group.length > 1),
+        repeatedFiles: [...selectedGroups.values()].filter(group => group.length > 1),
+        spelling: missing.filter(name => selectedGroups.has(key(name))).map(name => ({
+          expected: name, selected: [...new Set(selectedGroups.get(key(name)))]
+        }))
+      };
+    }
+    function renderPhotoMatching(match) {
+      const details = byId('photoMatchDetails'), output = byId('photoMatchIssues');
+      output.replaceChildren();
+      if (!photoFiles.files.length || !batch.length) { details.hidden = true; return; }
+      const quote = name => JSON.stringify(name);
+      const describeGroup = group => {
+        const counts = new Map();
+        for (const name of group) counts.set(name, (counts.get(name) || 0) + 1);
+        return [...counts].map(([name,count]) => quote(name) + (count > 1 ? ' × ' + count : '')).join(', ');
+      };
+      const sections = [
+        ['Missing photos', 'Select these exact filenames, or update the original list if you replaced or removed a photo.', match.missing.map(quote)],
+        ['Unexpected photos', 'Leave these out of the selection, or update the original list if they are the replacements you want.', match.extra.map(quote)],
+        ['Duplicate or ambiguous list entries', 'Use each original filename once. Names differing only in case or Unicode spelling are also ambiguous.', match.repeatedEntries.map(describeGroup)],
+        ['Duplicate or ambiguous selected files', 'Select only one file for each original name. Rename different photos that share a name before updating the list and selecting them again.', match.repeatedFiles.map(describeGroup)],
+        ['Case or Unicode spelling differences', 'Matching is exact. Correct the original list to the selected spelling, or select the file with the listed name. These also appear as missing and unexpected above.', match.spelling.map(item => 'List: ' + quote(item.expected) + ' — selected: ' + item.selected.map(quote).join(', '))]
+      ];
+      for (const [title, advice, items] of sections) {
+        if (!items.length) continue;
+        const section = document.createElement('section'), heading = document.createElement('h4');
+        heading.textContent = title + ' (' + items.length + ')';
+        const hint = document.createElement('p'); hint.className = 'hint'; hint.textContent = advice;
+        const list = document.createElement('ul');
+        for (const text of items.slice(0,30)) {
+          const item = document.createElement('li'); item.textContent = text; list.append(item);
+        }
+        section.append(heading,hint,list);
+        if (items.length > 30) {
+          const more = document.createElement('p'); more.textContent = 'Showing the first 30 of ' + items.length + '. Split larger batches into at most 30 photos per ZIP.'; section.append(more);
+        }
+        output.append(section);
+      }
+      details.hidden = !output.children.length;
+    }
+    function photoZipIssue(match = photoMatching()) {
       const files = Array.from(photoFiles.files);
       if (byId('downloadMapping').disabled) return 'Finish reviewing a valid filename list first.';
       if (!files.length) return 'Select the original photos that match your reviewed list.';
       if (files.length > 30 || batch.length > 30) return 'Batch too large: ' + Math.max(files.length, batch.length) + ' photos. Choose no more than 30 photos per ZIP. No ZIP was created; split the batch and try again.';
       if (files.some(file => !file.size || file.size > 32000000)) return 'Each photo must contain data and be no larger than 32 MB.';
       if (files.reduce((total,file) => total + file.size, 0) > 100000000) return 'Keep the combined photo size at or below 100 MB.';
-      if (new Set(batch.map(item => key(item.original))).size !== batch.length || new Set(files.map(file => key(file.name))).size !== files.length) return 'Ambiguous original filenames: use one uniquely named file for each list entry, including case and Unicode differences.';
-      if (files.length !== batch.length || batch.some(item => !files.some(file => file.name === item.original))) return 'Files do not match the list. Select exactly one photo for every original filename, with the same spelling and case; remove missing or extra files.';
+      if (match.repeatedEntries.length || match.repeatedFiles.length) return 'Ambiguous original filenames. Resolve the duplicate or ambiguous names shown below before downloading.';
+      if (match.missing.length || match.extra.length) return 'Files do not match the list: ' + match.missing.length + ' missing, ' + match.extra.length + ' unexpected. Check the filenames below; spelling and case must match exactly.';
       if (batch.some(item => !/\.(jpe?g|png|webp)$/i.test(item.original))) return 'ZIP copies support JPEG, PNG and WebP photos only.';
       if (typeof window.UtilityShelfPhotoZip !== 'function') return 'ZIP support could not load. Reload the page and try again.';
       return '';
     }
     function refreshPhotoZip() {
       zipRevision++;
-      const issue = photoZipIssue();
+      const match = photoMatching();
+      renderPhotoMatching(match);
+      const issue = photoZipIssue(match);
       zipButton.disabled = Boolean(issue);
       zipStatus.textContent = issue || batch.length + ' photos matched by original filename. Ready to download renamed copies and the mapping.';
     }

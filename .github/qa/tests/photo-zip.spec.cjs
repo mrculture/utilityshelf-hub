@@ -90,3 +90,81 @@ for(const setting of ['visitor','testMode','optout','dnt','gpc'])test('ZIP downl
  const zipEvents=events.filter(e=>e.event==='zip_download');expect(zipEvents).toEqual(setting==='visitor'?[{event:'zip_download',mode:'numbered',source:'custom'}]:[]);
  expect(JSON.stringify(zipEvents)).not.toMatch(/PRIVATE|prod1|filename|bytes/);
 });
+
+
+test('matching checklist names missing, extra and duplicate selections together and clears when resolved',async({page})=>{
+ const events=await open(page);
+ const a=await photo(page,'front.png'),b=await photo(page,'detail.png'),extra=await photo(page,'old-packaging.png');
+ await prepare(page,[a,b]);await expect(page.locator('#photoMatchDetails')).toBeHidden();
+ await page.locator('#photoFiles').setInputFiles([a,a,extra]);
+ await expect(page.locator('#downloadZip')).toBeDisabled();
+ const details=page.locator('#photoMatchDetails');
+ await expect(details).toBeVisible();
+ await expect(details.getByRole('heading',{name:'Missing photos (1)',exact:true})).toBeVisible();
+ await expect(details.getByRole('heading',{name:'Unexpected photos (1)',exact:true})).toBeVisible();
+ await expect(details.getByRole('heading',{name:'Duplicate or ambiguous selected files (1)',exact:true})).toBeVisible();
+ await expect(details.locator('li')).toHaveText(['"detail.png"','"old-packaging.png"','"front.png" × 2']);
+ await page.locator('#names').fill('front.png\nfront.png\ndetail.png');
+ await expect(details.getByRole('heading',{name:'Duplicate or ambiguous list entries (1)',exact:true})).toBeVisible();
+ await page.locator('#names').fill('front.png\ndetail.png');
+ await page.locator('#photoFiles').setInputFiles([b,a]);
+ await expect(page.locator('#downloadZip')).toBeEnabled();await expect(details).toBeHidden();await expect(page.locator('#photoMatchIssues')).toBeEmpty();
+ await page.locator('#photoFiles').setInputFiles([a]);await expect(details).toBeVisible();
+ await page.locator('#clearPhotos').click();await expect(details).toBeHidden();await expect(page.locator('#downloadZip')).toBeDisabled();
+ expect(events).toEqual([]);
+});
+
+test('case and Unicode differences are explained without silently choosing a file',async({page})=>{
+ await open(page);
+ for(const [listed,selected] of [['Front.PNG','front.png'],['café.png','cafe\u0301.png']]){
+  const expected=await photo(page,listed),actual={...expected,name:selected};
+  await prepare(page,[expected]);await page.locator('#photoFiles').setInputFiles(actual);
+  await expect(page.locator('#zipStatus')).toContainText('1 missing, 1 unexpected');
+  await expect(page.locator('#downloadZip')).toBeDisabled();
+  await expect(page.locator('#photoMatchDetails').getByRole('heading',{name:'Case or Unicode spelling differences (1)',exact:true})).toBeVisible();
+  await expect(page.locator('#photoMatchIssues')).toContainText('List: '+JSON.stringify(listed)+' — selected: '+JSON.stringify(selected));
+  await page.locator('#names').fill(selected);
+  await expect(page.locator('#photoMatchDetails')).toBeHidden();await expect(page.locator('#downloadZip')).toBeEnabled();
+  const archive=inspect(await download(page));expect(archive.mapping).toContain('Original: '+selected);
+  expect(archive.hashes[archive.names[0]]).toBe(crypto.createHash('sha256').update(actual.buffer).digest('hex'));
+ }
+ const a=await photo(page,'a.png');
+ await prepare(page,[a,{...a,name:'A.png'}]);
+ await expect(page.locator('#photoMatchIssues')).toContainText('"a.png", "A.png"');
+ await expect(page.locator('#photoMatchDetails').getByRole('heading',{name:'Duplicate or ambiguous list entries (1)',exact:true})).toBeVisible();
+ await expect(page.locator('#photoMatchDetails').getByRole('heading',{name:'Duplicate or ambiguous selected files (1)',exact:true})).toBeVisible();
+ await expect(page.locator('#downloadZip')).toBeDisabled();
+});
+
+test('replacement list identifies old and missing photos; corrected five-photo ZIP keeps order and exact replacement bytes',async({page})=>{
+ const events=await open(page);
+ const files=[];for(let i=0;i<5;i++)files.push(await photo(page,'view-'+i+'.png',['#660000','#006600','#000066','#666600','#006666'][i]));
+ await prepare(page,files);
+ const replacement=await photo(page,'new-packaging.png','#cc44aa');
+ const order=[files[4],files[0],replacement,files[1],files[3]];
+ const chooser=page.waitForEvent('filechooser');await page.locator('#loadFilenameList').click();
+ await(await chooser).setFiles({name:'ordered-filenames.txt',mimeType:'text/plain',buffer:Buffer.from(order.map(f=>f.name).join('\r\n'))});
+ await expect(page.locator('#filenameListStatus')).toContainText('Loaded 5 filenames');
+ await expect(page.locator('#photoMatchIssues li')).toHaveText(['"new-packaging.png"','"view-2.png"']);
+ await expect(page.locator('#downloadZip')).toBeDisabled();
+ await page.locator('#photoFiles').setInputFiles([...order].reverse());
+ await expect(page.locator('#photoMatchDetails')).toBeHidden();await expect(page.locator('#downloadZip')).toBeEnabled();
+ const archive=inspect(await download(page));
+ expect(archive.names).toEqual(['prod1-001.png','prod1-002.png','prod1-003.png','prod1-004.png','prod1-005.png','filename-mapping.txt']);
+ for(const [i,file] of order.entries()){
+  expect(archive.hashes[archive.names[i]]).toBe(crypto.createHash('sha256').update(file.buffer).digest('hex'));
+  expect(archive.mapping).toContain('Original: '+file.name+'\r\nNew: '+archive.names[i]);
+ }
+ expect(archive.mapping).not.toContain('view-2.png');expect(events).toEqual([]);
+});
+
+test('diagnostics render hostile filenames as text and bound long lists without weakening ZIP limits',async({page})=>{
+ await open(page);const a=await photo(page,'ok.png'),hostile=await photo(page,'<img onerror=alert(1)>.png');
+ await prepare(page,[a]);await page.locator('#photoFiles').setInputFiles([hostile]);
+ await expect(page.locator('#photoMatchIssues')).toContainText('"<img onerror=alert(1)>.png"');
+ expect(await page.locator('#photoMatchIssues img').count()).toBe(0);
+ await page.locator('#names').fill(Array.from({length:35},(_,i)=>'missing-'+i+'.png').join('\n'));
+ await expect(page.locator('#photoMatchIssues')).toContainText('Showing the first 30 of 35');
+ await expect(page.locator('#photoMatchDetails').getByRole('heading',{name:'Missing photos (35)',exact:true})).toBeVisible();
+ await expect(page.locator('#zipStatus')).toContainText('no more than 30');await expect(page.locator('#downloadZip')).toBeDisabled();
+});
