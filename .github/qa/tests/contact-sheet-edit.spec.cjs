@@ -4,7 +4,8 @@ test.beforeEach(async({context,page})=>{
  await context.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
  await page.goto('/utilities/image-contact-sheet/?test-mode=1');
  await page.locator('#demo').click();
- await expect(page.locator('#names li')).toHaveCount(3);
+ // Canvas example encoding can take longer on a cold CI browser; match the existing sample tests.
+ await expect(page.locator('#names li')).toHaveCount(3,{timeout:15000});
 });
 const labels=page=>page.locator('#names li > span');
 const action=(page,index,name)=>page.locator('#names li').nth(index).getByRole('button',{name:new RegExp('^'+name+':')});
