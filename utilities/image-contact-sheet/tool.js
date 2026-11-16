@@ -58,7 +58,61 @@ function makePhoto(file, image) {
   const zoom = Math.min(thumb.width / image.width, thumb.height / image.height);
   const width = image.width * zoom, height = image.height * zoom;
   ctx.drawImage(image, (thumb.width - width) / 2, (thumb.height - height) / 2, width, height);
-  return { name: file.name, size: file.size, thumb };
+  return { name: file.name, size: file.size, thumb, file, fingerprint:null };
+}
+
+async function preparePhoto(file) {
+  const image = await openPhoto(file);
+  let photo;
+  try { photo = makePhoto(file, image); } finally { image.close(); }
+  try {
+    const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+    photo.fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+  } catch { /* Keep a readable photo, but never claim its duplicate check passed. */ }
+  return photo;
+}
+
+async function renderDuplicates(version) {
+  const summary = byId('duplicateStatus'), list = byId('duplicateGroups');
+  list.replaceChildren();
+  const current = photos.slice();
+  if (!current.length) { summary.textContent = errors.length ? 'Check incomplete: no readable photos to compare.' : 'Choose photos to check for exact duplicates.'; return; }
+  summary.textContent = 'Checking exact file contents…';
+  const failed = current.filter(photo => !photo.fingerprint);
+  const buckets = new Map(), matches = [];
+  for (const [index, photo] of current.entries()) {
+    if (!photo.fingerprint) continue;
+    const key = photo.size + ':' + photo.fingerprint;
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push({photo, index});
+  }
+  for (const candidates of buckets.values()) {
+    if (candidates.length < 2) continue;
+    // Hashes narrow the candidates; byte comparison confirms exact equality.
+    const groups = [];
+    for (const item of candidates) {
+      let bytes;
+      try { bytes = new Uint8Array(await item.photo.file.arrayBuffer()); }
+      catch { failed.push(item.photo); continue; }
+      if (version !== renderVersion) return;
+      const group = groups.find(group => group.bytes.length === bytes.length && group.bytes.every((byte, i) => byte === bytes[i]));
+      if (group) group.items.push(item);
+      else groups.push({bytes, items:[item]});
+    }
+    matches.push(...groups.filter(group => group.items.length > 1).map(group => group.items));
+  }
+  if (version !== renderVersion) return;
+  const count = matches.reduce((sum, group) => sum + group.length, 0);
+  const incomplete = failed.length || errors.length;
+  summary.textContent = (incomplete ? 'Check incomplete. ' : '') +
+    (matches.length ? matches.length + ' exact duplicate groups across ' + count + ' photos (including originals).' : 'No exact duplicates found among the successfully checked photos.') +
+    ' No photos were removed.' + (failed.length ? ' Could not compare: ' + failed.map(photo => photo.name).join(', ') + '. Choose these files again to retry.' : '') +
+    (errors.length ? ' Unreadable or skipped files were not compared: ' + errors.join(', ') + '.' : '');
+  for (const [i, group] of matches.entries()) {
+    const li = document.createElement('li');
+    li.textContent = 'Group ' + (i + 1) + ' — identical file contents: ' + group.map(({photo,index}) => 'photo ' + (index + 1) + ' (' + photo.name + ')').join('; ') + '.';
+    list.append(li);
+  }
 }
 
 function shorten(ctx, name, width) {
@@ -77,10 +131,21 @@ function render() {
   byId('filenameOrder').hidden = !photos.length;
   byId('orderedNames').value = photos.map(photo => photo.name).join('\n');
   const multilineName = photos.some(photo => /[\u0000-\u001f\u007f]/.test(photo.name));
-  byId('copyNames').disabled = !photos.length || multilineName;
-  byId('downloadNames').disabled = !photos.length || multilineName;
-  byId('selectNames').disabled = multilineName;
-  byId('namesCopyStatus').textContent = multilineName ? 'A filename contains a line break or control character. Rename that file on your device and choose the photos again before copying or downloading a one-name-per-line list.' : '';
+  const filenameGroups = new Map();
+  photos.forEach((photo,index) => {
+    const key = photo.name.normalize('NFC').toLowerCase();
+    if (!filenameGroups.has(key)) filenameGroups.set(key, []);
+    filenameGroups.get(key).push('photo ' + (index + 1) + ' (' + photo.name + ')');
+  });
+  const conflicts = [...filenameGroups.values()].filter(group => group.length > 1);
+  byId('filenameIssues').replaceChildren();
+  for (const group of conflicts) { const li = document.createElement('li'); li.textContent = 'Ambiguous filenames: ' + group.join('; ') + '. Names alone do not establish identical contents.'; byId('filenameIssues').append(li); }
+  byId('copyNames').disabled = !photos.length || multilineName || !!conflicts.length;
+  byId('downloadNames').disabled = !photos.length || multilineName || !!conflicts.length;
+  byId('selectNames').disabled = multilineName || !!conflicts.length;
+  byId('namesCopyStatus').textContent = multilineName ? 'A filename contains a line break or control character. Rename that file on your device and choose the photos again before copying or downloading a one-name-per-line list.' :
+    conflicts.length ? 'Filename transfer is unavailable while names are ambiguous, including names differing only in case. Give different photos distinct filenames on your device and choose them again, or remove an unwanted photo. The sheet PNG remains available.' : '';
+  renderDuplicates(renderVersion);
   byId('undoRemoval').disabled = !removed;
   byId('undoHint').textContent = removed ? 'Undo restores ' + removed.photo.name + ' to position ' + (Math.min(removed.index, photos.length) + 1) + '. Only the most recent removal can be undone.' : '';
   if (!photos.length) {
@@ -177,10 +242,7 @@ async function load(files, id, source = 'custom') {
   const next = [], skipped = [];
   for (const file of files) {
     try {
-      const image = await openPhoto(file);
-      try {
-        next.push(makePhoto(file, image));
-      } finally { image.close(); }
+      next.push(await preparePhoto(file));
     } catch { skipped.push(file.name); }
     if (id !== generation) return;
   }
@@ -226,9 +288,7 @@ byId('replacementFile').addEventListener('change', async event => {
   try {
     if (photos.reduce((sum, photo) => sum + (photo === target ? 0 : photo.size), file.size) > 100000000)
       throw new Error('Keep the combined photo size at or below 100 MB');
-    const image = await openPhoto(file);
-    let replacement;
-    try { replacement = makePhoto(file, image); } finally { image.close(); }
+    const replacement = await preparePhoto(file);
     if (!current()) return;
     if (photos.reduce((sum, photo) => sum + (photo === target ? 0 : photo.size), file.size) > 100000000)
       throw new Error('Keep the combined photo size at or below 100 MB');

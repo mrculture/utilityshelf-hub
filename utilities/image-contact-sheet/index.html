@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="/utilities/shared.css">
   <link rel="stylesheet" href="./tool.css">
   <script src="/utilities/usage.js?v=20261110-photo-flow" defer></script>
-  <script src="./tool.js?v=20261116-load-order" defer></script>
+  <script src="./tool.js?v=20261116-exact-duplicates" defer></script>
 </head>
 <body>
   <header><a href="/">UtilityShelf</a><nav aria-label="Main"><a href="/#companions">Browse tools</a></nav></header>
@@ -21,8 +21,14 @@
       <p class="hint">Select up to 30 JPEG, PNG or WebP files, up to 32 MB each and 100 MB combined (1 MB = 1,000,000 bytes). Batches above 30 photos or 100 MB are rejected in full; split them before continuing. Use Move earlier and Move later below the preview to choose your listing order. The preview, numbered captions and downloaded PNG update together.</p><button id="demo" type="button">Try three product views</button>
       <div class="actions"><button id="loadOrder" type="button">Load photo order</button></div>
       <input id="orderFile" type="file" accept=".txt,text/plain" hidden>
-      <p class="hint">To resume a saved order, choose the same photos above, then load ordered-filenames.txt from Download ordered filenames. Use UTF-8 text, one filename per line, up to 30 names and 128 KiB. Names must match exactly, including case. Missing, extra, unreadable or duplicate files leave your current sheet unchanged. Loading a matching order updates the preview and list and clears Undo removal. The text file contains no photos and cannot identify changed image contents.</p>
+      <p class="hint">To resume a saved order, choose the same photos above, then load ordered-filenames.txt from Download ordered filenames. Use UTF-8 text, one filename per line, up to 30 names and 128 KiB. Names must match exactly, including case. Missing, extra, unreadable files or ambiguous filenames leave your current sheet unchanged. Loading a matching order updates the preview and list and clears Undo removal. The text file contains no photos and cannot identify changed image contents.</p>
       <p id="orderStatus" role="status"></p><ul id="orderIssues" aria-label="Photo order issues"></ul>
+    </section>
+    <section class="panel" aria-labelledby="duplicatesTitle"><h2 id="duplicatesTitle">Exact duplicate photos</h2>
+      <p id="duplicateStatus" role="status">Choose photos to check for exact duplicates.</p><ul id="duplicateGroups" aria-label="Exact duplicate photo groups"></ul>
+      <p class="hint">Files with identical bytes are grouped even when their filenames differ. Photos that were resized, recompressed or had metadata changed may look alike but are different files. This check runs locally and does not judge visual similarity. Use the photo numbers below to choose which copy to remove; nothing is removed automatically. Removal, undo, replacement and reordering refresh these groups.</p>
+      <h3>Filename conflicts</h3><ul id="filenameIssues" aria-label="Ambiguous photo filenames"></ul>
+      <p class="hint">Different photos can share a filename. Give each retained photo a distinct name before transferring the order to Filename Cleaner. Ambiguous names block filename-list download and copying, but you can still review and download the sheet.</p>
     </section>
     <section class="panel" aria-label="Results"><h2>Contact sheet preview</h2><p role="status" id="status">Choose photos or try the example.</p><canvas id="sheet" hidden aria-label="Contact sheet preview, with filename list below"></canvas><div class="actions"><button id="download" type="button" disabled>Download PNG</button><button id="undoRemoval" type="button" disabled>Undo removal</button></div><p id="undoHint" class="hint"></p><p id="editStatus" role="status"></p><input id="replacementFile" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Replacement photo" hidden><ol id="names" aria-label="Filenames in sheet order"></ol></section>
     <section class="panel" id="filenameOrder" hidden aria-labelledby="filenameOrderTitle">
