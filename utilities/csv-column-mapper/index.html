@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/utilities/shared.css">
 
   <script defer src="/utilities/usage.js?v=20261110-csv"></script>
-  <script type="module" src="./app.js?v=20261110-mappings"></script>
+  <script type="module" src="./app.js?v=20261116-mapping-report"></script>
 </head>
 <body>
   <header><a href="/#companions">UtilityShelf tools</a></header>
@@ -43,9 +43,16 @@
     </section>
     <section class="panel" id="result" hidden>
       <h2>Mapped CSV</h2>
+      <h3>Mapping summary</h3>
+      <p id="mappingSummary" role="status"></p>
+      <div class="table-wrap"><table aria-label="Destination column mapping"><thead><tr><th scope="col">Destination</th><th scope="col">Source</th><th scope="col">Change</th></tr></thead><tbody id="mappingDetails"></tbody></table></div>
+      <h3>Omitted source columns</h3><ul id="omittedColumns"></ul>
+      <p class="hint">Review omissions and empty-value choices against your import template. Counts exclude the header. Inserted blank cells count only columns set to Use empty values, not existing blanks in your source.</p>
       <label for="output">Preview (first five data rows)</label>
       <textarea id="output" rows="7" readonly spellcheck="false"></textarea>
-      <button id="download" type="button">Download full CSV</button>
+      <div class="actions"><button id="download" type="button">Download full CSV</button><button id="downloadReport" type="button" disabled>Download mapping report (.txt)</button></div>
+      <p id="reportStatus" role="status"></p>
+      <p class="hint">The report records column choices and row counts for this export. It includes headings but no product-row contents; review headings before sharing. It does not certify formula safety or importer acceptance. Changing the source, destination or mapping clears the report and export until you build again.</p>
     </section>
     <section>
       <h2>Try a supplier feed</h2>

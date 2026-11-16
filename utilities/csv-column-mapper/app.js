@@ -5,11 +5,18 @@ const source = byId('source'), target = byId('target'), message = byId('message'
 let records = [], labels = [], controls = [], generated = '';
 let inputSource = 'custom';
 let sourceHeaders = [], mappingRevision = 0;
+let mappingReport = '';
 const mappingLimit = 64 * 1024;
 const track = event => window.UtilityShelfUsage?.track('csv-column-mapper', event, 'mapped', inputSource);
 
 function clearResult() {
   generated = '';
+  mappingReport = '';
+  byId('downloadReport').disabled = true;
+  byId('reportStatus').textContent = '';
+  byId('mappingSummary').textContent = '';
+  byId('mappingDetails').replaceChildren();
+  byId('omittedColumns').replaceChildren();
   byId('result').hidden = true;
   byId('output').value = '';
 }
@@ -143,11 +150,61 @@ function build() {
     length += encoded.length + 2;
   }
   generated = rows.join('\r\n') + '\r\n';
+  summarizeMapping(mapping, rows.length - 1);
   byId('output').value = rows.slice(0, 6).join('\n');
   byId('result').hidden = false;
   message.textContent = 'Ready to download ' + records.length + ' data rows in ' + labels.length + ' destination columns.';
   track('build_complete');
 }
+
+function summarizeMapping(mapping, outputRows) {
+  const used = new Set(mapping.filter(index => index !== 'empty').map(Number));
+  const omitted = sourceHeaders.flatMap((name, index) => used.has(index) ? [] : [{name, index}]);
+  const emptyCount = mapping.filter(index => index === 'empty').length;
+  const quote = name => JSON.stringify(name);
+  const summary = 'Input: ' + records.length + ' data rows, ' + sourceHeaders.length + ' columns. Output: ' + outputRows + ' data rows, ' + labels.length + ' columns. Row order preserved; no data rows removed.';
+  const counts = 'Source columns omitted: ' + omitted.length + '. Destination columns using empty values: ' + emptyCount + ' (' + (emptyCount * outputRows) + ' inserted blank cells).';
+  byId('mappingSummary').textContent = summary + ' ' + counts;
+  const lines = ['UtilityShelf CSV mapping report', 'Status: Export prepared', summary, counts, '', 'Destination mapping (positions are 1-based):'];
+  mapping.forEach((selection, destination) => {
+    const index = selection === 'empty' ? null : Number(selection);
+    const from = index === null ? 'Use empty values' : (index + 1) + '. ' + quote(sourceHeaders[index]);
+    const to = (destination + 1) + '. ' + quote(labels[destination]);
+    const changes = [];
+    if (index === null) changes.push('Empty values inserted in all ' + outputRows + ' data rows');
+    else {
+      if (sourceHeaders[index] !== labels[destination]) changes.push('Renamed');
+      if (index !== destination) changes.push('Moved from position ' + (index + 1) + ' to ' + (destination + 1));
+      if (mapping.filter(value => value === selection).length > 1) changes.push('Source reused in multiple destinations');
+      if (!changes.length) changes.push('Same heading and position');
+    }
+    const note = changes.join('; ');
+    const tr = document.createElement('tr');
+    for (const value of [to, from, note]) { const td = document.createElement('td'); td.textContent = value; tr.append(td); }
+    byId('mappingDetails').append(tr);
+    lines.push(to + ' <- ' + from + ' | ' + note);
+  });
+  lines.push('', 'Omitted source columns:');
+  const descriptions = omitted.length ? omitted.map(({name,index}) => (index + 1) + '. ' + quote(name)) : ['None.'];
+  for (const description of descriptions) {
+    const li = document.createElement('li'); li.textContent = description; byId('omittedColumns').append(li);
+    lines.push(description);
+  }
+  lines.push('', 'Scope: This describes the prepared mapped.csv export, not importer acceptance or formula safety.',
+    'Counts exclude the header. Inserted blanks count only destinations set to Use empty values; existing blank source cells are not counted.',
+    'No cell values are transformed or sanitised. Headers are quoted with escaped control characters. This report contains headings and choices, not product-row contents.',
+    'Keep this report with its exact CSV. Rebuild and download both again after any input or mapping change.');
+  mappingReport = lines.join('\r\n') + '\r\n';
+  byId('downloadReport').disabled = false;
+}
+
+byId('downloadReport').addEventListener('click', () => {
+  if (!generated || !mappingReport) return;
+  const url = URL.createObjectURL(new Blob([mappingReport], {type:'text/plain;charset=utf-8'}));
+  const link = document.createElement('a'); link.href = url; link.download = 'csv-mapping-report.txt'; link.click();
+  byId('reportStatus').textContent = 'Mapping report download started. Keep it with this mapped CSV; rebuild and download both after changes.';
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+});
 
 source.addEventListener('input', () => { inputSource = 'custom'; reset(); });
 target.addEventListener('input', reset);
