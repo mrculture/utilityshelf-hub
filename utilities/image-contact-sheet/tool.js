@@ -39,6 +39,14 @@ let removed = null;
 let replacementTarget = null;
 let replacementRevision = 0;
 let renderVersion = 0;
+let orderRevision = 0;
+const orderStatus = byId('orderStatus');
+const orderIssues = byId('orderIssues');
+function cancelOrderRead() {
+  orderRevision++;
+  orderStatus.textContent = '';
+  orderIssues.replaceChildren();
+}
 const tileWidth = 300, tileHeight = 232;
 
 function makePhoto(file, image) {
@@ -61,6 +69,7 @@ function shorten(ctx, name, width) {
 }
 
 function render() {
+  cancelOrderRead();
   renderVersion++;
   names.replaceChildren();
   sheet.hidden = !photos.length;
@@ -124,6 +133,7 @@ function render() {
       button.setAttribute('aria-label', action + ': photo ' + (index + 1) + ', ' + photo.name);
       button.addEventListener('click', () => {
         if (action === 'Replace photo') {
+          cancelOrderRead();
           replacementRevision++;
           replacementTarget = photo;
           byId('editStatus').textContent = 'Choose a replacement for ' + photo.name + '. Cancelling keeps the existing photo.';
@@ -235,6 +245,65 @@ byId('replacementFile').addEventListener('change', async event => {
 });
 
 input.addEventListener('change', () => load(Array.from(input.files), ++generation));
+byId('loadOrder').addEventListener('click', () => {
+  cancelOrderRead();
+  byId('orderFile').value = '';
+  byId('orderFile').click();
+});
+byId('orderFile').addEventListener('cancel', () => {
+  cancelOrderRead();
+  orderStatus.textContent = 'Order loading cancelled. Your sheet is unchanged.';
+});
+byId('orderFile').addEventListener('change', async event => {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  cancelOrderRead();
+  const revision = orderRevision;
+  try {
+    if (!photos.length) throw new Error('Choose your photos and wait for their thumbnails first.');
+    if (!file.size || file.size > 131072) throw new Error('Choose a non-empty UTF-8 text file no larger than 128 KiB.');
+    orderStatus.textContent = 'Reading saved photo order…';
+    const bytes = await file.arrayBuffer();
+    if (revision !== orderRevision) return;
+    let text;
+    try { text = new TextDecoder('utf-8', {fatal:true}).decode(bytes); }
+    catch { throw new Error('Save the filename list as UTF-8 text.'); }
+    const list = text.replace(/^\uFEFF/, '').split(/\r\n|\r|\n/).filter(name => name.trim());
+    if (!list.length || list.length > 30) throw new Error('Use between 1 and 30 filenames, one per line.');
+    if (list.some(name => /[\\/\u0000-\u001f\u007f]/.test(name))) throw new Error('Use filenames only, without folder paths or control characters.');
+    const issues = [];
+    const duplicates = (values, label) => {
+      const groups = new Map();
+      for (const name of values) {
+        const key = name.normalize('NFC').toLowerCase();
+        groups.set(key, [...(groups.get(key) || []), name]);
+      }
+      for (const group of groups.values()) if (group.length > 1)
+        issues.push('Duplicate or ambiguous ' + label + ': ' + group.join(', ') + '. Give each photo a distinct filename.');
+    };
+    duplicates(list, 'names in saved order');
+    duplicates(photos.map(photo => photo.name), 'selected photos');
+    const selected = new Set(photos.map(photo => photo.name));
+    const expected = new Set(list);
+    for (const name of expected) if (!selected.has(name)) issues.push('Missing photo: ' + name);
+    for (const name of selected) if (!expected.has(name)) issues.push('Extra photo: ' + name);
+    if (errors.length) issues.push('Unreadable or skipped photos: ' + errors.join(', ') + '. Choose a fully readable matching batch.');
+    if (issues.length) {
+      for (const issue of issues) {
+        const item = document.createElement('li'); item.textContent = issue; orderIssues.append(item);
+      }
+      throw new Error('Resolve the listed files, then load the order again. Names must match exactly, including case and spelling.');
+    }
+    const lookup = new Map(photos.map(photo => [photo.name, photo]));
+    photos = list.map(name => lookup.get(name));
+    resetEdits();
+    render();
+    orderStatus.textContent = 'Loaded order for ' + photos.length + ' photos. Preview and filename list updated. Review the sheet before downloading. Undo removal has been cleared.';
+  } catch (error) {
+    if (revision === orderRevision) orderStatus.textContent = 'Order not loaded. ' + (error.message || 'Could not read this file.') + ' Your current sheet and order are unchanged.';
+  }
+});
 byId('downloadNames').addEventListener('click', () => {
   if (byId('downloadNames').disabled || !photos.length) return;
   const url = URL.createObjectURL(new Blob([photos.map(photo => photo.name).join('\r\n') + '\r\n'], {type:'text/plain;charset=utf-8'}));

@@ -54,6 +54,11 @@ test('real practice ZIP repairs from 3/6 to 5/5 and finishes with correct contac
  images[3]=replacementImage;
  const order=[images[1],images[0],...images.slice(2)];await expect(page.locator('#orderedNames')).toHaveValue(order.map(f=>f.name).join('\n'));
  const listDownload=await download(page,page.locator('#downloadNames'));expect(listDownload.suggestedFilename()).toBe('ordered-filenames.txt');const listPath=await listDownload.path();expect(fs.readFileSync(listPath,'utf8')).toBe(order.map(f=>f.name).join('\r\n')+'\r\n');
+ const arrangedPreview=await page.locator('#sheet').evaluate(c=>c.toDataURL());
+ await page.locator('#files').setInputFiles([...order].reverse());await expect(page.locator('#orderedNames')).toHaveValue([...order].reverse().map(f=>f.name).join('\n'));
+ const orderChooser=page.waitForEvent('filechooser');await page.locator('#loadOrder').click();await(await orderChooser).setFiles(listPath);
+ await expect(page.locator('#orderStatus')).toContainText('Loaded order for 5 photos');await expect(page.locator('#orderedNames')).toHaveValue(order.map(f=>f.name).join('\n'));
+ expect(await page.locator('#sheet').evaluate(c=>c.toDataURL())).toBe(arrangedPreview);
  const preview=await page.locator('#sheet').evaluate(c=>c.toDataURL().split(',')[1]);
  const sheet=fs.readFileSync(await (await download(page,page.locator('#download'))).path());expect(sheet.equals(Buffer.from(preview,'base64'))).toBe(true);expect(sheet.subarray(0,8)).toEqual(Buffer.from([137,80,78,71,13,10,26,10]));expect([sheet.readUInt32BE(16),sheet.readUInt32BE(20)]).toEqual([900,464]);
  await page.goto('/tools/filename-cleaner/?test-mode=1');const listChooser=page.waitForEvent('filechooser');await page.locator('#loadFilenameList').click();await (await listChooser).setFiles(listPath);await expect(page.locator('#names')).toHaveValue(order.map(f=>f.name).join('\n'));await page.locator('#mode').selectOption('numbered');await page.locator('#prefix').fill('PRACTICE-1042');
