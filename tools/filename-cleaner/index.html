@@ -29,6 +29,7 @@
     .pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:12px 22px;border-top:1px solid var(--line);padding:14px 0;align-items:center}
     .original{overflow-wrap:anywhere;white-space:pre-wrap}.pair label{font-size:.76rem;color:var(--muted)}.issue{font-size:.87rem;color:var(--warn);margin:3px 0 0}
     input[aria-invalid=true]{border:2px solid var(--warn);background:#fff8ee}.foot{border-top:1px solid var(--line);padding-top:16px}
+    .settings-actions{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0}
     #photoMatchDetails{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}#photoMatchDetails h3{margin:0 0 8px}#photoMatchIssues h4{margin:14px 0 4px}#photoMatchIssues ul{padding-left:24px}#photoMatchIssues li{overflow-wrap:anywhere;white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace}
     #summary{font-weight:650}#copyStatus{color:var(--green)}[hidden]{display:none!important}
     .number-controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}.choice{display:flex;align-items:start;gap:8px;font-weight:400}.choice input{width:auto;margin-top:5px}.examples{width:100%;border-collapse:collapse}.examples th,.examples td{text-align:left;padding:10px 6px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.examples code{white-space:normal}details{margin:14px 0}summary{cursor:pointer;font-weight:650}li{margin:8px 0}
@@ -64,6 +65,13 @@
         <select id="style"><option value="-">Lowercase with hyphens</option><option value="_">Lowercase with underscores</option><option value=" ">Lowercase with spaces</option></select>
         <p class="hint">The final extension keeps its original spelling and case. Duplicate checks ignore case.</p>
       </div></div>
+      <div class="foot" aria-labelledby="savedSettingsTitle">
+        <h2 id="savedSettingsTitle">Reuse naming settings</h2>
+        <div class="settings-actions"><button id="saveSettings" type="button">Save settings</button><button id="loadSettings" type="button">Load settings</button></div>
+        <input id="settingsFile" type="file" accept=".json,application/json" aria-label="Saved filename settings" hidden>
+        <p id="settingsStatus" role="status"></p>
+        <p class="hint">Save settings downloads a small JSON file with the mode, SKU prefix, start number, digit count and naming style. It contains no filenames, photos, individual name edits or privacy preferences. Files are read locally, up to 8 KiB. Loading keeps your current filename list and photo selection, regenerates suggestions (replacing individual edits), and cancels a ZIP still being prepared. Invalid files leave your setup unchanged. Review the prefix and start number for each new product; numbering does not advance automatically.</p>
+      </div>
     </section>
     <section class="panel" aria-labelledby="review"><h2 id="review">Review proposed names</h2>
       <p class="hint">Edit any suggestion. Changing naming settings regenerates the suggestions and replaces your edits. Numbered names follow the order of the original list.</p>
@@ -109,7 +117,7 @@
     <footer><a href="https://utilityshelf.site/privacy">Privacy</a> · <a href="https://utilityshelf.site/terms">Terms</a> · <a href="https://utilityshelf.site/contact">Contact</a></footer>
   </main>
   <script src="zip.js?v=20261110-photo-zip" defer></script>
-  <script src="app.js?v=20261116-photo-matching" defer></script>
+  <script src="app.js?v=20261116-naming-settings" defer></script>
 
 </body>
 </html>

@@ -160,6 +160,78 @@
         if (revision === listReadRevision) listStatus.textContent = 'List not loaded. ' + error.message + ' Your previous list and results are unchanged.';
       } finally { if (revision === listReadRevision) readingList = false; }
     });
+    const settingsPicker = byId('settingsFile'), savedSettingsStatus = byId('settingsStatus');
+    let settingsReadRevision = 0, readingSettings = false;
+    function cancelSettingsRead() {
+      settingsReadRevision++;
+      if (readingSettings) savedSettingsStatus.textContent = 'Settings loading cancelled because you made another change. Choose the file again if needed.';
+      readingSettings = false;
+    }
+    for (const event of ['input','change']) document.addEventListener(event, e => {
+      if (e.target !== settingsPicker) cancelSettingsRead();
+    });
+    for (const id of ['sample','clearPhotos','loadFilenameList']) byId(id).addEventListener('click', cancelSettingsRead);
+    function checkedNamingSettings(value) {
+      const fields = ['tool','version','mode','prefix','start','digits','style'];
+      if (!value || typeof value !== 'object' || Array.isArray(value) ||
+          Object.keys(value).length !== fields.length || fields.some(field => !Object.hasOwn(value, field)) ||
+          value.tool !== 'utilityshelf-filename-cleaner' || value.version !== 1)
+        throw Error('Choose a version-1 Filename Cleaner settings file.');
+      if (!['clean','numbered'].includes(value.mode) || !['-','_',' '].includes(value.style) || ![2,3,4].includes(value.digits))
+        throw Error('Use a supported mode, naming style and digit count.');
+      if (!Number.isSafeInteger(value.start) || value.start < 1 || value.start > 999999)
+        throw Error('Use a whole start number from 1 to 999999.');
+      if (typeof value.prefix !== 'string' || value.prefix.length > 200 || /[\\/\u0000-\u001f\u007f]/.test(value.prefix) ||
+          (value.prefix.trim() && !/[\p{L}\p{N}]/u.test(value.prefix)))
+        throw Error('Use a prefix of up to 200 characters with letters or numbers, without paths or control characters; blank uses “photo”.');
+      if (value.mode === 'numbered' && value.start + Math.max(0,batch.length-1) > 999999)
+        throw Error('The start number leaves too little room for the current filename list. Use a lower start number or a smaller batch.');
+      return value;
+    }
+    byId('saveSettings').addEventListener('click', () => {
+      cancelSettingsRead();
+      let url, link;
+      try {
+        const settings = checkedNamingSettings({tool:'utilityshelf-filename-cleaner',version:1,
+          mode:mode.value,prefix:prefix.value,start:Number(start.value),digits:Number(digits.value),style:style.value});
+        url = URL.createObjectURL(new Blob([JSON.stringify(settings,null,2) + '\n'], {type:'application/json'}));
+        link = document.createElement('a'); link.href = url; link.download = 'filename-cleaner-settings.json';
+        document.body.append(link); link.click();
+        savedSettingsStatus.textContent = 'Settings download started. Keep this file to reuse your naming setup; review the SKU prefix and start number for each new product.';
+      } catch (error) {
+        savedSettingsStatus.textContent = 'Settings not saved. ' + error.message;
+      } finally {
+        link?.remove();
+        if (url) setTimeout(() => URL.revokeObjectURL(url),30000);
+      }
+    });
+    byId('loadSettings').addEventListener('click', () => {
+      cancelSettingsRead(); cancelListRead(); settingsPicker.value = ''; settingsPicker.click();
+    });
+    settingsPicker.addEventListener('change', async () => {
+      const file = settingsPicker.files[0]; settingsPicker.value = '';
+      if (!file) return;
+      cancelListRead();
+      const revision = ++settingsReadRevision;
+      readingSettings = true; savedSettingsStatus.textContent = 'Reading naming settings…';
+      try {
+        if (!file.size || file.size > 8192) throw Error('Choose a non-empty settings file no larger than 8 KiB.');
+        let bytes;
+        try { bytes = await file.arrayBuffer(); } catch { throw Error('The settings file could not be read. Select it again.'); }
+        if (revision !== settingsReadRevision) return;
+        let value;
+        try { value = JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)); }
+        catch { throw Error('The file must contain valid UTF-8 JSON.'); }
+        const settings = checkedNamingSettings(value);
+        mode.value = settings.mode; prefix.value = settings.prefix; start.value = String(settings.start);
+        digits.value = String(settings.digits); style.value = settings.style;
+        byId('numbering').hidden = settings.mode !== 'numbered';
+        rebuild(true);
+        savedSettingsStatus.textContent = 'Settings loaded. Proposed names have been regenerated; the original list, photo selection and privacy choice are unchanged. Review the prefix and start number before downloading.';
+      } catch (error) {
+        if (revision === settingsReadRevision) savedSettingsStatus.textContent = 'Settings not loaded. ' + error.message + ' Your current settings and results are unchanged.';
+      } finally { if (revision === settingsReadRevision) readingSettings = false; }
+    });
     style.addEventListener('change', () => rebuild(true));
     mode.addEventListener('change', () => { byId('numbering').hidden = mode.value !== 'numbered'; rebuild(true); });
     prefix.addEventListener('input', () => rebuild(true));
