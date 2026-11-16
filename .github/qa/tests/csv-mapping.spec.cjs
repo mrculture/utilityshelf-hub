@@ -20,7 +20,7 @@ async function download(page,id){
 }
 test('saved mapping excludes rows and round trips into matching headers with fresh row data',async({page})=>{
  await setup(page);const file=await download(page,'#saveMapping');
- expect(file.name).toBe('utilityshelf-column-mapping.json');expect(JSON.parse(file.text)).toEqual({...saved,version:2,required:[false,false,false]});expect(file.text).not.toMatch(/A101|Notebook|12.00/);
+ expect(file.name).toBe('utilityshelf-column-mapping.json');expect(JSON.parse(file.text)).toEqual({...saved,version:3,required:[false,false,false],unique:[false,false,false],ignoreCase:false,trimWhitespace:false});expect(file.text).not.toMatch(/A101|Notebook|12.00/);
  await page.locator('#source').fill('SKU,Product,Price,Cost\n0099,New stock,10.00,5.00');await page.locator('#target').fill('Old target');
  await load(page,file.text);await expect(page.locator('#message')).toContainText('Mapping loaded by exact header name');
  await expect(page.locator('#target')).toHaveValue('SKU,Title,Price');await expect(page.locator('#result')).toBeHidden();

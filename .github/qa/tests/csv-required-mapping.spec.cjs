@@ -11,7 +11,7 @@ test.beforeEach(async({page,context})=>{await context.route('**/*',r=>new URL(r.
 
 for(const [kind,csv,columns]of [['matching',original,['0','1','2']],['reordered',reordered,['3','2','1']]])test(kind+' headers restore saved required choices on the correct destination and reproduce CSV and report',async({page})=>{
  await setup(page);await page.locator('#generate').click();const before=await download(page,'#download');const beforeReport=await download(page,'#downloadReport');
- const file=await download(page,'#saveMapping');expect(JSON.parse(file)).toEqual(saved);expect(file).not.toMatch(/0012|Mug, blue|Frame|0\.00/);
+ const file=await download(page,'#saveMapping');expect(JSON.parse(file)).toEqual({...saved,version:3,unique:[false,false,false],ignoreCase:false,trimWhitespace:false});expect(file).not.toMatch(/0012|Mug, blue|Frame|0\.00/);
  await page.locator('#source').fill(csv);await page.locator('#target').fill('Wrong');await load(page,JSON.parse(file));
  await choices(page,[true,false,true]);for(const [i,column]of columns.entries())await expect(page.locator('#source-'+i)).toHaveValue(column);
  await expect(page.locator('#result')).toBeHidden();await expect(page.locator('#downloadReport')).toBeDisabled();await expect(page.locator('#message')).toContainText('Required-field choices restored');
@@ -32,7 +32,7 @@ test('all-off flags and required empty destinations round trip and a new setup r
 test('legacy mappings remain readable and saving them upgrades with the current choices',async({page})=>{
  await setup(page);const legacy={...saved,version:1};delete legacy.required;await load(page,legacy);
  await choices(page,[false,false,false]);await expect(page.locator('#message')).toContainText('Older mapping');await page.locator('#required-1').check();
- expect(JSON.parse(await download(page,'#saveMapping'))).toEqual({...saved,required:[false,true,false]});
+ expect(JSON.parse(await download(page,'#saveMapping'))).toEqual({...saved,version:3,required:[false,true,false],unique:[false,false,false],ignoreCase:false,trimWhitespace:false});
 });
 
 test('invalid required-field arrays, unknown versions and changed headers reject without stale results',async({page})=>{

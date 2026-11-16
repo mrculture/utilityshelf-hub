@@ -1,5 +1,6 @@
 import { csvRows, encodeRow, attachFileInput } from './csv.js';
-import { reusableHeaders, validateMapping, resolveMapping } from './mapping.js?v=20261116-required-settings';
+import { reusableHeaders, validateMapping, resolveMapping } from './mapping.js?v=20261116-duplicates';
+import { checkDuplicates } from './duplicates.js';
 const byId = id => document.getElementById(id);
 const source = byId('source'), target = byId('target'), message = byId('message');
 let records = [], labels = [], controls = [], generated = '';
@@ -7,6 +8,7 @@ let inputSource = 'custom';
 let sourceHeaders = [], mappingRevision = 0;
 let mappingReport = '';
 let requiredControls = [];
+let uniqueControls = [];
 const mappingLimit = 64 * 1024;
 const track = event => window.UtilityShelfUsage?.track('csv-column-mapper', event, 'mapped', inputSource);
 
@@ -20,6 +22,8 @@ function clearResult() {
   byId('omittedColumns').replaceChildren();
   byId('requiredSummary').textContent = '';
   byId('requiredFindings').replaceChildren();
+  byId('duplicateSummary').textContent = '';
+  byId('duplicateFindings').replaceChildren();
   byId('result').hidden = true;
   byId('output').value = '';
 }
@@ -31,6 +35,9 @@ function reset() {
   labels = [];
   controls = [];
   requiredControls = [];
+  uniqueControls = [];
+  byId('ignoreCase').checked = false;
+  byId('trimWhitespace').checked = false;
   byId('mapping').hidden = true;
   byId('choices').replaceChildren();
   clearResult();
@@ -84,7 +91,13 @@ function prepare(sampleColumns) {
         message.textContent = 'Select Build mapped CSV to check the revised required fields. CSV values will not be changed.';
       });
       requiredControls.push(required);
-      fields.append(label, select, requiredLabel);
+      const unique = document.createElement('input');
+      unique.type = 'checkbox'; unique.id = 'unique-' + i;
+      const uniqueLabel = document.createElement('label');
+      uniqueLabel.append(unique, document.createTextNode(' Check duplicates for ' + heading));
+      unique.addEventListener('change', checksChanged);
+      uniqueControls.push(unique);
+      fields.append(label, select, requiredLabel, uniqueLabel);
       return select;
     });
     byId('choices').append(fields);
@@ -100,16 +113,24 @@ function prepare(sampleColumns) {
 function updateSave() {
   byId('saveMapping').disabled = !reusableHeaders(sourceHeaders) || !controls.length || controls.some(s => s.value === '');
 }
+function checksChanged() {
+  mappingRevision++;
+  clearResult();
+  message.textContent = 'Select Build mapped CSV to apply the revised duplicate checks. CSV values will not be changed.';
+}
+byId('ignoreCase').addEventListener('change', checksChanged);
+byId('trimWhitespace').addEventListener('change', checksChanged);
 function saveMapping() {
   if (byId('saveMapping').disabled) return;
-  const saved = {format:'utilityshelf-column-mapping', version:2, sourceHeaders,
+  const saved = {format:'utilityshelf-column-mapping', version:3, sourceHeaders,
     destinationHeaders:labels, columns:controls.map(s => s.value === 'empty' ? null : Number(s.value)),
-    required:requiredControls.map(control => control.checked)};
+    required:requiredControls.map(control => control.checked), unique:uniqueControls.map(control => control.checked),
+    ignoreCase:byId('ignoreCase').checked, trimWhitespace:byId('trimWhitespace').checked};
   const blob = new Blob([JSON.stringify(saved, null, 2) + '\n'], {type:'application/json;charset=utf-8'});
   if (blob.size > mappingLimit) { message.textContent = 'Mapping exceeds 64 KiB. Use shorter headers before saving.'; return; }
   const url = URL.createObjectURL(blob), link = document.createElement('a');
   link.href = url; link.download = 'utilityshelf-column-mapping.json'; link.click();
-  message.textContent = 'Mapping download started. It contains headers, column choices and required-field choices, with no data rows.';
+  message.textContent = 'Mapping download started. It contains headers, column choices, required-field and duplicate-check settings, with no data rows.';
   setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 byId('saveMapping').addEventListener('click', saveMapping);
@@ -127,7 +148,7 @@ byId('mappingFile').addEventListener('change', async event => {
     if (request !== mappingRevision) return;
     let saved;
     try { saved = validateMapping(JSON.parse(text.replace(/^\uFEFF/, ''))); }
-    catch { throw new Error('Choose a valid UtilityShelf mapping file (version 1 or 2). The file was not applied.'); }
+    catch { throw new Error('Choose a valid UtilityShelf mapping file (version 1, 2 or 3). The file was not applied.'); }
     if (!source.value.trim()) throw new Error('Open or paste your current source CSV before loading its mapping.');
     if (source.value.length > 2097152) throw new Error('Use a smaller CSV extract (up to 2 million characters).');
     const currentHeaders = csvRows(source.value).next().value.cells;
@@ -136,9 +157,13 @@ byId('mappingFile').addEventListener('change', async event => {
     if (destination.length > 8192) throw new Error('The saved destination header exceeds the supported limit.');
     target.value = destination;
     if (prepare(selections)) {
-      requiredControls.forEach((control, index) => { control.checked = saved.version === 2 ? saved.required[index] : false; });
+      requiredControls.forEach((control, index) => { control.checked = saved.version >= 2 ? saved.required[index] : false; });
+      uniqueControls.forEach((control, index) => { control.checked = saved.version === 3 ? saved.unique[index] : false; });
+      byId('ignoreCase').checked = saved.version === 3 ? saved.ignoreCase : false;
+      byId('trimWhitespace').checked = saved.version === 3 ? saved.trimWhitespace : false;
       message.textContent = 'Mapping loaded by exact header name. ' +
-        (saved.version === 2 ? 'Required-field choices restored for the destination columns. ' : 'Older mapping: required-field choices were not saved, so all start off. ') +
+        (saved.version >= 2 ? 'Required-field choices restored for the destination columns. ' : 'Older mapping: required-field choices were not saved, so all start off. ') +
+        (saved.version === 3 ? 'Duplicate-check settings restored. ' : 'Older mapping: duplicate checks and comparison options start off. ') +
         'Review every choice, then select Build mapped CSV. No export has been created yet.';
     }
   } catch (err) {
@@ -161,6 +186,7 @@ function build() {
   const requiredCheck = {indices:requiredIndices, count:0, affectedRows:0, findings:[]};
   const lineBreaks = text => (text.match(/\r\n|\r|\n/g) || []).length;
   let outputLine = lineBreaks(rows[0]) + 2;
+  const outputLines = [];
   for (const [rowIndex, { cells, start:sourceLine }] of records.entries()) {
     const values = mapping.map(index => index === 'empty' ? '' : cells[Number(index)]);
     const minimumLength = values.reduce((size, value) => size + value.length, values.length - 1) + 2;
@@ -171,6 +197,7 @@ function build() {
       return;
     }
     rows.push(encoded);
+    outputLines.push(outputLine);
     length += encoded.length + 2;
     let rowMissing = false;
     for (const index of requiredIndices) {
@@ -185,15 +212,19 @@ function build() {
     outputLine += lineBreaks(encoded) + 1;
   }
   generated = rows.join('\r\n') + '\r\n';
-  summarizeMapping(mapping, rows.length - 1, requiredCheck);
+  const duplicateOptions = {indices:uniqueControls.flatMap((control,index) => control.checked ? [index] : []),
+    ignoreCase:byId('ignoreCase').checked, trimWhitespace:byId('trimWhitespace').checked};
+  const duplicates = checkDuplicates(records, mapping, labels, outputLines, duplicateOptions);
+  summarizeMapping(mapping, rows.length - 1, requiredCheck, duplicates, duplicateOptions);
   byId('output').value = rows.slice(0, 6).join('\n');
   byId('result').hidden = false;
   message.textContent = 'Ready to download ' + records.length + ' data rows in ' + labels.length + ' destination columns.';
   if (requiredCheck.count) message.textContent += ' Required-field issues found: review them before importing. CSV values are unchanged.';
+  if (duplicates.count) message.textContent += ' Duplicate values found: review the affected rows before importing. No values or rows were changed.';
   track('build_complete');
 }
 
-function summarizeMapping(mapping, outputRows, requiredCheck) {
+function summarizeMapping(mapping, outputRows, requiredCheck, duplicates, duplicateOptions) {
   const used = new Set(mapping.filter(index => index !== 'empty').map(Number));
   const omitted = sourceHeaders.flatMap((name, index) => used.has(index) ? [] : [{name, index}]);
   const emptyCount = mapping.filter(index => index === 'empty').length;
@@ -227,6 +258,7 @@ function summarizeMapping(mapping, outputRows, requiredCheck) {
     lines.push(description);
   }
   lines.push('', ...summarizeRequired(requiredCheck, outputRows));
+  lines.push('', ...summarizeDuplicates(duplicates, duplicateOptions, outputRows));
   lines.push('', 'Scope: This describes the prepared mapped.csv export, not importer acceptance or formula safety.',
     'Counts exclude the header. Inserted blanks count only destinations set to Use empty values; existing blank source cells are not counted.',
     'No cell values are transformed or sanitised. Headers are quoted with escaped control characters. This report contains headings and choices, not product-row contents.',
@@ -251,6 +283,23 @@ function summarizeRequired(check, outputRows) {
   return [summary, scope, ...(limit ? [limit] : []), ...check.findings,
     'Data rows exclude the header; CSV records include it. Source and mapped CSV line numbers identify the start of each record, including multiline fields.',
     'Only presence is checked: empty or whitespace-only values are missing; 0 and 0.00 are present. Values are not trimmed, filled or removed. This does not validate numeric ranges, unique IDs or importer-specific rules.'];
+}
+
+function summarizeDuplicates(check, options, outputRows) {
+  let summary;
+  if (!options.indices.length) summary = 'Duplicate checks: Not checked — no destination columns selected.';
+  else if (!outputRows) summary = 'Duplicate checks: Not checked — no data rows.';
+  else if (!check.checked) summary = 'Duplicate checks: Not checked — no nonblank values in the selected columns.';
+  else if (check.count) summary = 'Duplicate checks: Issues found — ' + check.groups + ' duplicate groups; ' + check.count + ' occurrences across ' + check.affectedRows + ' data rows (including first occurrences).';
+  else summary = 'Duplicate checks: Passed — no duplicate nonblank values in the selected columns.';
+  const columns = 'Selected duplicate-check columns: ' + (options.indices.length ? options.indices.map(i => (i + 1) + '. ' + JSON.stringify(labels[i])).join(', ') : 'None.');
+  const comparison = 'Comparison: ' + (options.ignoreCase ? 'ignore case (lowercase comparison)' : 'case-sensitive') + '; ' + (options.trimWhitespace ? 'ignore leading/trailing whitespace' : 'preserve leading/trailing whitespace') + '. Internal whitespace is preserved. Leading zeros remain significant; no numeric conversion is performed.';
+  const counts = check.checked + ' nonblank field values checked; ' + check.skipped + ' blank or whitespace-only values skipped. Use Required value to flag missing values.';
+  const limit = check.count > 100 ? 'Showing first 100 of ' + check.count + ' duplicate occurrences, ordered by destination column then data row. All rows were checked.' : '';
+  byId('duplicateSummary').textContent = [summary, columns, comparison, counts, limit].filter(Boolean).join(' ');
+  for (const finding of check.findings) { const li = document.createElement('li'); li.textContent = finding; byId('duplicateFindings').append(li); }
+  return [summary, columns, comparison, counts, ...(limit ? [limit] : []), ...check.findings,
+    'Each selected column is checked separately, not as a combined key. Group references identify the first data row in that column; reports include no SKU or other cell values. Checks do not edit, merge or remove CSV values or rows.'];
 }
 
 byId('downloadReport').addEventListener('click', () => {
