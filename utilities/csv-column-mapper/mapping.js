@@ -6,13 +6,16 @@ export function reusableHeaders(headers) { return uniqueHeaders(headers); }
 
 export function validateMapping(value) {
   const keys = ['format', 'version', 'sourceHeaders', 'destinationHeaders', 'columns'];
+  if (value?.version === 2) keys.push('required');
   if (!value || typeof value !== 'object' || Array.isArray(value) ||
       Object.keys(value).length !== keys.length || !keys.every(k => Object.hasOwn(value, k)) ||
-      value.format !== 'utilityshelf-column-mapping' || value.version !== 1 ||
+      value.format !== 'utilityshelf-column-mapping' || ![1, 2].includes(value.version) ||
       !uniqueHeaders(value.sourceHeaders) || !uniqueHeaders(value.destinationHeaders) ||
       !Array.isArray(value.columns) || value.columns.length !== value.destinationHeaders.length ||
-      !value.columns.every(i => i === null || Number.isInteger(i) && i >= 0 && i < value.sourceHeaders.length)) {
-    throw new Error('Choose a valid UtilityShelf mapping file (version 1) with distinct, nonblank headers and valid column choices.');
+      !value.columns.every(i => i === null || Number.isInteger(i) && i >= 0 && i < value.sourceHeaders.length) ||
+      (value.version === 2 && (!Array.isArray(value.required) || value.required.length !== value.destinationHeaders.length ||
+        !value.required.every(flag => typeof flag === 'boolean')))) {
+    throw new Error('Choose a valid UtilityShelf mapping file (version 1 or 2) with distinct, nonblank headers and valid column and required-field choices.');
   }
   return value;
 }

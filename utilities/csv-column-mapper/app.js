@@ -1,5 +1,5 @@
 import { csvRows, encodeRow, attachFileInput } from './csv.js';
-import { reusableHeaders, validateMapping, resolveMapping } from './mapping.js';
+import { reusableHeaders, validateMapping, resolveMapping } from './mapping.js?v=20261116-required-settings';
 const byId = id => document.getElementById(id);
 const source = byId('source'), target = byId('target'), message = byId('message');
 let records = [], labels = [], controls = [], generated = '';
@@ -102,13 +102,14 @@ function updateSave() {
 }
 function saveMapping() {
   if (byId('saveMapping').disabled) return;
-  const saved = {format:'utilityshelf-column-mapping', version:1, sourceHeaders,
-    destinationHeaders:labels, columns:controls.map(s => s.value === 'empty' ? null : Number(s.value))};
+  const saved = {format:'utilityshelf-column-mapping', version:2, sourceHeaders,
+    destinationHeaders:labels, columns:controls.map(s => s.value === 'empty' ? null : Number(s.value)),
+    required:requiredControls.map(control => control.checked)};
   const blob = new Blob([JSON.stringify(saved, null, 2) + '\n'], {type:'application/json;charset=utf-8'});
   if (blob.size > mappingLimit) { message.textContent = 'Mapping exceeds 64 KiB. Use shorter headers before saving.'; return; }
   const url = URL.createObjectURL(blob), link = document.createElement('a');
   link.href = url; link.download = 'utilityshelf-column-mapping.json'; link.click();
-  message.textContent = 'Mapping download started. It contains headers and column choices, with no data rows.';
+  message.textContent = 'Mapping download started. It contains headers, column choices and required-field choices, with no data rows.';
   setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 byId('saveMapping').addEventListener('click', saveMapping);
@@ -126,7 +127,7 @@ byId('mappingFile').addEventListener('change', async event => {
     if (request !== mappingRevision) return;
     let saved;
     try { saved = validateMapping(JSON.parse(text.replace(/^\uFEFF/, ''))); }
-    catch { throw new Error('Choose a valid UtilityShelf mapping file (version 1). The file was not applied.'); }
+    catch { throw new Error('Choose a valid UtilityShelf mapping file (version 1 or 2). The file was not applied.'); }
     if (!source.value.trim()) throw new Error('Open or paste your current source CSV before loading its mapping.');
     if (source.value.length > 2097152) throw new Error('Use a smaller CSV extract (up to 2 million characters).');
     const currentHeaders = csvRows(source.value).next().value.cells;
@@ -134,7 +135,12 @@ byId('mappingFile').addEventListener('change', async event => {
     const destination = encodeRow(saved.destinationHeaders);
     if (destination.length > 8192) throw new Error('The saved destination header exceeds the supported limit.');
     target.value = destination;
-    if (prepare(selections)) message.textContent = 'Mapping loaded by exact header name. Review every choice, then select Build mapped CSV. No export has been created yet.';
+    if (prepare(selections)) {
+      requiredControls.forEach((control, index) => { control.checked = saved.version === 2 ? saved.required[index] : false; });
+      message.textContent = 'Mapping loaded by exact header name. ' +
+        (saved.version === 2 ? 'Required-field choices restored for the destination columns. ' : 'Older mapping: required-field choices were not saved, so all start off. ') +
+        'Review every choice, then select Build mapped CSV. No export has been created yet.';
+    }
   } catch (err) {
     if (request === mappingRevision) message.textContent = err.message;
   }
