@@ -59,6 +59,13 @@ test('real practice ZIP repairs from 3/6 to 5/5 and finishes with correct contac
  await page.goto('/tools/filename-cleaner/?test-mode=1');const listChooser=page.waitForEvent('filechooser');await page.locator('#loadFilenameList').click();await (await listChooser).setFiles(listPath);await expect(page.locator('#names')).toHaveValue(order.map(f=>f.name).join('\n'));await page.locator('#mode').selectOption('numbered');await page.locator('#prefix').fill('PRACTICE-1042');
  const expected=order.map((f,i)=>'practice-1042-'+String(i+1).padStart(3,'0')+path.extname(f.name));await expect(page.locator('#result')).toHaveValue(expected.join('\n'));
  await page.locator('#photoFiles').setInputFiles([...images].reverse());await expect(page.locator('#zipStatus')).toContainText('5 photos matched by original filename');
+ const saved=await download(page,page.locator('#saveSettings'));expect(saved.suggestedFilename()).toBe('filename-cleaner-settings.json');const settingsPath=await saved.path();
+ expect(JSON.parse(fs.readFileSync(settingsPath,'utf8'))).toEqual({tool:'utilityshelf-filename-cleaner',version:1,mode:'numbered',prefix:'PRACTICE-1042',start:1,digits:3,style:'-'});
+ await page.locator('#prefix').fill('OTHER-PRODUCT');await page.locator('#start').fill('37');await page.locator('#digits').selectOption('4');await page.locator('#style').selectOption('_');
+ await expect(page.locator('#result')).not.toHaveValue(expected.join('\n'));
+ const settingsChooser=page.waitForEvent('filechooser');await page.locator('#loadSettings').click();await(await settingsChooser).setFiles(settingsPath);
+ await expect(page.locator('#prefix')).toHaveValue('PRACTICE-1042');await expect(page.locator('#start')).toHaveValue('1');await expect(page.locator('#digits')).toHaveValue('3');await expect(page.locator('#style')).toHaveValue('-');
+ await expect(page.locator('#names')).toHaveValue(order.map(f=>f.name).join('\n'));await expect(page.locator('#result')).toHaveValue(expected.join('\n'));await expect(page.locator('#zipStatus')).toContainText('5 photos matched by original filename');
  const renamed=unzip(await (await download(page,page.locator('#downloadZip'))).path());expect(Object.keys(renamed)).toEqual([...expected,'filename-mapping.txt']);
  const mapping=buffer(renamed['filename-mapping.txt']).toString();for(const [i,name] of expected.entries()){expect(buffer(renamed[name]).equals(order[i].buffer)).toBe(true);expect(mapping).toContain('Original: '+order[i].name+'\r\nNew: '+name);}
  expect(remote).toEqual([]);
