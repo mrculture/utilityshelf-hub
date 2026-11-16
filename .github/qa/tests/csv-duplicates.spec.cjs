@@ -23,7 +23,7 @@ test('all four comparison modes preserve leading-zero SKUs and exact exported by
 
 for(const [kind,csv]of [['matching',sample],['reordered',reordered]])test(kind+' saved mapping restores duplicate selections and comparison options',async({page})=>{
  await setup(page);await page.locator('#required-0').check();await page.locator('#unique-0').check();await page.locator('#ignoreCase').check();await page.locator('#trimWhitespace').check();
- const file=await download(page,'#saveMapping');expect(JSON.parse(file)).toEqual(saved);expect(file).not.toMatch(/0012|ABC|Mug/);
+ const file=await download(page,'#saveMapping');expect(JSON.parse(file)).toEqual({...saved,version:4,numericRules:['none','none','none']});expect(file).not.toMatch(/0012|ABC|Mug/);
  await page.locator('#source').fill(csv);await load(page,JSON.parse(file));await expect(page.locator('#unique-0')).toBeChecked();await expect(page.locator('#unique-1')).not.toBeChecked();await expect(page.locator('#ignoreCase')).toBeChecked();await expect(page.locator('#trimWhitespace')).toBeChecked();await expect(page.locator('#required-0')).toBeChecked();
  await expect(page.locator('#result')).toBeHidden();await page.locator('#generate').click();await expect(page.locator('#duplicateSummary')).toContainText('2 duplicate groups; 5 occurrences');expect(await download(page,'#download')).toBe('SKU,Title,Price\r\n0012,Mug,0\r\n12,Notebook,0.00\r\nABC,Frame,15\r\nabc,Stand,6\r\n ABC ,Tray,8\r\n0012,Cup,12\r\n');
 });

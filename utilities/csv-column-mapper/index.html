@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/utilities/shared.css">
 
   <script defer src="/utilities/usage.js?v=20261110-csv"></script>
-  <script type="module" src="./app.js?v=20261116-duplicates"></script>
+  <script type="module" src="./app.js?v=20261116-numeric"></script>
 </head>
 <body>
   <header><a href="/#companions">UtilityShelf tools</a></header>
@@ -29,7 +29,7 @@
       <div class="actions"><button id="prepare" type="button">Set up mapping</button> <button id="sample" type="button">Try supplier inventory</button></div>
       <p role="status" id="message">Enter both headers to begin.</p>
       <h3>Reuse a saved mapping</h3>
-      <p>Open or paste the current CSV first, then load your saved mapping to restore the destination headings, column choices, required-field choices and duplicate-check settings. Review the choices before building the export.</p>
+      <p>Open or paste the current CSV first, then load your saved mapping to restore the destination headings, column choices, required-field choices, duplicate-check settings and numeric rules. Review the choices before building the export.</p>
       <input type="file" id="mappingFile" accept=".json,application/json" hidden>
       <button id="loadMapping" type="button">Load mapping</button>
       <p class="hint">Mapping files are read locally (up to 64 KiB). Reordered columns are matched by exact header name. Added, missing or renamed headers require a new mapping; case and spaces must match.</p>
@@ -39,13 +39,16 @@
       <p>Each destination column needs a selection. Select “Use empty values” only when your importer accepts a blank column. Source columns you leave unused are excluded.</p>
       <p>Tick <strong>Required value</strong> for each destination column that must contain a value, then build the CSV. Empty and whitespace-only values are flagged; <code>0</code> and <code>0.00</code> count as present. These checks do not change the CSV. Required choices start off for a new setup, source CSV, destination header or sample. Save mapping includes these choices; Load mapping restores them for each destination column, even when source columns have moved. Older version 1 files load with all required choices off. Review them before building.</p>
       <div id="choices"></div>
+      <h3>Price and stock formats</h3>
+      <p class="hint">Choose a Numeric rule only for columns you want to validate. Price accepts non-negative digits and an optional dot decimal, with digits on both sides (for example 0, 0.00 or 12.50). Stock accepts non-negative whole-number digits, including 0; 2.0 and 2.5 are both flagged. Signs (including -0 and +1), currency symbols, grouping separators, decimal commas and exponent notation are not accepted. Outer whitespace is ignored only for validation; internal spaces are not allowed.</p>
+      <p class="hint">Blank and whitespace-only cells are skipped by numeric rules; tick Required value if the column must be populated. No values are rounded, filled or rewritten. These checks do not verify currency, maximum amounts, decimal precision or actual stock availability. Rules save with mappings and restore by destination column. Older mappings start with numeric rules off; a new setup, source CSV, destination header or sample resets them.</p>
       <h3>Duplicate comparison options</h3>
       <label><input type="checkbox" id="ignoreCase"> Ignore case when checking duplicates</label>
       <label><input type="checkbox" id="trimWhitespace"> Ignore leading/trailing whitespace when checking duplicates</label>
       <p class="hint">Tick Check duplicates for SKU or another destination column. Each selected column is checked separately. Both options start off: comparisons are exact and case-sensitive. Ignoring whitespace trims only the ends for comparison; internal spaces stay significant. Values remain text, so 0012 and 12 are different. Blank and whitespace-only cells are skipped; use Required value to flag them. No rows or values are edited or removed.</p>
       <p class="hint">Save mapping includes duplicate selections and both options. Load mapping restores them for destination columns even if source columns move. Older mappings start with duplicate checks off. A new setup, source CSV, destination header or sample resets these settings.</p>
       <div class="actions"><button id="generate" type="button">Build mapped CSV</button><button id="saveMapping" type="button" disabled>Save mapping</button></div>
-      <p class="hint">Choose every destination column to save a mapping. Reusable mappings require distinct, nonblank source headers. The downloaded JSON contains headers, column choices and required-field choices, not data rows. Keep it on your device and review its headings before sharing.</p>
+      <p class="hint">Choose every destination column to save a mapping. Reusable mappings require distinct, nonblank source headers. The downloaded JSON contains headers, column choices, required-field, duplicate and numeric rules, not data rows. Keep it on your device and review its headings before sharing.</p>
     </section>
     <section class="panel" id="result" hidden>
       <h2>Mapped CSV</h2>
@@ -55,6 +58,9 @@
       <h3>Duplicate checks</h3>
       <p id="duplicateSummary" role="status"></p><ul id="duplicateFindings" aria-label="Duplicate value locations"></ul>
       <p class="hint">Findings include every occurrence, including the first, with data-row, CSV-record and source/mapped line locations. Each group is identified by its first data row within that destination column. Up to 100 occurrences appear here and in the report; totals cover all rows. Downloads remain available for review and correction.</p>
+      <h3>Price and stock checks</h3>
+      <p id="numericSummary" role="status"></p><ul id="numericFindings" aria-label="Numeric rule issues"></ul>
+      <p class="hint">Findings identify data rows, CSV records, destination columns and source/mapped start lines without copying cell contents. All rows are checked; up to 100 numeric findings are listed here and in the report. Downloads stay available so you can review and correct a copy.</p>
       <h3>Mapping summary</h3>
       <p id="mappingSummary" role="status"></p>
       <div class="table-wrap"><table aria-label="Destination column mapping"><thead><tr><th scope="col">Destination</th><th scope="col">Source</th><th scope="col">Change</th></tr></thead><tbody id="mappingDetails"></tbody></table></div>
@@ -64,7 +70,7 @@
       <textarea id="output" rows="7" readonly spellcheck="false"></textarea>
       <div class="actions"><button id="download" type="button">Download full CSV</button><button id="downloadReport" type="button" disabled>Download mapping report (.txt)</button></div>
       <p id="reportStatus" role="status"></p>
-      <p class="hint">The report records column choices, row counts, selected required-field results and duplicate findings for this export. It includes headings and issue locations but no product-row contents; review headings before sharing. It does not certify formula safety or importer acceptance. Changing the source, destination, mapping or check settings clears the report and export until you build again.</p>
+      <p class="hint">The report records column choices, row counts, selected required-field results, duplicate findings and numeric-rule results for this export. It includes headings and issue locations but no product-row contents; review headings before sharing. It does not certify formula safety or importer acceptance. Changing the source, destination, mapping or check settings clears the report and export until you build again.</p>
     </section>
     <section>
       <h2>Try a supplier feed</h2>

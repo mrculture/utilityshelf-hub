@@ -1,6 +1,7 @@
 import { csvRows, encodeRow, attachFileInput } from './csv.js';
-import { reusableHeaders, validateMapping, resolveMapping } from './mapping.js?v=20261116-duplicates';
+import { reusableHeaders, validateMapping, resolveMapping } from './mapping.js?v=20261116-numeric';
 import { checkDuplicates } from './duplicates.js';
+import { checkNumeric } from './numeric.js';
 const byId = id => document.getElementById(id);
 const source = byId('source'), target = byId('target'), message = byId('message');
 let records = [], labels = [], controls = [], generated = '';
@@ -9,6 +10,7 @@ let sourceHeaders = [], mappingRevision = 0;
 let mappingReport = '';
 let requiredControls = [];
 let uniqueControls = [];
+let numericControls = [];
 const mappingLimit = 64 * 1024;
 const track = event => window.UtilityShelfUsage?.track('csv-column-mapper', event, 'mapped', inputSource);
 
@@ -24,6 +26,8 @@ function clearResult() {
   byId('requiredFindings').replaceChildren();
   byId('duplicateSummary').textContent = '';
   byId('duplicateFindings').replaceChildren();
+  byId('numericSummary').textContent = '';
+  byId('numericFindings').replaceChildren();
   byId('result').hidden = true;
   byId('output').value = '';
 }
@@ -36,6 +40,7 @@ function reset() {
   controls = [];
   requiredControls = [];
   uniqueControls = [];
+  numericControls = [];
   byId('ignoreCase').checked = false;
   byId('trimWhitespace').checked = false;
   byId('mapping').hidden = true;
@@ -97,7 +102,11 @@ function prepare(sampleColumns) {
       uniqueLabel.append(unique, document.createTextNode(' Check duplicates for ' + heading));
       unique.addEventListener('change', checksChanged);
       uniqueControls.push(unique);
-      fields.append(label, select, requiredLabel, uniqueLabel);
+      const numeric = document.createElement('select'); numeric.id = 'numeric-' + i;
+      for (const [value, text] of [['none', 'No numeric rule'], ['price', 'Price: non-negative decimal'], ['stock', 'Stock: non-negative whole number']]) numeric.add(new Option(text, value));
+      const numericLabel = document.createElement('label'); numericLabel.htmlFor = numeric.id; numericLabel.textContent = 'Numeric rule for ' + heading;
+      numeric.addEventListener('change', checksChanged); numericControls.push(numeric);
+      fields.append(label, select, requiredLabel, uniqueLabel, numericLabel, numeric);
       return select;
     });
     byId('choices').append(fields);
@@ -116,21 +125,21 @@ function updateSave() {
 function checksChanged() {
   mappingRevision++;
   clearResult();
-  message.textContent = 'Select Build mapped CSV to apply the revised duplicate checks. CSV values will not be changed.';
+  message.textContent = 'Select Build mapped CSV to apply the revised check settings. CSV values will not be changed.';
 }
 byId('ignoreCase').addEventListener('change', checksChanged);
 byId('trimWhitespace').addEventListener('change', checksChanged);
 function saveMapping() {
   if (byId('saveMapping').disabled) return;
-  const saved = {format:'utilityshelf-column-mapping', version:3, sourceHeaders,
+  const saved = {format:'utilityshelf-column-mapping', version:4, sourceHeaders,
     destinationHeaders:labels, columns:controls.map(s => s.value === 'empty' ? null : Number(s.value)),
     required:requiredControls.map(control => control.checked), unique:uniqueControls.map(control => control.checked),
-    ignoreCase:byId('ignoreCase').checked, trimWhitespace:byId('trimWhitespace').checked};
+    ignoreCase:byId('ignoreCase').checked, trimWhitespace:byId('trimWhitespace').checked, numericRules:numericControls.map(control => control.value)};
   const blob = new Blob([JSON.stringify(saved, null, 2) + '\n'], {type:'application/json;charset=utf-8'});
   if (blob.size > mappingLimit) { message.textContent = 'Mapping exceeds 64 KiB. Use shorter headers before saving.'; return; }
   const url = URL.createObjectURL(blob), link = document.createElement('a');
   link.href = url; link.download = 'utilityshelf-column-mapping.json'; link.click();
-  message.textContent = 'Mapping download started. It contains headers, column choices, required-field and duplicate-check settings, with no data rows.';
+  message.textContent = 'Mapping download started. It contains headers, column choices, required-field, duplicate and numeric rules, with no data rows.';
   setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 byId('saveMapping').addEventListener('click', saveMapping);
@@ -148,7 +157,7 @@ byId('mappingFile').addEventListener('change', async event => {
     if (request !== mappingRevision) return;
     let saved;
     try { saved = validateMapping(JSON.parse(text.replace(/^\uFEFF/, ''))); }
-    catch { throw new Error('Choose a valid UtilityShelf mapping file (version 1, 2 or 3). The file was not applied.'); }
+    catch { throw new Error('Choose a valid UtilityShelf mapping file (version 1–4). The file was not applied.'); }
     if (!source.value.trim()) throw new Error('Open or paste your current source CSV before loading its mapping.');
     if (source.value.length > 2097152) throw new Error('Use a smaller CSV extract (up to 2 million characters).');
     const currentHeaders = csvRows(source.value).next().value.cells;
@@ -158,12 +167,14 @@ byId('mappingFile').addEventListener('change', async event => {
     target.value = destination;
     if (prepare(selections)) {
       requiredControls.forEach((control, index) => { control.checked = saved.version >= 2 ? saved.required[index] : false; });
-      uniqueControls.forEach((control, index) => { control.checked = saved.version === 3 ? saved.unique[index] : false; });
-      byId('ignoreCase').checked = saved.version === 3 ? saved.ignoreCase : false;
-      byId('trimWhitespace').checked = saved.version === 3 ? saved.trimWhitespace : false;
+      uniqueControls.forEach((control, index) => { control.checked = saved.version >= 3 ? saved.unique[index] : false; });
+      byId('ignoreCase').checked = saved.version >= 3 ? saved.ignoreCase : false;
+      byId('trimWhitespace').checked = saved.version >= 3 ? saved.trimWhitespace : false;
+      numericControls.forEach((control, index) => { control.value = saved.version === 4 ? saved.numericRules[index] : 'none'; });
       message.textContent = 'Mapping loaded by exact header name. ' +
         (saved.version >= 2 ? 'Required-field choices restored for the destination columns. ' : 'Older mapping: required-field choices were not saved, so all start off. ') +
-        (saved.version === 3 ? 'Duplicate-check settings restored. ' : 'Older mapping: duplicate checks and comparison options start off. ') +
+        (saved.version >= 3 ? 'Duplicate-check settings restored. ' : 'Older mapping: duplicate checks and comparison options start off. ') +
+        (saved.version === 4 ? 'Numeric rules restored. ' : 'Older mapping: numeric rules start off. ') +
         'Review every choice, then select Build mapped CSV. No export has been created yet.';
     }
   } catch (err) {
@@ -215,16 +226,19 @@ function build() {
   const duplicateOptions = {indices:uniqueControls.flatMap((control,index) => control.checked ? [index] : []),
     ignoreCase:byId('ignoreCase').checked, trimWhitespace:byId('trimWhitespace').checked};
   const duplicates = checkDuplicates(records, mapping, labels, outputLines, duplicateOptions);
-  summarizeMapping(mapping, rows.length - 1, requiredCheck, duplicates, duplicateOptions);
+  const numericRules = numericControls.map(control => control.value);
+  const numeric = checkNumeric(records, mapping, labels, outputLines, numericRules);
+  summarizeMapping(mapping, rows.length - 1, requiredCheck, duplicates, duplicateOptions, numeric, numericRules);
   byId('output').value = rows.slice(0, 6).join('\n');
   byId('result').hidden = false;
   message.textContent = 'Ready to download ' + records.length + ' data rows in ' + labels.length + ' destination columns.';
   if (requiredCheck.count) message.textContent += ' Required-field issues found: review them before importing. CSV values are unchanged.';
   if (duplicates.count) message.textContent += ' Duplicate values found: review the affected rows before importing. No values or rows were changed.';
+  if (numeric.count) message.textContent += ' Numeric-rule issues found: review before importing. CSV values are unchanged.';
   track('build_complete');
 }
 
-function summarizeMapping(mapping, outputRows, requiredCheck, duplicates, duplicateOptions) {
+function summarizeMapping(mapping, outputRows, requiredCheck, duplicates, duplicateOptions, numeric, numericRules) {
   const used = new Set(mapping.filter(index => index !== 'empty').map(Number));
   const omitted = sourceHeaders.flatMap((name, index) => used.has(index) ? [] : [{name, index}]);
   const emptyCount = mapping.filter(index => index === 'empty').length;
@@ -259,6 +273,7 @@ function summarizeMapping(mapping, outputRows, requiredCheck, duplicates, duplic
   }
   lines.push('', ...summarizeRequired(requiredCheck, outputRows));
   lines.push('', ...summarizeDuplicates(duplicates, duplicateOptions, outputRows));
+  lines.push('', ...summarizeNumeric(numeric, numericRules, outputRows));
   lines.push('', 'Scope: This describes the prepared mapped.csv export, not importer acceptance or formula safety.',
     'Counts exclude the header. Inserted blanks count only destinations set to Use empty values; existing blank source cells are not counted.',
     'No cell values are transformed or sanitised. Headers are quoted with escaped control characters. This report contains headings and choices, not product-row contents.',
@@ -300,6 +315,24 @@ function summarizeDuplicates(check, options, outputRows) {
   for (const finding of check.findings) { const li = document.createElement('li'); li.textContent = finding; byId('duplicateFindings').append(li); }
   return [summary, columns, comparison, counts, ...(limit ? [limit] : []), ...check.findings,
     'Each selected column is checked separately, not as a combined key. Group references identify the first data row in that column; reports include no SKU or other cell values. Checks do not edit, merge or remove CSV values or rows.'];
+}
+
+function summarizeNumeric(check, rules, outputRows) {
+  const selected = rules.flatMap((rule, i) => rule === 'none' ? [] : [(i + 1) + '. ' + JSON.stringify(labels[i]) + ': ' + rule]);
+  let summary;
+  if (!selected.length) summary = 'Numeric rules: Not checked — no rules selected.';
+  else if (!outputRows) summary = 'Numeric rules: Not checked — no data rows.';
+  else if (!check.checked) summary = 'Numeric rules: Not checked — no nonblank values in the selected columns.';
+  else if (check.count) summary = 'Numeric rules: Issues found — ' + check.count + ' invalid values across ' + check.affectedRows + ' data rows.';
+  else summary = 'Numeric rules: Passed — all checked nonblank values match the selected formats.';
+  const settings = 'Selected numeric rules: ' + (selected.join(', ') || 'None.');
+  const counts = check.checked + ' nonblank field values checked; ' + check.skipped + ' blank or whitespace-only values skipped. Use Required value to flag missing values.';
+  const limit = check.count > 100 ? 'Showing first 100 of ' + check.count + ' numeric findings, ordered by data row then destination column. All rows were checked.' : '';
+  byId('numericSummary').textContent = [summary, settings, counts, limit].filter(Boolean).join(' ');
+  for (const finding of check.findings) { const li = document.createElement('li'); li.textContent = finding; byId('numericFindings').append(li); }
+  return [summary, settings, counts, ...(limit ? [limit] : []), ...check.findings,
+    'Price accepts digits with an optional dot decimal (digits on both sides). Stock accepts digits only, including zero; decimal notation is rejected even when the fractional part is zero.',
+    'No signs, currency symbols, grouping separators, decimal commas or exponent notation. Outer whitespace is ignored for validation only. Values remain unchanged. These format checks do not verify currency, maximum amounts, decimal precision, stock availability or importer acceptance.'];
 }
 
 byId('downloadReport').addEventListener('click', () => {

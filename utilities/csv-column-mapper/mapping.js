@@ -6,19 +6,22 @@ export function reusableHeaders(headers) { return uniqueHeaders(headers); }
 
 export function validateMapping(value) {
   const keys = ['format', 'version', 'sourceHeaders', 'destinationHeaders', 'columns'];
-  if ([2, 3].includes(value?.version)) keys.push('required');
-  if (value?.version === 3) keys.push('unique', 'ignoreCase', 'trimWhitespace');
+  if ([2, 3, 4].includes(value?.version)) keys.push('required');
+  if ([3, 4].includes(value?.version)) keys.push('unique', 'ignoreCase', 'trimWhitespace');
+  if (value?.version === 4) keys.push('numericRules');
   if (!value || typeof value !== 'object' || Array.isArray(value) ||
       Object.keys(value).length !== keys.length || !keys.every(k => Object.hasOwn(value, k)) ||
-      value.format !== 'utilityshelf-column-mapping' || ![1, 2, 3].includes(value.version) ||
+      value.format !== 'utilityshelf-column-mapping' || ![1, 2, 3, 4].includes(value.version) ||
       !uniqueHeaders(value.sourceHeaders) || !uniqueHeaders(value.destinationHeaders) ||
       !Array.isArray(value.columns) || value.columns.length !== value.destinationHeaders.length ||
       !value.columns.every(i => i === null || Number.isInteger(i) && i >= 0 && i < value.sourceHeaders.length) ||
       (value.version >= 2 && (!Array.isArray(value.required) || value.required.length !== value.destinationHeaders.length ||
         !value.required.every(flag => typeof flag === 'boolean'))) ||
-      (value.version === 3 && (!Array.isArray(value.unique) || value.unique.length !== value.destinationHeaders.length ||
-        !value.unique.every(flag => typeof flag === 'boolean') || typeof value.ignoreCase !== 'boolean' || typeof value.trimWhitespace !== 'boolean'))) {
-    throw new Error('Choose a valid UtilityShelf mapping file (version 1, 2 or 3) with distinct, nonblank headers and valid check settings.');
+      (value.version >= 3 && (!Array.isArray(value.unique) || value.unique.length !== value.destinationHeaders.length ||
+        !value.unique.every(flag => typeof flag === 'boolean') || typeof value.ignoreCase !== 'boolean' || typeof value.trimWhitespace !== 'boolean')) ||
+      (value.version === 4 && (!Array.isArray(value.numericRules) || value.numericRules.length !== value.destinationHeaders.length ||
+        !value.numericRules.every(rule => ['none', 'price', 'stock'].includes(rule))))) {
+    throw new Error('Choose a valid UtilityShelf mapping file (version 1–4) with distinct, nonblank headers and valid check settings.');
   }
   return value;
 }

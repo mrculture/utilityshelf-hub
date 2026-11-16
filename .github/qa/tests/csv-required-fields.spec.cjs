@@ -48,7 +48,7 @@ test('inserted blanks and reused source values count per field and cap detail wi
 
 test('changing required choices invalidates results and loading a legacy mapping resets selections',async({page})=>{
  await setup(page,'SKU,Price\nA,0','SKU,Price',['0','1']);await requireFields(page,[1]);await expect(page.locator('#requiredSummary')).toContainText('Passed');
- const mapping=await download(page,'#saveMapping');const legacy=JSON.parse(mapping);expect(legacy.version).toBe(3);expect(legacy.required).toEqual([false,true]);legacy.version=1;delete legacy.required;delete legacy.unique;delete legacy.ignoreCase;delete legacy.trimWhitespace;
+ const mapping=await download(page,'#saveMapping');const legacy=JSON.parse(mapping);expect(legacy.version).toBe(4);expect(legacy.required).toEqual([false,true]);legacy.version=1;delete legacy.required;delete legacy.unique;delete legacy.ignoreCase;delete legacy.trimWhitespace;delete legacy.numericRules;
  await page.locator('#required-1').uncheck();await expect(page.locator('#result')).toBeHidden();await expect(page.locator('#downloadReport')).toBeDisabled();await expect(page.locator('#requiredSummary')).toBeEmpty();
  await requireFields(page,[1]);await page.locator('#mappingFile').setInputFiles({name:'mapping.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(legacy))});
  await expect(page.locator('#message')).toContainText('Mapping loaded');await expect(page.locator('#required-1')).not.toBeChecked();await page.locator('#generate').click();await expect(page.locator('#requiredSummary')).toContainText('Not checked');
