@@ -75,6 +75,9 @@
     </section>
     <section class="panel" aria-labelledby="review"><h2 id="review">Review proposed names</h2>
       <p class="hint">Edit any suggestion. Changing naming settings regenerates the suggestions and replaces your edits. Numbered names follow the order of the original list.</p>
+      <button id="undoNaming" type="button" disabled>Undo naming changes</button>
+      <p id="undoNamingStatus" role="status"></p>
+      <p class="hint">Undo restores the previous settings and proposed names, including manual edits. Up to 20 changes are kept for this filename list while the page stays open; typing in one field counts as one change. Changing or loading the original list, trying the sample or reloading the page clears this history. Photos and privacy choices stay as they are. Undo cancels pending file reads and ZIP preparation. Review restored names and download fresh outputs; previously downloaded files do not change.</p>
       <div id="rows"></div>
       <div class="bar foot"><span id="summary" role="status"></span><button id="copy" class="primary" disabled>Copy final list</button><button id="downloadMapping" type="button" disabled>Download filename mapping (.txt)</button></div>
       <span id="copyStatus" role="status"></span>
@@ -117,7 +120,7 @@
     <footer><a href="https://utilityshelf.site/privacy">Privacy</a> · <a href="https://utilityshelf.site/terms">Terms</a> · <a href="https://utilityshelf.site/contact">Contact</a></footer>
   </main>
   <script src="zip.js?v=20261110-photo-zip" defer></script>
-  <script src="app.js?v=20261116-naming-settings" defer></script>
+  <script src="app.js?v=20261116-naming-undo" defer></script>
 
 </body>
 </html>

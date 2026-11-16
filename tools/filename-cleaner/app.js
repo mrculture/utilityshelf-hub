@@ -3,6 +3,27 @@
     const mode = byId('mode'), prefix = byId('prefix'), start = byId('start'), digits = byId('digits');
     const examples = ['Front View.JPG','front_view.jpg','Side (Left).png','Rear – Detail 02.jpeg','Box & Accessories.webp'];
     let batch = [];
+    const namingHistory = [];
+    let currentNamingState = null, namingEditGroup = null;
+    const namingFields = {mode, prefix, start, digits, style};
+    function namingState() {
+      return {originalList:names.value, settings:Object.fromEntries(Object.entries(namingFields).map(([id,control]) => [id,control.value])),
+        items:batch.map(item => [item.id,item.value])};
+    }
+    function rememberNaming(group = null) {
+      if (currentNamingState && (!group || namingEditGroup !== group)) {
+        namingHistory.push(currentNamingState);
+        if (namingHistory.length > 20) namingHistory.shift();
+      }
+      namingEditGroup = group;
+      byId('undoNamingStatus').textContent = '';
+    }
+    function clearNamingHistory() {
+      const hadHistory = namingHistory.length > 0;
+      namingHistory.length = 0; namingEditGroup = null;
+      byId('undoNamingStatus').textContent = hadHistory ? 'Original filename list changed. Naming undo history cleared.' : '';
+    }
+    document.addEventListener('focusout', event => { if (event.target === namingEditGroup) namingEditGroup = null; });
     let inputSource = 'custom', readyTimer;
     const recorded = new Set();
     const usageTestMode = new URLSearchParams(location.search).has('test-mode');
@@ -99,10 +120,12 @@
       byId('manual').hidden = !ready;
       byId('copyStatus').textContent = '';
       refreshPhotoZip();
+      currentNamingState = namingState();
+      byId('undoNaming').disabled = !namingHistory.length;
       // Count a stable valid list, not every keystroke or intermediate suggestion.
       if (ready) readyTimer = setTimeout(() => track('ready'),1500);
     }
-    function rebuild(reset = false) {
+    function rebuild(reset = false, restoredValues = null) {
       const prior = new Map(batch.map(item => [item.id,item.value]));
       const occurrences = new Map();
       const settingError = settingsIssue();
@@ -112,7 +135,7 @@
         const seq = (occurrences.get(original) || 0) + 1;
         occurrences.set(original,seq);
         const id = JSON.stringify([original,seq]);
-        const value = !reset && mode.value === 'clean' && prior.has(id) ? prior.get(id) : proposed(original,batch.length,settingError);
+        const value = restoredValues?.has(id) ? restoredValues.get(id) : !reset && mode.value === 'clean' && prior.has(id) ? prior.get(id) : proposed(original,batch.length,settingError);
         const row = document.createElement('div'); row.className = 'pair';
         const left = document.createElement('div'); left.className = 'original'; left.textContent = original;
         const right = document.createElement('div'), label = document.createElement('label'), input = document.createElement('input'), note = document.createElement('div');
@@ -121,12 +144,12 @@
         input.value = value; input.spellcheck = false;
         note.id = 'issue-' + index; note.className = 'issue'; input.setAttribute('aria-describedby',note.id);
         const item = {id, original, value, input, note};
-        input.addEventListener('input', () => { item.value = input.value; update(); });
+        input.addEventListener('input', () => { if (item.value !== input.value) rememberNaming(input); item.value = input.value; update(); });
         right.append(label,input,note); row.append(left,right); rows.append(row); batch.push(item);
       }
       update();
     }
-    names.addEventListener('input', () => { inputSource = 'custom'; rebuild(); });
+    names.addEventListener('input', () => { clearNamingHistory(); inputSource = 'custom'; rebuild(); });
     const listPicker = byId('filenameListFile'), listStatus = byId('filenameListStatus');
     let listReadRevision = 0, readingList = false;
     function cancelListRead() {
@@ -154,7 +177,7 @@
         const lines = text.replace(/^\uFEFF/, '').split(/\r\n|\r|\n/).filter(line => line.trim());
         if (!lines.length || lines.length > 1000) throw new Error('Use between 1 and 1,000 filenames, one per line.');
         if (lines.some(line => /[\\/\u0000-\u001f\u007f]/.test(line))) throw new Error('Use filenames only, without folder paths or control characters.');
-        names.value = lines.join('\n'); inputSource = 'custom'; rebuild(true);
+        clearNamingHistory(); names.value = lines.join('\n'); inputSource = 'custom'; rebuild(true);
         listStatus.textContent = 'Loaded ' + lines.length + ' filenames in file order. Review the proposed names and select the matching photos for the ZIP.';
       } catch (error) {
         if (revision === listReadRevision) listStatus.textContent = 'List not loaded. ' + error.message + ' Your previous list and results are unchanged.';
@@ -223,6 +246,7 @@
         try { value = JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)); }
         catch { throw Error('The file must contain valid UTF-8 JSON.'); }
         const settings = checkedNamingSettings(value);
+        rememberNaming();
         mode.value = settings.mode; prefix.value = settings.prefix; start.value = String(settings.start);
         digits.value = String(settings.digits); style.value = settings.style;
         byId('numbering').hidden = settings.mode !== 'numbered';
@@ -232,12 +256,26 @@
         if (revision === settingsReadRevision) savedSettingsStatus.textContent = 'Settings not loaded. ' + error.message + ' Your current settings and results are unchanged.';
       } finally { if (revision === settingsReadRevision) readingSettings = false; }
     });
-    style.addEventListener('change', () => rebuild(true));
-    mode.addEventListener('change', () => { byId('numbering').hidden = mode.value !== 'numbered'; rebuild(true); });
-    prefix.addEventListener('input', () => rebuild(true));
-    start.addEventListener('input', () => rebuild(true));
-    digits.addEventListener('change', () => rebuild(true));
-    byId('sample').addEventListener('click', () => { inputSource = 'sample'; names.value = examples.join('\n'); rebuild(true); });
+    for (const control of [style, mode, prefix, start, digits]) {
+      control.addEventListener(control === prefix || control === start ? 'input' : 'change', () => {
+        if (currentNamingState?.settings[control.id] === control.value) return;
+        rememberNaming(control === prefix || control === start ? control : null);
+        byId('numbering').hidden = mode.value !== 'numbered';
+        rebuild(true);
+      });
+    }
+    byId('sample').addEventListener('click', () => { clearNamingHistory(); inputSource = 'sample'; names.value = examples.join('\n'); rebuild(true); });
+    byId('undoNaming').addEventListener('click', () => {
+      if (!namingHistory.length) return;
+      cancelSettingsRead(); cancelListRead();
+      const saved = namingHistory.pop(); namingEditGroup = null;
+      if (saved.originalList !== names.value) { clearNamingHistory(); byId('undoNaming').disabled = true; return; }
+      for (const [id,control] of Object.entries(namingFields)) control.value = saved.settings[id];
+      byId('numbering').hidden = mode.value !== 'numbered';
+      savedSettingsStatus.textContent = '';
+      rebuild(true, new Map(saved.items));
+      byId('undoNamingStatus').textContent = 'Restored previous naming settings and proposed names. ' + namingHistory.length + ' earlier changes available. Photo selection and privacy choice are unchanged. Review the final list and download a fresh mapping and ZIP.';
+    });
     function selectList() {
       byId('result').focus();
       byId('result').select();
