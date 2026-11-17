@@ -43,7 +43,7 @@ test('inserted blanks and reused source values count per field and cap detail wi
  await expect(page.locator('#requiredSummary')).toContainText('3 missing values across 1 data rows');expect(await download(page,'#downloadReport')).toContain('empty value inserted by mapping');
  await setup(page,'SKU,Price\n'+Array.from({length:105},(_,i)=>`A${i},`).join('\n'),'SKU,Price',['0','1']);await requireFields(page,[1]);
  await expect(page.locator('#requiredSummary')).toContainText('105 missing values across 105 data rows');await expect(page.locator('#requiredFindings li')).toHaveCount(100);
- const report=await download(page,'#downloadReport');expect(report).toContain('Showing first 100 of 105 findings. All data rows were checked.');expect(report.match(/Data row \d+ /g)).toHaveLength(100);expect(report).toContain('Data row 100 (CSV record 101)');
+ const report=await download(page,'#downloadReport');expect(report).toContain('Showing first 100 of 105 findings. All data rows were checked.');expect(report.split('Combined problem rows')[0].match(/Data row \d+ /g)).toHaveLength(100);expect(report).toContain('Data row 100 (CSV record 101)');
 });
 
 test('changing required choices invalidates results and loading a legacy mapping resets selections',async({page})=>{

@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/utilities/shared.css">
 
   <script defer src="/utilities/usage.js?v=20261110-csv"></script>
-  <script type="module" src="./app.js?v=20261116-numeric"></script>
+  <script type="module" src="./app.js?v=20261117-problems"></script>
 </head>
 <body>
   <header><a href="/#companions">UtilityShelf tools</a></header>
@@ -52,6 +52,13 @@
     </section>
     <section class="panel" id="result" hidden>
       <h2>Mapped CSV</h2>
+      <h3>Problem rows</h3>
+      <p id="problemSummary" role="status"></p>
+      <button id="showProblems" type="button" aria-expanded="false" aria-controls="problemRows" disabled>Show problem rows</button>
+      <div id="problemRows" hidden>
+        <p class="hint">One entry per failed check, ordered by data row then destination column. All rows are checked; the first 100 issues are shown. Values below are JSON-quoted so blanks, spaces and line breaks are distinguishable; previews longer than 200 characters are shortened. Values stay in your browser and are omitted from the mapping report. This view does not edit, remove or filter rows from the downloaded CSV.</p>
+        <div class="table-wrap"><table aria-label="Problem rows"><thead><tr><th scope="col">Row and lines</th><th scope="col">Column mapping</th><th scope="col">Value preview</th><th scope="col">Reason</th></tr></thead><tbody id="problemDetails"></tbody></table></div>
+      </div>
       <h3>Required-field checks</h3>
       <p id="requiredSummary" role="status"></p><ul id="requiredFindings" aria-label="Missing required values"></ul>
       <p class="hint">Review flagged values before importing. Downloads stay available so you can save and correct the mapped file. Data rows exclude the header; CSV records include it. Source and mapped CSV line numbers mark the start of each record, allowing for multiline fields. All rows are checked; up to 100 findings are listed here and in the report. Presence checks do not validate prices or your importer's other rules; use Duplicate checks below for selected-column uniqueness.</p>

@@ -1,7 +1,8 @@
 import { csvRows, encodeRow, attachFileInput } from './csv.js';
 import { reusableHeaders, validateMapping, resolveMapping } from './mapping.js?v=20261116-numeric';
-import { checkDuplicates } from './duplicates.js';
-import { checkNumeric } from './numeric.js';
+import { checkDuplicates } from './duplicates.js?v=20261117-problems';
+import { checkNumeric } from './numeric.js?v=20261117-problems';
+import { problemCollector, renderProblems } from './problems.js';
 const byId = id => document.getElementById(id);
 const source = byId('source'), target = byId('target'), message = byId('message');
 let records = [], labels = [], controls = [], generated = '';
@@ -16,6 +17,12 @@ const track = event => window.UtilityShelfUsage?.track('csv-column-mapper', even
 
 function clearResult() {
   generated = '';
+  byId('showProblems').disabled = true;
+  byId('problemRows').hidden = true;
+  byId('showProblems').setAttribute('aria-expanded', 'false');
+  byId('showProblems').textContent = 'Show problem rows';
+  byId('problemSummary').textContent = '';
+  byId('problemDetails').replaceChildren();
   mappingReport = '';
   byId('downloadReport').disabled = true;
   byId('reportStatus').textContent = '';
@@ -194,6 +201,7 @@ function build() {
   const rows = [encodeRow(labels)];
   let length = rows[0].length + 2;
   const requiredIndices = requiredControls.flatMap((control,index) => control.checked ? [index] : []);
+  const problems = problemCollector();
   const requiredCheck = {indices:requiredIndices, count:0, affectedRows:0, findings:[]};
   const lineBreaks = text => (text.match(/\r\n|\r|\n/g) || []).length;
   let outputLine = lineBreaks(rows[0]) + 2;
@@ -214,6 +222,7 @@ function build() {
     for (const index of requiredIndices) {
       if (values[index].trim() !== '') continue;
       requiredCheck.count++; rowMissing = true;
+      problems.add(rowIndex, index, mapping[index] === 'empty' ? 'empty value inserted by mapping' : values[index] === '' ? 'blank cell' : 'whitespace-only value');
       if (requiredCheck.findings.length < 100) requiredCheck.findings.push(
         'Data row ' + (rowIndex + 1) + ' (CSV record ' + (rowIndex + 2) + '), destination column ' + (index + 1) + ' ' + JSON.stringify(labels[index]) +
         ': ' + (mapping[index] === 'empty' ? 'empty value inserted by mapping' : values[index] === '' ? 'blank cell' : 'whitespace-only value') +
@@ -225,10 +234,12 @@ function build() {
   generated = rows.join('\r\n') + '\r\n';
   const duplicateOptions = {indices:uniqueControls.flatMap((control,index) => control.checked ? [index] : []),
     ignoreCase:byId('ignoreCase').checked, trimWhitespace:byId('trimWhitespace').checked};
-  const duplicates = checkDuplicates(records, mapping, labels, outputLines, duplicateOptions);
+  const duplicates = checkDuplicates(records, mapping, labels, outputLines, duplicateOptions, problems.add);
   const numericRules = numericControls.map(control => control.value);
-  const numeric = checkNumeric(records, mapping, labels, outputLines, numericRules);
+  const numeric = checkNumeric(records, mapping, labels, outputLines, numericRules, problems.add);
   summarizeMapping(mapping, rows.length - 1, requiredCheck, duplicates, duplicateOptions, numeric, numericRules);
+  const problemLines = renderProblems(problems, records, mapping, labels, sourceHeaders, outputLines, requiredIndices.length + duplicateOptions.indices.length + numericRules.filter(rule => rule !== 'none').length);
+  mappingReport += '\r\n' + problemLines.join('\r\n') + '\r\n';
   byId('output').value = rows.slice(0, 6).join('\n');
   byId('result').hidden = false;
   message.textContent = 'Ready to download ' + records.length + ' data rows in ' + labels.length + ' destination columns.';
@@ -366,3 +377,10 @@ byId('download').addEventListener('click', () => {
   setTimeout(() => URL.revokeObjectURL(url), 30000);
 });
 attachFileInput(byId('file'), source, message);
+
+byId('showProblems').addEventListener('click', () => {
+  const open = byId('problemRows').hidden;
+  byId('problemRows').hidden = !open;
+  byId('showProblems').setAttribute('aria-expanded', String(open));
+  byId('showProblems').textContent = open ? 'Hide problem rows' : 'Show problem rows';
+});
