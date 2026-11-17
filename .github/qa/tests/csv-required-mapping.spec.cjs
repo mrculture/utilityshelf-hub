@@ -17,7 +17,8 @@ for(const [kind,csv,columns]of [['matching',original,['0','1','2']],['reordered'
  await expect(page.locator('#result')).toBeHidden();await expect(page.locator('#downloadReport')).toBeDisabled();await expect(page.locator('#message')).toContainText('Required-field choices restored');
  await page.locator('#generate').click();expect(await download(page,'#download')).toBe(before);
  const report=await download(page,'#downloadReport');expect(report).toContain('2 missing values across 2 data rows');
- const findings=text=>text.split('\r\n').filter(line=>/^Data row \d/.test(line));expect(findings(report)).toEqual(findings(beforeReport));
+ const findings=text=>text.split('Combined problem rows')[0].split('\r\n').filter(line=>/^Data row \d/.test(line));expect(findings(report)).toEqual(findings(beforeReport));
+ const combined=report.split('Combined problem rows')[1];for(const index of [0,2])expect(combined).toContain('Destination column '+(index+1)+' '+JSON.stringify(saved.destinationHeaders[index])+' ← source column '+(Number(columns[index])+1)+' '+JSON.stringify(saved.sourceHeaders[index]));
  expect(report).toContain('Selected required destination columns: 1. "SKU", 3. "Price"');expect(findings(report).join('\n')).not.toContain('whitespace-only value');
 });
 
