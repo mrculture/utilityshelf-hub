@@ -1,0 +1,17 @@
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.snapshot-grid fieldset {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: .45rem;
+}
+.snapshot-grid legend { font-weight: 650 }
+.snapshot-grid select { width: 100% }
+#resultRows td:first-child { font-family: ui-monospace, Consolas, monospace; white-space: pre-wrap }
+#resultRows td[data-changed] { background: #edf5ef; font-weight: 650 }
+@media (max-width: 680px) {
+  .snapshot-grid { grid-template-columns: minmax(0, 1fr) }
+}

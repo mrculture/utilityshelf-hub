@@ -681,6 +681,7 @@ footer p {
 .photo-workflow h2 { margin: 8px 0; font-size: clamp(1.8rem, 3vw, 2.6rem); }
 .workflow-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; padding: 0; margin: 24px 0; list-style: none; }
 .workflow-steps li { display: flex; flex-direction: column; align-items: flex-start; padding: 20px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-soft); }
+#supplier-csv .workflow-optional { grid-column: 1 / -1; }
 .workflow-step { font-size: .8rem; text-transform: uppercase; font-weight: 800; color: var(--teal-dark); }
 .workflow-steps h3 { margin: 12px 0 4px; }
 .workflow-steps p { margin: 8px 0 20px; }

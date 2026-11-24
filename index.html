@@ -16,7 +16,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://utilityshelf.site/">
     <link rel="canonical" href="https://utilityshelf.site/">
-    <link rel="stylesheet" href="/styles.css?v=20261110-finder">
+    <link rel="stylesheet" href="/styles.css?v=20261124-supplier-compare">
     <script defer src="/tool-finder.js?v=20261110-finder"></script>
     <script type="application/ld+json">
       {
@@ -233,6 +233,13 @@
             <p>Find cells a spreadsheet might interpret as formulas.</p>
             <a class="button" href="/utilities/csv-formula-checker/">Check CSV formulas</a>
           </article>
+          <article class="tool-card tool-card-meta" data-categories="data" data-keywords="csv supplier inventory sku compare comparison snapshot price stock added missing products">
+            <span class="tool-icon" aria-hidden="true">Δ</span>
+            <p class="tag">Data imports</p>
+            <h3>Supplier CSV Compare</h3>
+            <p>Compare two supplier CSVs by SKU to see which products were added or went missing and where price or stock changed.</p>
+            <a class="button" href="/utilities/supplier-csv-compare/">Compare supplier CSVs</a>
+          </article>
           <article class="tool-card tool-card-meta" data-categories="data text" data-keywords="list compare differences duplicates identifiers text">
             <span class="tool-icon" aria-hidden="true">≠</span>
             <p class="tag">Data imports</p>
@@ -295,6 +302,7 @@
           <li><span class="workflow-step">1 · Check</span><h3>Check the file structure</h3><p>Find duplicate headers, quoting problems and rows with missing or extra fields. Correct the source before mapping.</p><a href="https://csv-import-checker.utilityshelf.site/">Check a CSV before importing</a></li>
           <li><span class="workflow-step">2 · Map</span><h3>Match your template</h3><p>Rename and reorder supplier columns to match your destination's headings, then download the mapped CSV.</p><a href="/utilities/csv-column-mapper/">Map supplier columns</a></li>
           <li><span class="workflow-step">3 · Review</span><h3>Review formula warnings</h3><p>Check the downloaded CSV for values a spreadsheet might treat as formulas. Review any flags before using the file.</p><a href="/utilities/csv-formula-checker/">Check CSV formulas</a></li>
+          <li class="workflow-optional"><span class="workflow-step">4 · Compare (optional)</span><h3>Compare with the previous supplier file</h3><p>If you have a previous export, check which SKUs were added or went missing and where price or stock changed before importing.</p><a href="/utilities/supplier-csv-compare/">Compare old and new CSVs</a></li>
         </ol>
         <p class="workflow-note">Files stay in your browser. Choose the file separately in each tool. After making changes, recheck the final export's structure and your destination's required fields.</p>
         <a class="button" href="/guides/prepare-supplier-csv-for-import">Follow the supplier CSV walkthrough</a>
@@ -342,7 +350,7 @@
       </div>
     </footer>
     <!-- Cloudflare Web Analytics -->
-    <script src="/utilities/usage.js?v=20261124-workflow-nav" defer></script>
+    <script src="/utilities/usage.js?v=20261124-supplier-compare" defer></script>
     <!-- End Cloudflare Web Analytics -->
     <script src="/photo-workflow.js?v=20261110-workflow-tracking" defer></script>
   </body>

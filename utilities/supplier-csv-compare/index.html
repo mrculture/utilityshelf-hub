@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Supplier CSV Compare | UtilityShelf</title>
+  <meta name="description" content="Compare two supplier inventory CSVs by SKU. Find added and missing products and review previous and current prices and stock counts in your browser.">
+  <link rel="canonical" href="https://utilityshelf.site/utilities/supplier-csv-compare/">
+  <link rel="stylesheet" href="/utilities/shared.css?v=20261124-workflow-nav">
+  <link rel="stylesheet" href="./tool.css">
+  <script src="/utilities/usage.js?v=20261124-supplier-compare" defer></script>
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header><a href="/#companions">UtilityShelf tools</a></header>
+  <main>
+    <p class="eyebrow">Data preparation</p>
+    <h1>Supplier CSV Compare</h1>
+    <p class="intro">Compare a previous inventory CSV with the latest one. Match products by SKU to see what was added, what is missing, and which prices or stock counts changed. Both files are processed in your browser.</p>
+    <nav class="workflow-nav" aria-label="Supplier CSV workflow">
+      <p><strong>Supplier CSV workflow · Step 4 of 4 (optional)</strong></p>
+      <div class="workflow-nav-links">
+        <a href="/utilities/csv-formula-checker/">Previous: CSV Formula Checker</a>
+        <a href="/guides/prepare-supplier-csv-for-import#verify-final-csv">Next: Verify the final CSV</a>
+        <a href="/guides/prepare-supplier-csv-for-import">Guide: Supplier CSV guide</a>
+      </div>
+    </nav>
+
+    <section class="panel" aria-labelledby="inputsTitle">
+      <h2 id="inputsTitle">Choose two supplier snapshots</h2>
+      <p class="hint">Use comma-separated UTF-8 CSVs with a header. Each file can contain up to 25,000 data rows and be up to 2 MiB. Open a file or paste its CSV text.</p>
+      <div class="snapshot-grid">
+        <div>
+          <label for="previousFile">Open previous CSV</label>
+          <input id="previousFile" type="file" accept=".csv,text/csv">
+          <label for="previous">Previous CSV text</label>
+          <textarea id="previous" rows="7" spellcheck="false" placeholder="SKU,Price,Stock"></textarea>
+        </div>
+        <div>
+          <label for="currentFile">Open latest CSV</label>
+          <input id="currentFile" type="file" accept=".csv,text/csv">
+          <label for="current">Latest CSV text</label>
+          <textarea id="current" rows="7" spellcheck="false" placeholder="SKU,Price,Stock"></textarea>
+        </div>
+      </div>
+      <div class="actions"><button id="readHeaders" type="button">Read headers</button><button id="sample" type="button">Try supplier example</button></div>
+      <div id="columnChoices" hidden>
+        <h3>Match the columns in each file</h3>
+        <p class="hint">Select the SKU, price and stock headings for each file. The columns can have different names or positions.</p>
+        <div class="snapshot-grid">
+          <fieldset>
+            <legend>Previous CSV</legend>
+            <label for="previousSku">SKU column</label><select id="previousSku"></select>
+            <label for="previousPrice">Price column</label><select id="previousPrice"></select>
+            <label for="previousStock">Stock column</label><select id="previousStock"></select>
+          </fieldset>
+          <fieldset>
+            <legend>Latest CSV</legend>
+            <label for="currentSku">SKU column</label><select id="currentSku"></select>
+            <label for="currentPrice">Price column</label><select id="currentPrice"></select>
+            <label for="currentStock">Stock column</label><select id="currentStock"></select>
+          </fieldset>
+        </div>
+        <div class="actions"><button id="compare" class="primary" type="button">Compare by SKU</button></div>
+      </div>
+      <p id="status" role="status">Choose both CSVs, then select Read headers.</p>
+    </section>
+
+    <section id="results" class="panel" hidden aria-labelledby="resultsTitle">
+      <h2 id="resultsTitle">Comparison results</h2>
+      <p id="summary" role="status"></p>
+      <label for="resultKind">Show products</label>
+      <select id="resultKind">
+        <option value="changed">Changed price or stock</option>
+        <option value="added">Added · only in latest CSV</option>
+        <option value="missing">Missing · only in previous CSV</option>
+      </select>
+      <p id="pageStatus" role="status"></p>
+      <div id="resultTable" class="table-wrap">
+        <table aria-label="Supplier CSV differences">
+          <thead><tr><th scope="col">SKU</th><th scope="col">Previous price</th><th scope="col">Latest price</th><th scope="col">Previous stock</th><th scope="col">Latest stock</th><th scope="col">Difference</th></tr></thead>
+          <tbody id="resultRows"></tbody>
+        </table>
+      </div>
+      <div id="resultPager" class="actions" role="group" aria-label="Comparison pages" hidden>
+        <button id="previousPage" type="button">Previous page</button>
+        <button id="nextPage" type="button">Next page</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="matchingTitle">
+      <h2 id="matchingTitle">How matching works</h2>
+      <p>SKUs match exactly, including capitals, spaces and leading zeros. For example, <code>0012</code> and <code>12</code> are different products. Each file needs one nonblank row identifier per product. Resolve blank or repeated SKUs before comparing.</p>
+      <p>Prices use non-negative digits with an optional decimal point, and stock uses whole numbers. Use the same currency and stock units in both files. <code>7.50</code> and <code>7.5</code> compare as equal, while a blank cell is different from zero.</p>
+      <p>Check the source files before acting on a difference. A missing SKU may mean the latest CSV covers a different set of products.</p>
+    </section>
+  </main>
+  <footer><a href="/#companions">More utilities</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer>
+</body>
+</html>

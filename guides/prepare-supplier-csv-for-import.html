@@ -91,7 +91,21 @@ A106,"   ","   "</code></pre>
     <p>The checker flags prefixes; it does not sanitise the file. Review the intended values and your spreadsheet's text-import settings. Do not assume that adding quotes makes a CSV safe. See <a href="https://community.owasp.org/attacks/CSV_Injection">OWASP's CSV formula-injection guidance</a> for application-specific limitations.</p>
     <p>Select <strong>Download check report (.txt)</strong> to save the formula review. The mapped corrected example has three columns and three data rows: expect <strong>0 fields to review out of 12 checked</strong>, including the header. For a deliberate warning, change the Notebook title in a practice copy to <code>=SUM(2)</code> and rescan; the report should identify record 3, line 3, column 2.</p>
     <p>The two checker reports use <strong>Passed</strong>, <strong>Issues found</strong> or <strong>Check incomplete</strong>. An incomplete check, for example from a missing closing quote, is not a pass. Reports list up to 100 findings and state when more were found. They can include header names or field previews, so review them before sharing. Keep reports alongside the exact CSV you checked and rerun after changes.</p>
-    <h2 id="verify-final-csv">5. Check the final saved file</h2>
+    <h2>5. Compare with the previous supplier file (optional)</h2>
+    <p>Open <a href="/utilities/supplier-csv-compare/">Supplier CSV Compare</a> when you have two exports covering the same supplier catalogue. Open or paste the earlier export as the previous CSV and the incoming export as the current CSV. Select <strong>Read headers</strong>, choose the SKU, Price and Stock columns in each file, then select <strong>Compare by SKU</strong>.</p>
+    <p>For a practice run, paste this as the previous CSV.</p>
+    <pre class="example-block"><code>SKU,Price,Stock
+0012,12.50,3
+A102,6.50,2
+A103,15,4</code></pre>
+    <p>Paste this as the current CSV and select <strong>Unit price</strong> for its Price column.</p>
+    <pre class="example-block"><code>Stock,SKU,Unit price
+4,0012,12.5
+2,A102,7.00
+1,12,19.00</code></pre>
+    <p>Expect one added SKU (<code>12</code>) and one missing SKU (<code>A103</code>). Stock for <code>0012</code> rises from 3 to 4 and price for <code>A102</code> rises from 6.50 to 7.00. The price for <code>0012</code> stays the same because 12.50 and 12.5 are equal.</p>
+    <p>SKUs are matched as exact text, including leading zeros, case and spaces. A duplicate or blank SKU stops the comparison so you can correct the source. Prices use non-negative decimals and stock uses non-negative whole numbers. Blank prices and stock counts are treated as missing values distinct from zero. Check the supplier's export scope before acting on a missing SKU.</p>
+    <h2 id="verify-final-csv">6. Check the final saved file</h2>
     <ol class="checklist">
       <li>Run CSV Import Checker on the exact export you intend to import, especially after making corrections.</li>
       <li>Confirm required fields, currencies, decimal separators, identifiers and stock values against the destination's specification.</li>
@@ -102,5 +116,5 @@ A106,"   ","   "</code></pre>
     <p><a href="/utilities/csv-column-mapper/">Map supplier columns</a> · <a href="/guides/prepare-product-photos-for-ebay">Prepare listing photos</a></p>
   </article></main>
   <footer><div class="footer-inner"><p>UtilityShelf · Practical browser tools</p><nav aria-label="Footer"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a></nav></div></footer>
-  <script defer src="/utilities/usage.js?v=20261124-workflow-nav"></script>
+  <script defer src="/utilities/usage.js?v=20261124-supplier-compare"></script>
 </body></html>

@@ -11,6 +11,7 @@ const photoGuide = hub + '/guides/prepare-product-photos-for-ebay';
 const csvImport = 'https://csv-import-checker.utilityshelf.site/';
 const mapper = hub + '/utilities/csv-column-mapper/';
 const formula = hub + '/utilities/csv-formula-checker/';
+const comparator = hub + '/utilities/supplier-csv-compare/';
 const csvGuide = hub + '/guides/prepare-supplier-csv-for-import';
 
 const workflows = [
@@ -19,7 +20,8 @@ const workflows = [
   [filename, [sheet, photoGuide + '#verify-listing-photos', photoGuide]],
   [csvImport, [hub + '/#supplier-csv', mapper, csvGuide]],
   [mapper, [csvImport, formula, csvGuide]],
-  [formula, [mapper, csvGuide + '#verify-final-csv', csvGuide]],
+  [formula, [mapper, comparator, csvGuide]],
+  [comparator, [formula, csvGuide + '#verify-final-csv', csvGuide]],
 ];
 
 // Keep production origins so cross-subdomain navigation uses the public link
@@ -80,9 +82,21 @@ test('supplier guide keeps test mode when continuing to the CSV tools', async ({
   const tracked = await serveSite(page);
   await page.goto(testUrl(csvGuide));
   await expect(page.locator('#testModeNotice')).toBeVisible();
-  for (const destination of [csvImport, mapper, formula]) {
+  for (const destination of [csvImport, mapper, formula, comparator]) {
     await expect(page.locator('article').locator('a[href="' + testUrl(destination) + '"]').first()).toBeVisible();
   }
+  expect(tracked).toEqual([]);
+});
+
+test('supplier workflow opens the optional comparison with test mode intact', async ({page}) => {
+  const tracked = await serveSite(page);
+  await page.goto(testUrl(hub + '/#supplier-csv'));
+  const link = page.locator('#supplier-csv a[href="' + testUrl(comparator) + '"]');
+  await expect(link).toBeVisible();
+  await link.click();
+  await expect(page).toHaveURL(testUrl(comparator));
+  await expect(page.getByRole('heading', {name: 'Supplier CSV Compare', exact: true})).toBeVisible();
+  await expect(page.locator('#testModeNotice')).toBeVisible();
   expect(tracked).toEqual([]);
 });
 

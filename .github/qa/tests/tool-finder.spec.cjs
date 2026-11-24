@@ -1,5 +1,5 @@
 const {test,expect}=require('@playwright/test');
-const csv=['CSV Import Checker','CSV Column Mapper','CSV Formula Checker'];
+const csv=['CSV Import Checker','CSV Column Mapper','CSV Formula Checker','Supplier CSV Compare'];
 const photos=['Filename Cleaner','Image Dimension Checker','Image Contact Sheet'];
 const names=page=>page.locator('.tool-card:visible h3').allTextContents();
 test.beforeEach(async({context,page})=>{
@@ -8,19 +8,19 @@ test.beforeEach(async({context,page})=>{
 });
 test('finder starts before the catalog and workflows with every tool available',async({page})=>{
  await expect(page.getByRole('search',{name:'Find a UtilityShelf tool'})).toBeVisible();
- await expect(page.locator('.tool-card:visible')).toHaveCount(17);
- await expect(page.locator('#tool-count')).toHaveText('Showing 17 of 17 tools.');
+ await expect(page.locator('.tool-card:visible')).toHaveCount(18);
+ await expect(page.locator('#tool-count')).toHaveText('Showing 18 of 18 tools.');
  const positions=await page.locator('#tool-finder, .tool-card, #product-photos, #supplier-csv').evaluateAll(nodes=>nodes.map(n=>({id:n.id,top:n.getBoundingClientRect().top})));
  expect(positions[0].id).toBe('tool-finder');expect(positions.at(-2).id).toBe('product-photos');expect(positions.at(-1).id).toBe('supplier-csv');
- expect(new Set(await page.locator('.tool-card .button').evaluateAll(nodes=>nodes.map(n=>n.href))).size).toBe(17);
+ expect(new Set(await page.locator('.tool-card .button').evaluateAll(nodes=>nodes.map(n=>n.href))).size).toBe(18);
  await expect(page.locator('#tool-count')).toHaveAttribute('role','status');
 });
-test('CSV searches find all three check and mapping tools across both sections',async({page})=>{
+test('CSV searches find checks, mapping and snapshot comparison across both sections',async({page})=>{
  for(const query of ['CSV','  cSv  ','CSV tools']){
   await page.getByRole('searchbox',{name:'Search tools'}).fill(query);expect(await names(page)).toEqual(csv);
-  await expect(page.locator('#tool-count')).toHaveText('Showing 3 of 17 tools.');
+  await expect(page.locator('#tool-count')).toHaveText('Showing 4 of 18 tools.');
  }
- const expected=['https://csv-import-checker.utilityshelf.site/','/utilities/csv-column-mapper/','/utilities/csv-formula-checker/'];
+ const expected=['https://csv-import-checker.utilityshelf.site/','/utilities/csv-column-mapper/','/utilities/csv-formula-checker/','/utilities/supplier-csv-compare/'];
  for(const [i,title] of csv.entries())await expect(page.locator('.tool-card').filter({has:page.getByRole('heading',{name:title,exact:true})}).locator('.button')).toHaveAttribute('href',expected[i]);
  await page.getByRole('link',{name:'Map CSV columns',exact:true}).click();
  await expect(page).toHaveURL(/\/utilities\/csv-column-mapper\/$/);await expect(page.locator('h1')).toHaveText('CSV Column Mapper');
@@ -45,12 +45,12 @@ test('each category covers its intended tools and combinations narrow the result
 test('no matches and clear filters restore all tools and keyboard focus',async({page})=>{
  await page.locator('#tool-query').fill('csv');await page.locator('#tool-category').selectOption('photos');
  await expect(page.locator('.tool-card:visible')).toHaveCount(0);await expect(page.locator('#tool-empty')).toBeVisible();
- await expect(page.locator('#tool-count')).toHaveText('Showing 0 of 17 tools.');await expect(page.locator('#companions')).toBeHidden();
+ await expect(page.locator('#tool-count')).toHaveText('Showing 0 of 18 tools.');await expect(page.locator('#companions')).toBeHidden();
  await page.getByRole('button',{name:'Clear filters',exact:true}).click();await expect(page.locator('#tool-query')).toBeFocused();
  await expect(page.locator('#tool-query')).toHaveValue('');await expect(page.locator('#tool-category')).toHaveValue('all');
- await expect(page.locator('.tool-card:visible')).toHaveCount(17);await expect(page.locator('#tool-empty')).toBeHidden();
+ await expect(page.locator('.tool-card:visible')).toHaveCount(18);await expect(page.locator('#tool-empty')).toBeHidden();
  await page.locator('#tool-query').fill('<script>not-a-tool</script>');await expect(page.locator('#tool-empty')).toBeVisible();
- await page.locator('#tool-query').fill('');await expect(page.locator('.tool-card:visible')).toHaveCount(17);
+ await page.locator('#tool-query').fill('');await expect(page.locator('.tool-card:visible')).toHaveCount(18);
 });
 test('search and category controls work by keyboard without submitting or sending the query',async({page})=>{
  const requests=[];page.on('request',request=>requests.push(request.url()));
@@ -61,7 +61,7 @@ test('search and category controls work by keyboard without submitting or sendin
  // Enter may open the native select popup on Linux. Close it before testing Tab order.
  await page.keyboard.press('Escape');await expect(page.locator('#tool-category')).toBeFocused();
  await page.keyboard.press('Tab');await expect(page.getByRole('button',{name:'Clear filters',exact:true})).toBeFocused();
- await page.keyboard.press('Enter');await expect(page.locator('.tool-card:visible')).toHaveCount(17);
+ await page.keyboard.press('Enter');await expect(page.locator('.tool-card:visible')).toHaveCount(18);
  expect(requests).toEqual([]);
 });
 test('companion navigation clears a filter that would hide its destination and workflows remain reachable',async({page})=>{
@@ -75,12 +75,12 @@ test('all static tool links and workflows remain available without JavaScript',a
  const context=await browser.newContext({javaScriptEnabled:false});
  await context.route('**/*',route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.abort());
  const page=await context.newPage();await page.goto('http://127.0.0.1:4179/');
- await expect(page.locator('#tool-finder')).toBeHidden();await expect(page.locator('.tool-card:visible')).toHaveCount(17);
+ await expect(page.locator('#tool-finder')).toBeHidden();await expect(page.locator('.tool-card:visible')).toHaveCount(18);
  await expect(page.getByText('Browse all available tools below.',{exact:true})).toBeVisible();await expect(page.locator('#supplier-csv')).toBeVisible();await context.close();
 });
 test('a failed finder script leaves a usable static catalog',async({page})=>{
  await page.route('**/tool-finder.js*',route=>route.abort());await page.reload();
  await expect(page.locator('#tool-finder')).toBeHidden();await expect(page.locator('#tool-fallback')).toBeVisible();
- await expect(page.locator('.tool-card:visible')).toHaveCount(17);
+ await expect(page.locator('.tool-card:visible')).toHaveCount(18);
  await page.getByRole('link',{name:'Map CSV columns',exact:true}).click();await expect(page.locator('h1')).toHaveText('CSV Column Mapper');
 });
