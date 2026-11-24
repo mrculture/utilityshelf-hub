@@ -181,3 +181,7 @@ byId('sample').addEventListener('click', () => {
   }
   if (readHeaders()) compare();
 });
+
+for (const control of [byId('readHeaders'), byId('sample'), ...sources.map(source => source.file)]) {
+  control.disabled = false;
+}

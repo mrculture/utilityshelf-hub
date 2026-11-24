@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/utilities/shared.css?v=20261124-workflow-nav">
   <link rel="stylesheet" href="./tool.css">
   <script src="/utilities/usage.js?v=20261124-supplier-compare" defer></script>
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./app.js?v=20261124-ready"></script>
 </head>
 <body>
   <header><a href="/#companions">UtilityShelf tools</a></header>
@@ -32,18 +32,18 @@
       <div class="snapshot-grid">
         <div>
           <label for="previousFile">Open previous CSV</label>
-          <input id="previousFile" type="file" accept=".csv,text/csv">
+          <input id="previousFile" type="file" accept=".csv,text/csv" disabled>
           <label for="previous">Previous CSV text</label>
           <textarea id="previous" rows="7" spellcheck="false" placeholder="SKU,Price,Stock"></textarea>
         </div>
         <div>
           <label for="currentFile">Open latest CSV</label>
-          <input id="currentFile" type="file" accept=".csv,text/csv">
+          <input id="currentFile" type="file" accept=".csv,text/csv" disabled>
           <label for="current">Latest CSV text</label>
           <textarea id="current" rows="7" spellcheck="false" placeholder="SKU,Price,Stock"></textarea>
         </div>
       </div>
-      <div class="actions"><button id="readHeaders" type="button">Read headers</button><button id="sample" type="button">Try supplier example</button></div>
+      <div class="actions"><button id="readHeaders" type="button" disabled>Read headers</button><button id="sample" type="button" disabled>Try supplier example</button></div>
       <div id="columnChoices" hidden>
         <h3>Match the columns in each file</h3>
         <p class="hint">Select the SKU, price and stock headings for each file. The columns can have different names or positions.</p>

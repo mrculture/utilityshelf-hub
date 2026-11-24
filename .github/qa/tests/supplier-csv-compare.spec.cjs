@@ -16,6 +16,27 @@ function rowFor(page, sku) {
   return page.locator('#resultRows tr').filter({has: page.getByRole('cell', {name: sku, exact: true})});
 }
 
+test('keeps the example and file controls disabled until the comparison script is ready', async ({page}) => {
+  let startApp;
+  const canLoad = new Promise(resolve => { startApp = resolve; });
+  await page.route(url => url.pathname === '/utilities/supplier-csv-compare/app.js', async route => {
+    await canLoad;
+    await route.continue();
+  });
+  const example = page.getByRole('button', {name: 'Try supplier example'});
+  try {
+    await page.reload({waitUntil: 'commit'});
+    await expect(example).toBeDisabled();
+    await expect(page.locator('#readHeaders')).toBeDisabled();
+    await expect(page.locator('#previousFile')).toBeDisabled();
+    await expect(page.locator('#currentFile')).toBeDisabled();
+  } finally {
+    startApp();
+  }
+  await example.click();
+  await expect(page.locator('#summary')).toHaveText('1 added · 1 missing · 2 changed · 1 unchanged');
+});
+
 test('compares added and missing products, price and stock changes, and equivalent decimals', async ({page}) => {
   const previous = 'SKU,Price,Stock\n0012,1.20,10\n12,2.00,8\nBOTH,4.00,2\nZERO,,\nEQUAL,1.5000,002\nOLD,9.00,2';
   const current = 'Stock,SKU,Price\n2,EQUAL,1.50\n9,12,2\n10,0012,1.35\n3,BOTH,4.50\n0,ZERO,0\n2,"NEW,SKU",9.99';
