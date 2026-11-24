@@ -7,7 +7,7 @@ test('photo walkthrough keeps test mode across homepage, guide and photo tool li
  for(const link of await page.locator('#product-photos a[data-photo-step]').all())expect(await link.getAttribute('href')).toContain('test-mode=1');
  await page.getByRole('link',{name:'Follow the six-photo walkthrough',exact:true}).click();
  await expect(page).toHaveURL(/prepare-product-photos-for-ebay\?test-mode=1$/);
- await page.getByRole('link',{name:'Check photo dimensions',exact:true}).click();
+ await page.getByRole('link',{name:'Check your photos',exact:true}).click();
  await expect(page.locator('#testModeNotice')).toBeVisible();
  await page.getByRole('link',{name:'make a contact sheet',exact:true}).click();
  await expect(page.locator('#testModeNotice')).toBeVisible();
