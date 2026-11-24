@@ -1,6 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const fs=require('node:fs');
-async function download(page,id){const wait=page.waitForEvent('download');await page.locator(id).click();return fs.readFileSync(await(await wait).path(),'utf8');}
+async function downloadBytes(page,id){const wait=page.waitForEvent('download');await page.locator(id).click();return fs.readFileSync(await(await wait).path());}
+async function download(page,id){return (await downloadBytes(page,id)).toString('utf8');}
 async function setup(page,csv,header){await page.locator('#source').fill(csv);await page.locator('#target').fill(header);await page.locator('#prepare').click();}
 test.beforeEach(async({page,context})=>{await context.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());await page.goto('/utilities/csv-column-mapper/?test-mode=1');});
 
@@ -18,9 +19,57 @@ test('combined mixed issues agree with report and preserve CSV, including multil
  await page.locator('#unique-0').uncheck();await expect(page.locator('#result')).toBeHidden();await expect(page.locator('#problemDetails')).toBeEmpty();await expect(page.locator('#downloadReport')).toBeDisabled();await page.locator('#generate').click();await expect(page.locator('#problemSummary')).toContainText('3 issues across 2 data rows');await expect(page.locator('#showProblems')).toHaveAttribute('aria-expanded','false');
 });
 
-test('combined cap counts all rows and selects earliest issues across different check passes',async({page})=>{
- await setup(page,'SKU,Price\n'+Array.from({length:105},(_,i)=>'DUP,'+(i===104?'':'-1')).join('\n'),'SKU,Price');await page.locator('#required-1').check();await page.locator('#unique-0').check();await page.locator('#numeric-1').selectOption('price');await page.locator('#generate').click();await page.locator('#showProblems').click();
- await expect(page.locator('#problemSummary')).toContainText('210 issues across 105 data rows');await expect(page.locator('#problemSummary')).toContainText('Showing first 100 of 210');await expect(page.locator('#problemDetails tr')).toHaveCount(100);await expect(page.locator('#problemDetails tr').last()).toContainText('Data row 50 (CSV record 51)');const report=await download(page,'#downloadReport');expect(report.split('Combined problem rows')[1]).toContain('Showing first 100 of 210');
+test('all findings are available across pages and filters without changing full CSV or report',async({page})=>{
+ const csv='SKU,Price,Stock\n'+Array.from({length:105},(_,i)=>i===104?'0012,,2.5':'0012,-1,0').join('\n');
+ await setup(page,csv,'SKU,Price,Stock');
+ await page.locator('#generate').click();
+ const original=await downloadBytes(page,'#download');
+ await page.locator('#required-1').check();
+ await page.locator('#unique-0').check();
+ await page.locator('#numeric-1').selectOption('price');
+ await page.locator('#numeric-2').selectOption('stock');
+ await page.locator('#generate').click();
+ const report=await download(page,'#downloadReport');
+ expect(report.split('Combined problem rows')[1]).toContain('Showing first 100 of 211 issues in this report');
+ await page.locator('#showProblems').click();
+ const status=page.locator('#problemPageStatus');
+ const rows=page.locator('#problemDetails tr');
+ await expect(page.locator('#problemSummary')).toContainText('211 issues across 105 data rows');
+ await expect(status).toHaveText('Showing issues 1–50 of 211. Page 1 of 5.');
+ await expect(rows).toHaveCount(50);
+ await page.getByRole('button',{name:'Next page',exact:true}).click();
+ await expect(status).toContainText('51–100 of 211');
+ await page.getByRole('button',{name:'Next page',exact:true}).click();
+ await expect(status).toContainText('101–150 of 211');
+ await expect(rows.first()).toContainText('Data row 51 (CSV record 52)');
+ await page.getByLabel('Page number',{exact:true}).fill('5');
+ await page.getByRole('button',{name:'Go to page',exact:true}).click();
+ await expect(status).toHaveText('Showing issues 201–211 of 211. Page 5 of 5.');
+ await expect(rows).toHaveCount(11);
+ await expect(rows.last()).toContainText('Data row 105 (CSV record 106)');
+ await expect(rows.last()).toContainText('invalid stock format');
+ await expect(page.getByRole('button',{name:'Next page',exact:true})).toBeDisabled();
+ await page.getByRole('button',{name:'Previous page',exact:true}).click();
+ await expect(status).toContainText('151–200 of 211');
+
+ const filter=page.getByLabel('Issue type',{exact:true});
+ for (const [type, count, reason] of [['missing',1,'blank cell'],['duplicate',105,'duplicate group'],['price',104,'invalid price format'],['stock',1,'invalid stock format']]) {
+   await filter.selectOption(type);
+   await expect(status).toHaveText('Showing issues 1–'+Math.min(50,count)+' of '+count+'. Page 1 of '+Math.ceil(count/50)+'.');
+   expect((await rows.allTextContents()).every(text=>text.includes(reason))).toBe(true);
+ }
+ expect(await downloadBytes(page,'#download')).toEqual(original);
+ expect(await download(page,'#downloadReport')).toBe(report);
+ await page.locator('#numeric-2').selectOption('none');
+ await page.locator('#generate').click();
+ await page.locator('#showProblems').click();
+ await expect(filter).toHaveValue('all');
+ await expect(status).toContainText('Page 1 of 5');
+ await filter.selectOption('stock');
+ await expect(status).toHaveText('No issues match this filter.');
+ await expect(rows).toHaveCount(0);
+ await expect(page.locator('#problemPagination')).toBeHidden();
+ expect(await downloadBytes(page,'#download')).toEqual(original);
 });
 
 test('no rules, no records, clean zeros and inserted blanks have clear states',async({page})=>{

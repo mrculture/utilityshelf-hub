@@ -1,8 +1,8 @@
 import { csvRows, encodeRow, attachFileInput } from './csv.js';
 import { reusableHeaders, validateMapping, resolveMapping } from './mapping.js?v=20261116-numeric';
-import { checkDuplicates } from './duplicates.js?v=20261117-problems';
-import { checkNumeric } from './numeric.js?v=20261117-problems';
-import { problemCollector, renderProblems } from './problems.js';
+import { checkDuplicates } from './duplicates.js?v=20261124-issue-pages';
+import { checkNumeric } from './numeric.js?v=20261124-issue-pages';
+import { clearProblems, problemCollector, renderProblems } from './problems.js?v=20261124-issue-pages';
 const byId = id => document.getElementById(id);
 const source = byId('source'), target = byId('target'), message = byId('message');
 let records = [], labels = [], controls = [], generated = '';
@@ -17,12 +17,7 @@ const track = event => window.UtilityShelfUsage?.track('csv-column-mapper', even
 
 function clearResult() {
   generated = '';
-  byId('showProblems').disabled = true;
-  byId('problemRows').hidden = true;
-  byId('showProblems').setAttribute('aria-expanded', 'false');
-  byId('showProblems').textContent = 'Show problem rows';
-  byId('problemSummary').textContent = '';
-  byId('problemDetails').replaceChildren();
+  clearProblems();
   mappingReport = '';
   byId('downloadReport').disabled = true;
   byId('reportStatus').textContent = '';
@@ -200,8 +195,14 @@ function build() {
   const maxCharacters = 4 * 1024 * 1024;
   const rows = [encodeRow(labels)];
   let length = rows[0].length + 2;
+  const tooLarge = 'Mapped CSV exceeds the 4,194,304-character export limit. Choose fewer destination columns or a smaller source extract.';
+  // Even an empty mapped row needs its separators and line ending.
+  if (length + records.length * (labels.length + 1) > maxCharacters) {
+    message.textContent = tooLarge;
+    return;
+  }
   const requiredIndices = requiredControls.flatMap((control,index) => control.checked ? [index] : []);
-  const problems = problemCollector();
+  const problems = problemCollector(records.length, labels.length);
   const requiredCheck = {indices:requiredIndices, count:0, affectedRows:0, findings:[]};
   const lineBreaks = text => (text.match(/\r\n|\r|\n/g) || []).length;
   let outputLine = lineBreaks(rows[0]) + 2;
@@ -212,7 +213,7 @@ function build() {
     // A mapping can duplicate the same long source cell many times. Check before joining it.
     const encoded = length + minimumLength <= maxCharacters ? encodeRow(values) : null;
     if (encoded === null || length + encoded.length + 2 > maxCharacters) {
-      message.textContent = 'Mapped CSV exceeds the 4,194,304-character export limit. Choose fewer destination columns or a smaller source extract.';
+      message.textContent = tooLarge;
       return;
     }
     rows.push(encoded);
@@ -222,7 +223,7 @@ function build() {
     for (const index of requiredIndices) {
       if (values[index].trim() !== '') continue;
       requiredCheck.count++; rowMissing = true;
-      problems.add(rowIndex, index, mapping[index] === 'empty' ? 'empty value inserted by mapping' : values[index] === '' ? 'blank cell' : 'whitespace-only value');
+      problems.add(rowIndex, index, 'missing');
       if (requiredCheck.findings.length < 100) requiredCheck.findings.push(
         'Data row ' + (rowIndex + 1) + ' (CSV record ' + (rowIndex + 2) + '), destination column ' + (index + 1) + ' ' + JSON.stringify(labels[index]) +
         ': ' + (mapping[index] === 'empty' ? 'empty value inserted by mapping' : values[index] === '' ? 'blank cell' : 'whitespace-only value') +

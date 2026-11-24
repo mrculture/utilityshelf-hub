@@ -22,7 +22,7 @@ export function checkDuplicates(records, mapping, labels, outputLines, options, 
       const key = keyFor(row), group = key === null ? null : groups.get(key);
       if (!group || group.count < 2) continue;
       result.count++; affected.add(rowIndex);
-      onIssue(rowIndex, index, 'duplicate group starting at data row ' + group.first + ' (' + group.count + ' occurrences, including the first)');
+      onIssue(rowIndex, index, 'duplicate', group.first, group.count);
       if (result.findings.length < 100) result.findings.push(
         'Data row ' + (rowIndex + 1) + ' (CSV record ' + (rowIndex + 2) + '), destination column ' + (index + 1) + ' ' + JSON.stringify(labels[index]) +
         ': duplicate group starting at data row ' + group.first + ' (' + group.count + ' occurrences, including the first).' +

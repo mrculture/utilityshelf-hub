@@ -11,7 +11,7 @@ export function checkNumeric(records, mapping, labels, outputLines, rules, onIss
       // Validate text, never round/coerce numbers or modify the mapped value.
       if ((rule === 'price' ? /^[0-9]+(?:\.[0-9]+)?$/ : /^[0-9]+$/).test(text)) continue;
       result.count++; failed = true;
-      onIssue(rowIndex, index, 'invalid ' + rule + ' format');
+      onIssue(rowIndex, index, rule);
       if (result.findings.length < 100) result.findings.push(
         'Data row ' + (rowIndex + 1) + ' (CSV record ' + (rowIndex + 2) + '), destination column ' + (index + 1) + ' ' + JSON.stringify(labels[index]) +
         ': invalid ' + rule + ' format. ' + (rule === 'price' ? 'Use non-negative digits with an optional dot decimal.' : 'Use non-negative whole-number digits only; decimal notation is not accepted.') +
