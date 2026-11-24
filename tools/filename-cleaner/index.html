@@ -34,6 +34,10 @@
     #summary{font-weight:650}#copyStatus{color:var(--green)}[hidden]{display:none!important}
     .number-controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}.choice{display:flex;align-items:start;gap:8px;font-weight:400}.choice input{width:auto;margin-top:5px}.examples{width:100%;border-collapse:collapse}.examples th,.examples td{text-align:left;padding:10px 6px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.examples code{white-space:normal}details{margin:14px 0}summary{cursor:pointer;font-weight:650}li{margin:8px 0}
     @media(max-width:640px){.controls,.pair{grid-template-columns:1fr}.controls{gap:10px}.pair{gap:7px}main{padding-top:24px}}
+    .workflow-nav { margin: 1rem 0; padding: .75rem 1rem; border: 1px solid #c9d8cf; border-radius: .65rem; background: #fff }
+    .workflow-nav p { margin: 0 0 .4rem }
+    .workflow-nav-links { display: flex; flex-wrap: wrap; gap: .35rem 1.15rem }
+    .workflow-nav a { color: #11634d; font-weight: 650; text-underline-offset: 3px }
   </style>
 </head>
 <body>
@@ -42,6 +46,14 @@
     <span class="eyebrow">File preparation</span>
     <h1>Filename Cleaner</h1>
     <p class="intro">Clean messy filenames or prepare a numbered set of product-photo names. Add a product or SKU prefix, preserve file extensions, and review the final list before renaming your files.</p>
+    <nav class="workflow-nav" aria-label="Product photo workflow">
+      <p><strong>Product photo workflow · Step 3 of 3</strong></p>
+      <div class="workflow-nav-links">
+        <a href="https://utilityshelf.site/utilities/image-contact-sheet/">Previous: Image Contact Sheet</a>
+        <a href="https://utilityshelf.site/guides/prepare-product-photos-for-ebay#verify-listing-photos">Next: Verify listing photos</a>
+        <a href="https://utilityshelf.site/guides/prepare-product-photos-for-ebay">Guide: Product photo guide</a>
+      </div>
+    </nav>
     <section class="panel" id="five-photo-example" aria-label="Filename input">
       <div class="controls"><div>
         <label for="names">Original filenames</label>

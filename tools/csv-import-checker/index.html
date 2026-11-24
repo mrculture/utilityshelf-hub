@@ -28,6 +28,10 @@
     li { padding:.6rem 0; border-top:1px solid #e0e6df; overflow-wrap:anywhere }
     ul { list-style:none; padding:0; margin:.7rem 0 0 }
     #summary { font-weight:650 }
+    .workflow-nav { margin: 1rem 0; padding: .75rem 1rem; border: 1px solid #c9d8cf; border-radius: .65rem; background: #fff }
+    .workflow-nav p { margin: 0 0 .4rem }
+    .workflow-nav-links { display: flex; flex-wrap: wrap; gap: .35rem 1.15rem }
+    .workflow-nav a { color: #11634d; font-weight: 650; text-underline-offset: 3px }
   </style>
 </head>
 <body>
@@ -36,6 +40,14 @@
     <span class="eyebrow">File preparation</span>
     <h1>CSV Import Checker</h1>
     <p>Catch repeated headings and uneven rows before uploading a spreadsheet to your shop or database.</p>
+    <nav class="workflow-nav" aria-label="Supplier CSV workflow">
+      <p><strong>Supplier CSV workflow · Step 1 of 3</strong></p>
+      <div class="workflow-nav-links">
+        <a href="https://utilityshelf.site/#supplier-csv">Previous: Supplier CSV workflow overview</a>
+        <a href="https://utilityshelf.site/utilities/csv-column-mapper/">Next: CSV Column Mapper</a>
+        <a href="https://utilityshelf.site/guides/prepare-supplier-csv-for-import">Guide: Supplier CSV guide</a>
+      </div>
+    </nav>
     <section id="inventory-example" aria-labelledby="input-title">
       <h2 id="input-title">Check a CSV</h2>
       <p class="hint">Use a comma-separated file with a header on line 1. Files are read locally as UTF-8. You can also paste CSV below.</p>
@@ -63,7 +75,7 @@
     <label><input type="checkbox" id="usage" checked> Share anonymous action counts. No filenames, headings or CSV contents are sent. <a href="https://utilityshelf.site/privacy">Privacy details</a></label>
     <footer><a href="https://utilityshelf.site/privacy">Privacy</a> · <a href="https://utilityshelf.site/terms">Terms</a> · <a href="https://utilityshelf.site/contact">Contact</a></footer>
   </main>
-  <script src="./usage.js?v=20261110-reports"></script>
+  <script src="./usage.js?v=20261124-workflow-nav"></script>
   <script>
     const source = document.getElementById('source');
     const summary = document.getElementById('summary');

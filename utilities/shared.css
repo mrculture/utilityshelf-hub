@@ -35,3 +35,8 @@ footer { max-width: 62rem; margin: 1rem auto; padding: 1rem; border-top: 1px sol
 .usage-choice { display: block; margin-top: 1rem }
 .usage-choice input { width: auto; display: inline; margin-right: .4rem }
 [hidden] { display: none !important }
+
+.workflow-nav { margin: 1rem 0; padding: .75rem 1rem; border: 1px solid #c9d8cf; border-radius: .65rem; background: #fff }
+.workflow-nav p { margin: 0 0 .4rem }
+.workflow-nav-links { display: flex; flex-wrap: wrap; gap: .35rem 1.15rem }
+.workflow-nav a { color: #11634d; font-weight: 650; text-underline-offset: 3px }

@@ -91,7 +91,7 @@ A106,"   ","   "</code></pre>
     <p>The checker flags prefixes; it does not sanitise the file. Review the intended values and your spreadsheet's text-import settings. Do not assume that adding quotes makes a CSV safe. See <a href="https://community.owasp.org/attacks/CSV_Injection">OWASP's CSV formula-injection guidance</a> for application-specific limitations.</p>
     <p>Select <strong>Download check report (.txt)</strong> to save the formula review. The mapped corrected example has three columns and three data rows: expect <strong>0 fields to review out of 12 checked</strong>, including the header. For a deliberate warning, change the Notebook title in a practice copy to <code>=SUM(2)</code> and rescan; the report should identify record 3, line 3, column 2.</p>
     <p>The two checker reports use <strong>Passed</strong>, <strong>Issues found</strong> or <strong>Check incomplete</strong>. An incomplete check, for example from a missing closing quote, is not a pass. Reports list up to 100 findings and state when more were found. They can include header names or field previews, so review them before sharing. Keep reports alongside the exact CSV you checked and rerun after changes.</p>
-    <h2>5. Check the final saved file</h2>
+    <h2 id="verify-final-csv">5. Check the final saved file</h2>
     <ol class="checklist">
       <li>Run CSV Import Checker on the exact export you intend to import, especially after making corrections.</li>
       <li>Confirm required fields, currencies, decimal separators, identifiers and stock values against the destination's specification.</li>
@@ -102,5 +102,5 @@ A106,"   ","   "</code></pre>
     <p><a href="/utilities/csv-column-mapper/">Map supplier columns</a> · <a href="/guides/prepare-product-photos-for-ebay">Prepare listing photos</a></p>
   </article></main>
   <footer><div class="footer-inner"><p>UtilityShelf · Practical browser tools</p><nav aria-label="Footer"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a></nav></div></footer>
-  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"104d69dafb54484bbb4e18e34d50c835"}'></script>
+  <script defer src="/utilities/usage.js?v=20261124-workflow-nav"></script>
 </body></html>
