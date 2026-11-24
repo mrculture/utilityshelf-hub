@@ -37,21 +37,28 @@ test('real practice ZIP repairs from 3/6 to 5/5 and finishes with correct contac
  const replace=page.waitForEvent('filechooser');await rows.nth(2).getByRole('button',{name:/^Replace photo/}).click();await (await replace).setFiles(upload('03-replacement.jpg',entries['replacements/03-replacement.jpg']));
  await expect(page.locator('#status')).toHaveText('4 of 5 meet your limits.');await page.locator('#prepareResize').click();await expect(page.locator('#downloadResized')).toBeEnabled({timeout:30000});
  await expect(page.locator('#resizeStatus')).toContainText('5 of 5 copies meet all selected limits');
- const copies=unzip(await (await download(page,page.locator('#downloadResized'))).path());expect(Object.keys(copies)).toHaveLength(6);
+ const checkedZip=await (await download(page,page.locator('#downloadResized'))).path();
+ const copies=unzip(checkedZip);expect(Object.keys(copies)).toHaveLength(6);
  const images=Object.entries(copies).filter(([n])=>n!=='resize-report.txt').map(([n,b])=>upload(n,b));
  expect(images.map(f=>f.name)).toEqual(['01-01-pass-front-resized.jpg','02-02-pass-detail.png','03-03-replacement-resized.jpg','04-04-fail-file-size-resized.jpg','05-06-pass-packaging-resized.jpg']);
  for(const item of images)expect(item.buffer.length).toBeLessThanOrEqual(1000000);
  await page.locator('#files').setInputFiles(images);await expect(page.locator('#status')).toHaveText('5 of 5 meet your limits.');
  const finalReport=fs.readFileSync(await (await download(page,page.locator('#downloadReport'))).path(),'utf8');expect(finalReport).toContain('Status: Passed');expect(finalReport).toContain('Selected: 5. Passed: 5.');expect(finalReport).not.toContain('05-fail-unreadable');expect(finalReport).not.toContain('03-fail-too-small');
  const dimensions=await rows.locator('td:nth-child(2)').allTextContents();for(const text of dimensions){const [w,h]=text.split(' × ').map(Number);expect(Math.min(w,h)).toBeGreaterThanOrEqual(800);expect(Math.max(w,h)).toBeLessThanOrEqual(1200);}
- await page.getByRole('link',{name:'make a contact sheet',exact:true}).click();await page.locator('#files').setInputFiles(images);await expect(page.locator('#names li')).toHaveCount(5);
+ await page.getByRole('link',{name:'make a contact sheet',exact:true}).click();
+ await page.getByLabel('Open checked-photo ZIP', {exact:true}).setInputFiles(checkedZip);
+ await expect(page.locator('#checkedZipStatus')).toContainText('Imported 5 photos from the checked-photo ZIP. Resize report skipped.');
+ await expect(page.locator('#orderedNames')).toHaveValue(images.map(file=>file.name).join('\n'));
  await page.locator('#names li').first().getByRole('button',{name:/Move later/}).click();
  await page.locator('#names li').nth(2).getByRole('button',{name:/^Remove photo/}).click();
  await expect(page.locator('#names li')).toHaveCount(4);await page.locator('#undoRemoval').click();await expect(page.locator('#names li')).toHaveCount(5);
  const replacementImage={...images[4],name:'better-packaging.jpg'};
  const replaceSheet=page.waitForEvent('filechooser');await page.locator('#names li').nth(3).getByRole('button',{name:/^Replace photo/}).click();await(await replaceSheet).setFiles(replacementImage);
  await expect(page.locator('#editStatus')).toContainText('at position 4');
- images[3]=replacementImage;
+ const restoreSheet=page.waitForEvent('filechooser');
+ await page.locator('#names li').nth(3).getByRole('button',{name:/^Replace photo/}).click();
+ await (await restoreSheet).setFiles(images[3]);
+ await expect(page.locator('#names li').nth(3)).toContainText(images[3].name);
  const order=[images[1],images[0],...images.slice(2)];await expect(page.locator('#orderedNames')).toHaveValue(order.map(f=>f.name).join('\n'));
  const listDownload=await download(page,page.locator('#downloadNames'));expect(listDownload.suggestedFilename()).toBe('ordered-filenames.txt');const listPath=await listDownload.path();expect(fs.readFileSync(listPath,'utf8')).toBe(order.map(f=>f.name).join('\r\n')+'\r\n');
  const arrangedPreview=await page.locator('#sheet').evaluate(c=>c.toDataURL());
@@ -74,4 +81,42 @@ test('real practice ZIP repairs from 3/6 to 5/5 and finishes with correct contac
  const renamed=unzip(await (await download(page,page.locator('#downloadZip'))).path());expect(Object.keys(renamed)).toEqual([...expected,'filename-mapping.txt']);
  const mapping=buffer(renamed['filename-mapping.txt']).toString();for(const [i,name] of expected.entries()){expect(buffer(renamed[name]).equals(order[i].buffer)).toBe(true);expect(mapping).toContain('Original: '+order[i].name+'\r\nNew: '+name);}
  expect(remote).toEqual([]);
+});
+
+test('damaged and oversized checked ZIPs preserve the sheet and a later valid ZIP imports', async ({page}) => {
+ await page.goto('/utilities/image-contact-sheet/?test-mode=1');
+ await page.locator('#demo').click();
+ await expect(page.locator('#names li')).toHaveCount(3);
+ await page.locator('#names li').first().getByRole('button',{name:/Move later/}).click();
+ const originalOrder = await page.locator('#orderedNames').inputValue();
+ const originalSheet = await page.locator('#sheet').evaluate(canvas => canvas.toDataURL());
+
+ // Use the production writer to build small, valid archives in its exact format.
+ await page.addScriptTag({url:'/utilities/image-dimension-checker/zip.js'});
+ const createArchive = async count => Buffer.from(await page.evaluate(async count => {
+   const canvas = document.createElement('canvas');
+   canvas.width = canvas.height = 12;
+   const image = await new Promise(resolve => canvas.toBlob(resolve));
+   const bytes = new Uint8Array(await image.arrayBuffer());
+   const entries = Array.from({length:count}, (_, i) => ({name:`photo-${i + 1}.png`, bytes}));
+   entries.push({name:'resize-report.txt', bytes:new TextEncoder().encode('Practice report')});
+   return Array.from(new Uint8Array(await window.UtilityShelfPhotoZip(entries).arrayBuffer()));
+ }, count));
+ const valid = await createArchive(2);
+ const damaged = Buffer.from(valid);
+ damaged[30 + Buffer.byteLength('photo-1.png') + 20] ^= 1;
+ const oversized = await createArchive(31);
+ const chooser = page.getByLabel('Open checked-photo ZIP', {exact:true});
+ const importZip = buffer => chooser.setInputFiles({name:'checked-photo-copies.zip',mimeType:'application/zip',buffer});
+ for (const [buffer, message] of [[valid.subarray(0, valid.length - 8), 'damaged or unsupported'], [damaged, 'damaged or unsupported'], [oversized, '30-photo limit']]) {
+   await importZip(buffer);
+   await expect(page.locator('#checkedZipStatus')).toContainText(message);
+   await expect(page.locator('#checkedZipStatus')).toContainText('Your current sheet and order are unchanged.');
+   await expect(page.locator('#orderedNames')).toHaveValue(originalOrder);
+   expect(await page.locator('#sheet').evaluate(canvas => canvas.toDataURL())).toBe(originalSheet);
+ }
+ await importZip(valid);
+ await expect(page.locator('#checkedZipStatus')).toContainText('Imported 2 photos');
+ await expect(page.locator('#orderedNames')).toHaveValue('photo-1.png\nphoto-2.png');
+ await expect(page.locator('#duplicateStatus')).toContainText('1 exact duplicate groups across 2 photos');
 });

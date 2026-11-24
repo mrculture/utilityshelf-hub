@@ -40,6 +40,9 @@ let replacementTarget = null;
 let replacementRevision = 0;
 let renderVersion = 0;
 let orderRevision = 0;
+let zipRevision = 0;
+let zipPending = false;
+const zipStatus = byId('checkedZipStatus');
 const orderStatus = byId('orderStatus');
 const orderIssues = byId('orderIssues');
 function cancelOrderRead() {
@@ -124,6 +127,9 @@ function shorten(ctx, name, width) {
 
 function render() {
   cancelOrderRead();
+  if (zipPending) zipStatus.textContent = 'ZIP import cancelled because the sheet changed.';
+  zipPending = false;
+  zipRevision++;
   renderVersion++;
   names.replaceChildren();
   sheet.hidden = !photos.length;
@@ -225,6 +231,7 @@ function render() {
 }
 
 async function load(files, id, source = 'custom') {
+  if (!zipPending) zipStatus.textContent = '';
   inputSource = source;
   resetEdits();
   photos = [];
@@ -305,6 +312,37 @@ byId('replacementFile').addEventListener('change', async event => {
 });
 
 input.addEventListener('change', () => load(Array.from(input.files), ++generation));
+byId('checkedZip').addEventListener('change', async event => {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  const revision = ++zipRevision;
+  zipPending = true;
+  zipStatus.textContent = 'Reading checked-photo ZIP…';
+  try {
+    const files = await readCheckedPhotoZip(file);
+    if (revision !== zipRevision) return;
+    const next = [];
+    for (const photo of files) {
+      try { next.push(await preparePhoto(photo)); }
+      catch { throw new Error('Could not read the photo “' + photo.name + '”.'); }
+      if (revision !== zipRevision) return;
+    }
+    generation++;
+    input.value = '';
+    resetEdits();
+    inputSource = 'custom';
+    photos = next;
+    errors = [];
+    zipPending = false;
+    render();
+    zipStatus.textContent = 'Imported ' + photos.length + (photos.length === 1 ? ' photo' : ' photos') + ' from the checked-photo ZIP. Resize report skipped.';
+  } catch (error) {
+    if (revision !== zipRevision) return;
+    zipPending = false;
+    zipStatus.textContent = 'ZIP not imported. ' + error.message + ' Your current sheet and order are unchanged.';
+  }
+});
 byId('loadOrder').addEventListener('click', () => {
   cancelOrderRead();
   byId('orderFile').value = '';
@@ -397,6 +435,7 @@ byId('copyNames').addEventListener('click', async () => {
 byId('columns').addEventListener('change', render);
 byId('demo').addEventListener('click', async () => {
   const id = ++generation;
+  if (!zipPending) zipStatus.textContent = '';
   resetEdits();
   input.value = '';
   photos = [];
