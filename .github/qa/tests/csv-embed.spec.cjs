@@ -164,6 +164,22 @@ for (const optOut of [false, true]) {
   });
 }
 
+test('onward links keep a demo user in test mode before the tracker loads', async ({page, context, partnerSite}) => {
+  const resume = await holdTracker(context);
+  await page.goto(checker + '/?embed=1&partner=supplier-demo', {waitUntil: 'commit'});
+  try {
+    await page.locator('#sample').click();
+    await expect(page.locator('#summary')).toContainText('2 issues');
+    await expect(page.locator('#usage')).toBeDisabled();
+    await expect(page.getByRole('link', {name: 'Map your columns'})).toHaveAttribute('href', hub + '/utilities/csv-column-mapper/?test-mode=1');
+  } finally {
+    resume();
+  }
+  await page.waitForLoadState('networkidle');
+  expect(partnerSite.posts).toEqual([]);
+  expect(partnerSite.beacons).toEqual([]);
+});
+
 for (const options of ['partner=supplier-demo', 'partner=supplier-pilot&amp;test-mode=1']) {
   test('embedded demo or test URL excludes checks with ' + options, async ({page, partnerSite}) => {
     partnerSite.snippet = '<iframe title="Checker" src="' + checker + '/?embed=1&amp;' + options + '#inventory-example"></iframe>';
