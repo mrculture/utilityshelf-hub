@@ -72,13 +72,20 @@ test('credential text is redacted from errors',()=>{
 });
 test('public packages exclude CI, credentials, untracked data and sibling tools',()=>{
  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'utilityshelf-package-test-'));
+ const installerFiles=['for-websites/index.html','for-websites/install.js'];
  try {
   execFileSync('git',['init'],{cwd:temp,stdio:'ignore'});
-  for(const file of ['index.html','styles.css','.env','.github/qa/package.json','README.md','tools/other/index.html','_headers','guides/guide.html','guides/samples/supplier-inventory-original.csv','guides/samples/supplier-inventory-corrected.csv','guides/samples/supplier-required-fields.csv','guides/samples/product-photo-practice-v1.zip','guides/samples/private.zip','private.zip','private.csv']) {
+  for(const file of ['index.html','styles.css','.env','.github/qa/package.json','README.md','tools/other/index.html','tools/csv-import-checker/index.html', ...installerFiles.map(name=>'tools/csv-import-checker/'+name), '_headers','guides/guide.html','guides/samples/supplier-inventory-original.csv','guides/samples/supplier-inventory-corrected.csv','guides/samples/supplier-required-fields.csv','guides/samples/product-photo-practice-v1.zip','guides/samples/private.zip','private.zip','private.csv']) {
    fs.mkdirSync(path.dirname(path.join(temp,file)),{recursive:true});fs.writeFileSync(path.join(temp,file),'fixture');
   }
   execFileSync('git',['add','.'],{cwd:temp});fs.writeFileSync(path.join(temp,'untracked.html'),'must not publish');
   const sha='a'.repeat(40),{directory}=packageSite(temp,{name:'hub',source:''},sha,path.join(temp,'out'));
+  const checker=packageSite(temp,{name:'csv',source:'tools/csv-import-checker'},sha,path.join(temp,'out'));
+  for(const file of installerFiles) {
+   const expected=fs.readFileSync(path.join(temp,'tools/csv-import-checker',file));
+   assert.deepEqual(fs.readFileSync(path.join(directory,file)),expected,file);
+   assert.deepEqual(fs.readFileSync(path.join(checker.directory,file)),expected,file);
+  }
   for(const file of ['index.html','styles.css','guides/guide.html','_headers','release.json','guides/samples/supplier-inventory-original.csv','guides/samples/supplier-inventory-corrected.csv','guides/samples/supplier-required-fields.csv','guides/samples/product-photo-practice-v1.zip'])assert.ok(fs.existsSync(path.join(directory,file)),file);
   for(const file of ['.env','.github/qa/package.json','README.md','tools/other/index.html','untracked.html','private.csv','private.zip','guides/samples/private.zip'])assert.equal(fs.existsSync(path.join(directory,file)),false,file);
   assert.equal(JSON.parse(fs.readFileSync(path.join(directory,'release.json'))).commit,sha);

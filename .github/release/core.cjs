@@ -1,6 +1,7 @@
 // A release is serialized by GitHub Actions. No repository edits or AI calls here.
 const fs = require('node:fs');
 const path = require('node:path');
+const {sharedHubPaths} = require('../hub-assets.cjs');
 const {execFileSync, spawn} = require('node:child_process');
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 class ReleaseError extends Error {
@@ -74,7 +75,7 @@ function packageSite(root, target, sha, output) {
   let count=0;
   for (const file of tracked) {
     if (!file.startsWith(prefix)) continue;
-    const relative=file.slice(prefix.length);
+    const relative=(!prefix && sharedHubPaths.get(file)) || file.slice(prefix.length);
     if (relative.split('/').some(part=>part.startsWith('.')) || relative.endsWith('.md')) continue;
     if (!prefix && relative.startsWith('tools/')) continue;
     const publicSample = !prefix && (/^guides\/samples\/supplier-inventory-(original|corrected)\.csv$/.test(relative) || relative === 'guides/samples/supplier-required-fields.csv' || relative === 'guides/samples/product-photo-practice-v1.zip');

@@ -4,21 +4,33 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const root = path.resolve(__dirname, '../../..');
 const sites = require('../sites.json');
+const {hubSourcePath} = require('../../hub-assets.cjs');
 const sitesByOrigin = new Map(sites.map(site => [site.origin, site]));
 const tracked = execFileSync('git', ['ls-files', '-z'], {cwd: root, encoding: 'utf8'}).split('\0').filter(Boolean);
 function resolveFile(site, pathname) {
-  const file = path.join(root, site.dir, decodeURIComponent(pathname));
+  const decoded = decodeURIComponent(pathname);
+  const file = path.join(root, site.dir, site.dir ? decoded : hubSourcePath(decoded));
   return [file, file + '.html', path.join(file, 'index.html')].find(p => fs.existsSync(p) && fs.statSync(p).isFile());
 }
 test.beforeEach(async ({ context }) => {
   // Never send QA page views or fixtures to production services.
   await context.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
-  await context.addInitScript(() => localStorage.setItem('systemCareTourSeen', 'true'));
+  await context.addInitScript(() => {
+    if (location.hostname === '127.0.0.1') localStorage.setItem('systemCareTourSeen', 'true');
+  });
 });
 test('all tracked website JavaScript parses', () => {
   for (const file of tracked.filter(f => f.endsWith('.js') && !f.startsWith('.github/'))) {
     execFileSync(process.execPath, ['--input-type=module', '--check'], { input: fs.readFileSync(path.join(root, file)), stdio: ['pipe', 'pipe', 'pipe'] });
   }
+});
+test('the homepage opens the shared CSV checker installer on the hub', async ({page}) => {
+  await page.goto('/');
+  await page.getByRole('link', {name: 'Add the CSV checker to your website'}).click();
+  await expect(page).toHaveURL(/\/for-websites\/$/);
+  await expect(page.locator('#copy-code')).toBeEnabled();
+  await expect(page.locator('#checker-preview')).toHaveAttribute('src', 'https://csv-import-checker.utilityshelf.site/?embed=1&test-mode=1');
+  await expect(page.locator('#embed-code')).toHaveValue(/https:\/\/csv-import-checker\.utilityshelf\.site\/\?embed=1/);
 });
 for (const site of sites) {
   const xml = fs.readFileSync(path.join(root, site.dir, 'sitemap.xml'), 'utf8');

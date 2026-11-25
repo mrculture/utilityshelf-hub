@@ -1,11 +1,12 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
+const {hubSourcePath} = require('../hub-assets.cjs');
 const root = path.resolve(__dirname, '../..');
 http.createServer((req, res) => {
   try {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
-    let file = path.resolve(root, '.' + pathname);
+    let file = path.resolve(root, '.' + hubSourcePath(pathname));
     if (!file.startsWith(root + path.sep) && file !== root) throw Error('Outside root');
     if (pathname.split('/').some(p => p.startsWith('.'))) throw Error('Private file');
     file = [file, file + '.html', path.join(file, 'index.html')].find(p => fs.existsSync(p) && fs.statSync(p).isFile());
