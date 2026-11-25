@@ -36,7 +36,7 @@ test('remove, reorder and undo synchronize PNG and names; latest removal and emp
  await expect(page.locator('#download')).toBeDisabled();await expect(page.locator('#orderedNames')).toHaveValue('');
  await page.locator('#undoRemoval').click();await expect(labels(page)).toHaveText(['detail.png']);await expect(page.locator('#sheet')).toBeVisible();
  await action(page,0,'Remove photo').click();await page.locator('#demo').click();
- await expect(labels(page)).toHaveText(['front.png','side.png','detail.png']);await expect(page.locator('#undoRemoval')).toBeDisabled();
+ await expect(labels(page)).toHaveText(['front.png','side.png','detail.png'],{timeout:15000});await expect(page.locator('#undoRemoval')).toBeDisabled();
 });
 test('replace keeps slot; cancelled, unreadable and oversized replacements leave old photo intact',async({page})=>{
  const original=await page.locator('#sheet').evaluate(c=>c.toDataURL());

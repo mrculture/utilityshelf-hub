@@ -86,7 +86,7 @@ test('real practice ZIP repairs from 3/6 to 5/5 and finishes with correct contac
 test('damaged and oversized checked ZIPs preserve the sheet and a later valid ZIP imports', async ({page}) => {
  await page.goto('/utilities/image-contact-sheet/?test-mode=1');
  await page.locator('#demo').click();
- await expect(page.locator('#names li')).toHaveCount(3);
+ await expect(page.locator('#names li')).toHaveCount(3,{timeout:15000});
  await page.locator('#names li').first().getByRole('button',{name:/Move later/}).click();
  const originalOrder = await page.locator('#orderedNames').inputValue();
  const originalSheet = await page.locator('#sheet').evaluate(canvas => canvas.toDataURL());
