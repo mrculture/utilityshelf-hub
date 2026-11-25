@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Try an embedded CSV Import Checker beside a supplier’s stock download. Use the practice stock file to check for repeated headings and short rows.">
+  <meta name="robots" content="noindex">
+  <title>Supplier stock download · UtilityShelf example</title>
+  <style>
+    * { box-sizing: border-box }
+    body { margin: 0; color: #233731; background: #f4f4ee; font: 1rem/1.55 system-ui, sans-serif }
+    a { color: #145641; text-underline-offset: .2em }
+    :focus-visible { outline: 3px solid #287aa7; outline-offset: 3px }
+    header { color: #f8faf5; background: #28483d }
+    header div, main { width: min(100% - 2rem, 48rem); margin: auto }
+    header div { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .4rem 1.1rem; padding: .9rem 0 }
+    header a { color: inherit }
+    main { padding: clamp(1.5rem, 4vw, 3rem) 0 }
+    h1, h2 { margin: 0; line-height: 1.15 }
+    h1 { font-size: clamp(2.1rem, 6vw, 3.5rem); letter-spacing: -.04em }
+    h2 { font-size: 1.35rem }
+    section { margin: 1.4rem 0; padding: clamp(1.1rem, 3vw, 1.7rem); border: 1px solid #cbd7cb; border-radius: .65rem; background: white }
+    .file { margin-top: .4rem; color: #53675d }
+    .download { display: inline-block; padding: .65rem 1rem; border-radius: .35rem; background: #28483d; color: white; font-weight: 650; text-decoration: none }
+    iframe { display: block; background: white }
+    section p:last-child { margin-bottom: 0 }
+  </style>
+</head>
+<body>
+  <header><div><strong>Sample supplier portal</strong><a id="get-embed" href="https://csv-import-checker.utilityshelf.site/for-websites/">Get this checker for your site</a></div></header>
+  <main>
+    <h1>Stock downloads</h1>
+    <p>Download the practice stock file, then open it in the checker below before importing it into a shop.</p>
+    <section aria-labelledby="file-title">
+      <h2 id="file-title">Homeware stock list</h2>
+      <p class="file">CSV · 3 products · UTF-8</p>
+      <a class="download" href="/guides/samples/supplier-inventory-original.csv" download="supplier-inventory-original.csv">Download stock CSV</a>
+    </section>
+    <section aria-labelledby="checker-title">
+      <h2 id="checker-title">Check the stock file</h2>
+      <p>Choose the file you just downloaded. It includes two practice errors. Checks on this demonstration page are excluded from partner usage reports.</p>
+      <iframe title="CSV Import Checker"
+        src="https://csv-import-checker.utilityshelf.site/?embed=1&amp;partner=supplier-demo&amp;test-mode=1"
+        height="640" style="width:100%;border:0" loading="lazy"
+        referrerpolicy="no-referrer"></iframe>
+      <p><a href="https://csv-import-checker.utilityshelf.site/?test-mode=1">Open the full CSV Import Checker</a></p>
+    </section>
+  </main>
+</body>
+</html>

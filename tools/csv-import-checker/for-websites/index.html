@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Add the CSV Import Checker to a supplier download page or help article. Preview the checker and copy its HTML or a direct link.">
+  <link rel="canonical" href="https://csv-import-checker.utilityshelf.site/for-websites/">
+  <title>Add CSV Import Checker to your website | UtilityShelf</title>
+  <style>
+    * { box-sizing: border-box }
+    body { margin: 0; background: #f5f6ee; color: #1a302a; font: 1rem/1.55 system-ui, sans-serif }
+    header { background: white; border-bottom: 1px solid #cdd9cf }
+    header div, main { max-width: 76rem; margin: auto; padding-inline: clamp(1rem, 4vw, 3rem) }
+    header div { display: flex; align-items: center; gap: .8rem; min-height: 4rem }
+    header b { background: #195d49; color: white; border-radius: .4rem; padding: .12rem .6rem }
+    header a { margin-left: auto }
+    a { color: #155d48; text-underline-offset: .18em }
+    main { padding-block: clamp(1.5rem, 4vw, 3rem) }
+    h1 { max-width: 21ch; margin: 0; font-size: clamp(2rem, 4.4vw, 3.4rem); line-height: 1.05; letter-spacing: -.045em }
+    h2 { margin: 0; font-size: 1.35rem; line-height: 1.25 }
+    main > p { max-width: 65ch }
+    .panels { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 1.2rem; align-items: start; margin-top: 1.6rem }
+    section { min-width: 0; padding: clamp(1rem, 2.4vw, 1.65rem); background: white; border: 1px solid #cbd8cf; border-radius: .8rem }
+    label { display: block; margin: 1.1rem 0 .35rem; font-weight: 650 }
+    .hint { color: #496256; margin: .4rem 0 .85rem; font-size: .94rem }
+    textarea, input { width: 100%; padding: .7rem .8rem; background: #fbfcf9; color: inherit; border: 1px solid #839b8e; border-radius: .4rem; font: inherit }
+    textarea { resize: vertical; font: .88rem/1.5 ui-monospace, monospace }
+    details { margin: 1.2rem 0 }
+    summary { cursor: pointer; font-weight: 650 }
+    button { cursor: pointer; margin-top: .4rem; padding: .56rem .95rem; border: 1px solid #195d49; border-radius: .4rem; background: #195d49; color: white; font: inherit; font-weight: 650 }
+    button.secondary { background: #f3f8f3; color: #195d49 }
+    button:disabled { opacity: .5; cursor: default }
+    :focus-visible { outline: 3px solid #297ba5; outline-offset: 2px }
+    [aria-invalid=true] { border-color: #aa352a }
+    #partner-error { color: #94372b }
+    #copy-status { min-height: 1.5em; margin-bottom: 0 }
+    iframe { display: block; width: 100%; border: 1px solid #cad8d0; border-radius: .6rem; background: #fff }
+    @media (max-width: 48rem) { .panels { grid-template-columns: 1fr } }
+  </style>
+  <script src="./install.js" defer></script>
+</head>
+<body>
+  <header><div><b aria-hidden="true">U</b><strong>UtilityShelf</strong><a href="../">CSV Import Checker</a></div></header>
+  <main>
+    <h1>Add CSV Import Checker to your website</h1>
+    <p>Give sellers a way to check stock files beside your download button or import instructions. They can spot repeated headers and uneven rows while their CSV stays in their browser.</p>
+    <p><a id="supplier-example" href="https://utilityshelf.site/examples/supplier-stock/">See the checker on a sample supplier page</a></p>
+    <div class="panels">
+      <section aria-labelledby="install-title">
+        <h2 id="install-title">Install the checker</h2>
+        <p>Paste the embed code into an HTML block on your page. If your editor accepts links only, use the direct link.</p>
+        <details>
+          <summary>Use an assigned partner code</summary>
+          <label for="partner">Partner code (optional)</label>
+          <input id="partner" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="partner-help partner-error">
+          <p class="hint" id="partner-help">Partner counts cover checks inside the embed. Leave this blank for shared reporting, or <a href="https://utilityshelf.site/contact">ask UtilityShelf for a code</a> for your site.</p>
+          <p id="partner-error" role="status"></p>
+        </details>
+        <label for="embed-code">Embed code</label>
+        <textarea id="embed-code" rows="7" readonly spellcheck="false"></textarea>
+        <button type="button" id="copy-code">Copy embed code</button>
+        <label for="direct-link">Direct link to the full checker</label>
+        <input id="direct-link" type="url" readonly value="https://csv-import-checker.utilityshelf.site/">
+        <button type="button" class="secondary" id="copy-link">Copy link</button>
+        <p class="hint" id="copy-status" role="status"></p>
+        <noscript><p><a href="../">Open the full checker</a>. Enable JavaScript to generate embed code and preview the checker.</p></noscript>
+      </section>
+      <section aria-labelledby="preview-title">
+        <h2 id="preview-title">Live preview</h2>
+        <p class="hint">Try the example or check a file. Actions in this preview are excluded from usage reports.</p>
+        <iframe id="checker-preview" title="CSV Import Checker preview" src="../?embed=1&amp;test-mode=1" height="640" referrerpolicy="no-referrer"></iframe>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

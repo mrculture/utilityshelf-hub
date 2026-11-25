@@ -2,12 +2,14 @@
 const productionOrigin = 'https://filename-cleaner.utilityshelf.site';
 const hubOrigin = 'https://utilityshelf.site';
 const csvOrigin = 'https://csv-import-checker.utilityshelf.site';
+const embedPartners = new Set(['community', 'supplier-pilot']);
+const embedFields = 'event,mode,partner,source,surface,tool';
 const modes = {
   'product-photo-workflow': {entry:['home','guide'], check_resize:['home','guide'], arrange:['home','guide'], name_download:['home','guide'], walkthrough:['home']},
   'filename-cleaner': {ready:['clean','numbered'], copy:['clean','numbered'], mapping_download:['clean','numbered'], zip_download:['clean','numbered']},
   'image-contact-sheet': {reorder:['sheet'], sheet_download:['sheet'], names_copy:['sheet']},
   'image-dimension-checker': {check_complete:['custom','ebay'], ebay_preset:['ebay'], report_download:['custom','ebay'], resize_complete:['custom','ebay'], resize_download:['custom','ebay']},
-  'csv-import-checker': {check_complete:['passed','issues'], corrected_download:['passed'], report_download:['passed','issues','incomplete']},
+  'csv-import-checker': {check_complete:['passed','issues'], corrected_download:['passed'], report_download:['passed','issues','incomplete'], onward_click:['mapper','guide']},
   'csv-column-mapper': {build_complete:['mapped'], mapped_download:['mapped']},
   'sku-photo-matcher': {check_complete:['match'], report_download:['match']},
   'csv-formula-checker': {scan_complete:['clear','warnings'], report_download:['passed','issues','incomplete']}
@@ -54,13 +56,22 @@ export default {
       }
       text += decoder.decode();
       const data = JSON.parse(text);
-      if (!data || Array.isArray(data) || !['event,mode,source','event,mode,source,tool'].includes(Object.keys(data).sort().join(','))) return reply(400);
+      if (!data || typeof data !== 'object' || Array.isArray(data)) return reply(400);
+      const fields = Object.keys(data).sort().join(',');
+      if (!['event,mode,source','event,mode,source,tool',embedFields].includes(fields)) return reply(400);
       // Retain compatibility with Filename Cleaner's existing three-field events.
       const tool = Object.hasOwn(data, 'tool') ? data.tool : 'filename-cleaner';
       if (![tool, data.event, data.mode, data.source].every(value => typeof value === 'string')) return reply(400);
       if (!Object.hasOwn(modes, tool) || !Object.hasOwn(modes[tool], data.event) || !modes[tool][data.event].includes(data.mode) || !['sample','custom'].includes(data.source)) return reply(400);
       if (origin !== (tool === 'filename-cleaner' ? productionOrigin : tool === 'csv-import-checker' ? csvOrigin : hubOrigin)) return reply(403);
-      env.USAGE.writeDataPoint({indexes:[tool],blobs:[data.event,data.mode,data.source],doubles:[1]});
+      const blobs = [data.event, data.mode, data.source];
+      if (fields === embedFields) {
+        if (tool !== 'csv-import-checker' || data.surface !== 'embed' || !embedPartners.has(data.partner)) return reply(400);
+        blobs.push(data.surface, data.partner);
+      } else if (data.event === 'onward_click') {
+        return reply(400);
+      }
+      env.USAGE.writeDataPoint({indexes:[tool],blobs,doubles:[1]});
       return reply(204);
     } catch { return reply(400); }
   }

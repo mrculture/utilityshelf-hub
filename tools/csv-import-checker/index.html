@@ -6,6 +6,9 @@
   <link rel="canonical" href="https://csv-import-checker.utilityshelf.site/">
   <meta name="description" content="Check CSV headers, row lengths, quoting and likely separator mistakes before importing a file. Your CSV is checked locally in your browser.">
   <title>CSV Import Checker | UtilityShelf</title>
+  <script>
+    if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('embedded');
+  </script>
   <style>
     * { box-sizing: border-box }
     body { margin: 0; color: #1a302a; background: #f5f6ee; font: 1rem/1.5 system-ui,sans-serif }
@@ -32,15 +35,35 @@
     .workflow-nav p { margin: 0 0 .4rem }
     .workflow-nav-links { display: flex; flex-wrap: wrap; gap: .35rem 1.15rem }
     .workflow-nav a { color: #11634d; font-weight: 650; text-underline-offset: 3px }
+    .embed-only { display: none }
+    .embedded .full-page-only, .embedded .embed-only[hidden], .embedded #results[hidden] { display: none }
+    .embedded .embed-only { display: block }
+    .embedded body { background: #fff }
+    .embedded main { max-width: 50rem; padding: clamp(.85rem,3vw,1.4rem); overflow-wrap: anywhere }
+    .embedded h1 { font-size: clamp(1.5rem,5vw,2rem); margin: 0; letter-spacing: -.035em }
+    .embedded section { margin: .75rem 0; padding: 0; border: 0 }
+    .embedded section .hint { margin: .45rem 0 }
+    .embedded label { margin: .65rem 0 .25rem }
+    .embedded #file { max-width: 100%; font: inherit }
+    .embedded #source { padding: .45rem .65rem; height: 5rem; display: block }
+    .embedded .actions { gap: .4rem }
+    .embedded a { color: #11634d; text-underline-offset: .15em }
+    .embedded #results { margin-top: 1rem; padding-top: .75rem; border-top: 1px solid #ccd7ce }
+    .embedded #issues:empty { margin: 0 }
+    .embedded #reportStatus { margin: .4rem 0 }
+    .embedded .onward a { display: inline-block; margin: .3rem 1rem 0 0; font-weight: 650 }
+    .embedded .usage-choice, .embedded .embed-footer { font-size: .85rem; font-weight: normal; color: #476156 }
+    .embedded .usage-choice { margin: .85rem 0 .35rem }
+    .embedded .embed-footer { margin: 0 }
   </style>
 </head>
 <body>
-  <header><b aria-hidden="true">U</b><strong>UtilityShelf</strong><small><a href="https://utilityshelf.site/">UtilityShelf tools</a></small></header>
+  <header class="full-page-only"><b aria-hidden="true">U</b><strong>UtilityShelf</strong><small><a href="https://utilityshelf.site/">UtilityShelf tools</a></small></header>
   <main>
-    <span class="eyebrow">File preparation</span>
+    <span class="eyebrow full-page-only">File preparation</span>
     <h1>CSV Import Checker</h1>
-    <p>Catch repeated headings and uneven rows before uploading a spreadsheet to your shop or database.</p>
-    <nav class="workflow-nav" aria-label="Supplier CSV workflow">
+    <p class="full-page-only">Catch repeated headings and uneven rows before uploading a spreadsheet to your shop or database.</p>
+    <nav class="workflow-nav full-page-only" aria-label="Supplier CSV workflow">
       <p><strong>Supplier CSV workflow · Step 1 of 4</strong></p>
       <div class="workflow-nav-links">
         <a href="https://utilityshelf.site/#supplier-csv">Previous: Supplier CSV workflow overview</a>
@@ -49,33 +72,39 @@
       </div>
     </nav>
     <section id="inventory-example" aria-labelledby="input-title">
-      <h2 id="input-title">Check a CSV</h2>
-      <p class="hint">Use a comma-separated file with a header on line 1. Files are read locally as UTF-8. You can also paste CSV below.</p>
+      <h2 id="input-title" class="full-page-only">Check a CSV</h2>
+      <p class="hint full-page-only">Use a comma-separated file with a header on line 1. Files are read locally as UTF-8. You can also paste CSV below.</p>
+      <p class="hint embed-only">Check a supplier file for repeated headers and uneven rows. Your CSV stays in your browser.</p>
       <label for="file">Open a CSV file</label>
       <input id="file" type="file" accept=".csv,text/csv">
       <label for="source">CSV to check</label>
       <textarea id="source" rows="7" spellcheck="false" placeholder="SKU,Product,Price"></textarea>
       <div class="actions"><button id="check">Check CSV</button><button id="sample">Try inventory sample</button></div>
     </section>
-    <section aria-labelledby="results-title">
+    <section id="results" aria-labelledby="results-title">
       <h2 id="results-title">Import checks</h2>
-      <div id="summary" role="status">Open a file, paste CSV, or try the sample.</div>
+      <div id="summary" role="status" tabindex="-1">Open a file, paste CSV, or try the sample.</div>
       <ul id="issues"></ul>
       <div class="actions"><button id="download" type="button" disabled>Download corrected CSV</button><button id="downloadReport" type="button" disabled>Download check report (.txt)</button></div>
       <p id="reportStatus">Run a check to create a report.</p>
-      <p class="hint">The report includes the result, issue locations and suggested fixes. It lists up to 100 issues and states when more were found. Review issue details before sharing.</p>
-      <p class="hint">Edit the CSV above and run Check CSV. When the header and field-count checks pass, download the exact checked text as a separate file. Values and formula-like fields are not changed automatically.</p>
-      <p class="hint">Header comparisons ignore case and outer spaces. Line numbers refer to the pasted text, including the header. Quoted fields may contain commas and line breaks.</p>
+      <p class="hint full-page-only">The report includes the result, issue locations and suggested fixes. It lists up to 100 issues and states when more were found. Review issue details before sharing.</p>
+      <p class="hint full-page-only">Edit the CSV above and run Check CSV. When the header and field-count checks pass, download the exact checked text as a separate file. Values and formula-like fields are not changed automatically.</p>
+      <p class="hint full-page-only">Header comparisons ignore case and outer spaces. Line numbers refer to the pasted text, including the header. Quoted fields may contain commas and line breaks.</p>
+      <nav id="embedNext" class="embed-only onward" aria-label="Continue on UtilityShelf" hidden>
+        <a href="https://utilityshelf.site/guides/prepare-supplier-csv-for-import" data-onward="guide" target="_blank" rel="noopener noreferrer">Supplier CSV walkthrough</a>
+        <a href="https://utilityshelf.site/utilities/csv-column-mapper/" data-onward="mapper" target="_blank" rel="noopener noreferrer">Map your columns</a>
+      </nav>
     </section>
-    <section aria-labelledby="next-step"><h2 id="next-step">Next: match your destination template</h2>
+    <section class="full-page-only" aria-labelledby="next-step"><h2 id="next-step">Next: match your destination template</h2>
       <p>Resolve the reported issues and save a corrected copy. Use <a href="https://utilityshelf.site/utilities/csv-column-mapper/">CSV Column Mapper</a> to rename and reorder its columns, then download the mapped CSV.</p>
       <p>Review that export in <a href="https://utilityshelf.site/utilities/csv-formula-checker/">CSV Formula Checker</a> before opening it in a spreadsheet or sharing it. Return here to check the final file's headers and row lengths. Files are not transferred automatically between tools.</p>
       <p><a href="https://utilityshelf.site/guides/prepare-supplier-csv-for-import">Follow the supplier CSV walkthrough</a>. Passing these checks does not validate your destination's required values or product data.</p>
     </section>
-    <label><input type="checkbox" id="usage" checked> Share anonymous action counts. No filenames, headings or CSV contents are sent. <a href="https://utilityshelf.site/privacy">Privacy details</a></label>
-    <footer><a href="https://utilityshelf.site/privacy">Privacy</a> · <a href="https://utilityshelf.site/terms">Terms</a> · <a href="https://utilityshelf.site/contact">Contact</a></footer>
+    <label class="usage-choice"><input type="checkbox" id="usage" checked> Share anonymous action counts. No filenames, headings or CSV contents are sent. <a href="https://utilityshelf.site/privacy" id="privacyDetails">Privacy details</a></label>
+    <footer class="full-page-only"><a href="https://utilityshelf.site/privacy">Privacy</a> · <a href="https://utilityshelf.site/terms">Terms</a> · <a href="https://utilityshelf.site/contact">Contact</a> · <a href="./for-websites/">Add to your website</a></footer>
+    <p class="embed-only embed-footer"><a href="https://csv-import-checker.utilityshelf.site/" target="_blank" rel="noopener noreferrer">Open the full checker on UtilityShelf</a></p>
   </main>
-  <script src="./usage.js?v=20261125-catalog-checks"></script>
+  <script src="./usage.js?v=20261125-csv-embed"></script>
   <script>
     const source = document.getElementById('source');
     const summary = document.getElementById('summary');
@@ -83,10 +112,23 @@
     const download = document.getElementById('download');
     const downloadReport = document.getElementById('downloadReport');
     const reportStatus = document.getElementById('reportStatus');
+    const embedded = document.documentElement.classList.contains('embedded');
+    const results = document.getElementById('results');
+    const embedNext = document.getElementById('embedNext');
     let reportText = null, reportInput = null, reportMode = null;
     let checkedText = null, inputSource = 'custom';
     const track = (event, mode) => window.UtilityShelfUsage?.track('csv-import-checker', event, mode, inputSource);
+    if (embedded) {
+      results.hidden = true;
+      const privacy = document.getElementById('privacyDetails');
+      privacy.target = '_blank';
+      privacy.rel = 'noopener noreferrer';
+      embedNext.querySelectorAll('[data-onward]').forEach(link => {
+        link.addEventListener('click', () => track('onward_click', link.dataset.onward));
+      });
+    }
     function invalidateDownload() {
+      embedNext.hidden = true;
       checkedText = null; download.disabled = true;
       reportText = null; reportInput = null; reportMode = null; downloadReport.disabled = true;
       reportStatus.textContent = 'Run a check to create a report.';
@@ -162,6 +204,8 @@
       return '';
     }
     function check() {
+      results.hidden = false;
+      if (embedded) requestAnimationFrame(() => summary.focus());
       invalidateDownload();
       issues.replaceChildren();
       if (!source.value.trim()) { summary.textContent = 'Enter CSV with a header on line 1.'; return; }
@@ -211,6 +255,7 @@
         (count > 100 ? ' Showing the first 100 issues.' : '');
       if (!count && width) { checkedText = source.value; download.disabled = false; }
       prepareReport(count ? 'Issues found' : 'Passed', count ? findings : ['No header or field-count issues found.']);
+      embedNext.hidden = !embedded;
       track('check_complete', count ? 'issues' : 'passed');
     }
     let revision = 0;
@@ -243,6 +288,7 @@
       const file = event.target.files[0];
       if (!file) return;
       const request = ++revision;
+      results.hidden = false;
       inputSource = 'custom';
       invalidateDownload();
       source.value = '';
@@ -272,7 +318,7 @@
       source.value = text;
       check();
     });
-    if (location.hash === "#inventory-example") { inputSource = 'sample'; source.value = sample; check(); }
+    if (!embedded && window.self === window.top && location.hash === "#inventory-example") { inputSource = 'sample'; source.value = sample; check(); }
   </script>
 </body>
 </html>

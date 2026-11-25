@@ -56,6 +56,37 @@ input is necessary, record its exact stored signatures and purpose in
 `node .github/analytics/build-queries.cjs`, and validate against the export.
 Keep photo names, customer data and identifiers out of this manifest.
 
+## Embedded CSV Import Checker
+
+Run the [seven-day partner report](../analytics/csv-embed-partners.sql) in
+Cloudflare Analytics Engine Studio. It groups deliberate checks, download starts
+and onward clicks by placement, input source and result or destination.
+The collector appends `blob4='embed'` and a fixed placement label in `blob5`
+to these events. One user action produces one data point. The general visitor
+report includes custom actions from both standalone and embedded use. To limit
+a CSV report to the standalone checker, add `AND blob4 != 'embed'`.
+
+Use an untagged embed for a self-serve installation. Its actions count under
+`community`. Supply `partner=supplier-pilot` to one pilot placement for
+separate attribution. To issue another placement code, add its fixed label to
+`tools/csv-import-checker/for-websites/install.js`, the shared tracker and
+its standalone copy, then to the collector's
+`embedPartners` set. Deploy the collector before handing out the new code.
+The browser maps missing or unrecognised codes to `community`; it never sends
+an arbitrary query value, the parent site address, or CSV contents. Codes
+label snippets; a copied code can appear on another site.
+
+A frame load sends neither an action nor a Web Analytics page view. Pressing
+the example button can add a sample completion. Custom completions include
+uploaded, pasted and edited data. A result's mapper or guide link adds
+`onward_click` with its destination in `blob2`. Keep those separate from
+the check totals. Counts retain the existing per-page deduplication.
+The installer preview and sample supplier use test mode. The reserved
+`supplier-demo` code also suppresses events and carries test mode onward.
+For installation checks use `test-mode=1`; ordinary owner use without this
+flag is indistinguishable from visitor use. Exercise normal-mode attribution
+with the browser tests and a local collector binding.
+
 ## Scope
 
 Cloudflare Web Analytics page views are a separate dataset. Historical manual

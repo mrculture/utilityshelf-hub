@@ -20,6 +20,37 @@ test('standalone CSV tracker matches the shared tracker',()=>{
  const root=path.resolve(__dirname,'../../..');
  assert.equal(fs.readFileSync(path.join(root,'tools/csv-import-checker/usage.js'),'utf8'),fs.readFileSync(path.join(root,'utilities/usage.js'),'utf8'));
 });
+
+test('CSV embed stores fixed partner labels and supports existing page events', async () => {
+ const w = await worker;
+ const headers = {Origin: 'https://csv-import-checker.utilityshelf.site'};
+ const points = [];
+ const env = {USAGE: {writeDataPoint: point => points.push(point)}};
+ const base = {tool: 'csv-import-checker', event: 'check_complete', mode: 'issues', source: 'sample'};
+ const embedded = {...base, surface: 'embed', partner: 'supplier-pilot'};
+ const send = (body, extra = {}) => w.fetch(request(body, {...headers, ...extra}), env);
+ for (const body of [base, embedded, {...embedded, source: 'custom', mode: 'passed', partner: 'community'},
+                     {...embedded, event: 'onward_click', mode: 'mapper'}, {...embedded, event: 'onward_click', mode: 'guide'}]) {
+   assert.equal((await send(body)).status, 204);
+ }
+ assert.deepEqual(points.map(point => point.blobs), [
+   ['check_complete', 'issues', 'sample'],
+   ['check_complete', 'issues', 'sample', 'embed', 'supplier-pilot'],
+   ['check_complete', 'passed', 'custom', 'embed', 'community'],
+   ['onward_click', 'mapper', 'sample', 'embed', 'supplier-pilot'],
+   ['onward_click', 'guide', 'sample', 'embed', 'supplier-pilot']
+ ]);
+ for (const body of [{...embedded, partner:'some-private-value'}, {...embedded, partner:'supplier-demo'},
+                     {...embedded, surface:'somewhere-else'}, {...embedded, csv:'SKU,Revenue'},
+                     {...base, partner:'supplier-pilot'}, {...base, event:'onward_click', mode:'mapper'},
+                     {...embedded, event:'onward_click', mode:'https://example.test/'}]) {
+   assert.equal((await send(body)).status, 400);
+ }
+ assert.equal((await send(embedded, {Origin:'https://partner.example'})).status, 403);
+ assert.equal((await send({...embedded, tool:'sku-photo-matcher', mode:'match'}, {Origin:'https://utilityshelf.site'})).status, 400);
+ for (const header of ['DNT','Sec-GPC']) assert.equal((await send(embedded, {[header]:'1'})).status, 204);
+ assert.equal(points.length, 5);
+});
 function request(body=event,headers={},url=origin+'/usage') {
  return new Request(url,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',...headers},body:typeof body==='string'?body:JSON.stringify(body)});
 }

@@ -5,6 +5,26 @@ const path=require('node:path');
 const {DatabaseSync}=require('node:sqlite');
 const {query}=require('../../analytics/build-queries.cjs');
 const {events}=require('../../analytics/known-tests.json');
+
+test('partner report separates example, custom and onward actions and excludes standalone activity', () => {
+ const db = new DatabaseSync(':memory:');
+ db.exec('CREATE TABLE utilityshelf_tool_usage(timestamp TEXT,index1 TEXT,blob1 TEXT,blob2 TEXT,blob3 TEXT,blob4 TEXT,blob5 TEXT,double1 REAL,_sample_interval INTEGER)');
+ const insert = db.prepare("INSERT INTO utilityshelf_tool_usage VALUES ('2026-11-25 17:00:00',?,?,?,?,?,?,1,?)");
+ insert.run('csv-import-checker', 'check_complete', 'issues', 'sample', 'embed', 'supplier-pilot', 2);
+ insert.run('csv-import-checker', 'check_complete', 'passed', 'custom', 'embed', 'supplier-pilot', 1);
+ insert.run('csv-import-checker', 'onward_click', 'mapper', 'custom', 'embed', 'community', 1);
+ insert.run('csv-import-checker', 'check_complete', 'issues', 'sample', '', '', 6);
+ insert.run('csv-import-checker', 'check_complete', 'issues', 'sample', 'embed', 'supplier-demo', 5);
+ insert.run('csv-column-mapper', 'build_complete', 'mapped', 'custom', '', '', 3);
+ const sql = fs.readFileSync(path.resolve(__dirname, '../../analytics/csv-embed-partners.sql'), 'utf8');
+ const rows = db.prepare(sql.replace("NOW() - INTERVAL '7' DAY", "'2026-11-19'")).all();
+ assert.deepEqual(rows.map(row => [row.partner, row.action, row.outcome, row.input_source, row.events]), [
+   ['community', 'onward_click', 'mapper', 'custom', 1],
+   ['supplier-pilot', 'check_complete', 'passed', 'custom', 1],
+   ['supplier-pilot', 'check_complete', 'issues', 'sample', 2]
+ ]);
+ db.close();
+});
 test('filtered reports exclude known signatures and samples while preserving nearby visitor actions',()=>{
  const db=new DatabaseSync(':memory:');
  db.function('toDateTime',(value,zone)=>{assert.equal(zone,'UTC');return value;});
