@@ -118,6 +118,21 @@
     let reportText = null, reportInput = null, reportMode = null;
     let checkedText = null, inputSource = 'custom';
     const usageChoice = document.getElementById('usage');
+    const pageParams = new URLSearchParams(location.search);
+    const excludedSession = pageParams.has('test-mode') || pageParams.has('release-check') ||
+      (embedded && pageParams.get('partner') === 'supplier-demo');
+    if (excludedSession) {
+      usageChoice.checked = false;
+      usageChoice.disabled = true;
+      // A tester can follow a link before the deferred script arrives.
+      for (const link of document.querySelectorAll('a[href]')) {
+        const next = new URL(link.href);
+        if ([location.origin, 'https://utilityshelf.site', 'https://csv-import-checker.utilityshelf.site'].includes(next.origin)) {
+          next.searchParams.set('test-mode', '1');
+          link.href = next.href;
+        }
+      }
+    }
     const earlyActions = new Map();
     // The checker works while the optional tracker loads. Keep only action
     // labels and their input type, including a standalone example opened by URL.
