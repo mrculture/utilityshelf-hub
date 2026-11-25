@@ -104,7 +104,7 @@
     <footer class="full-page-only"><a href="https://utilityshelf.site/privacy">Privacy</a> · <a href="https://utilityshelf.site/terms">Terms</a> · <a href="https://utilityshelf.site/contact">Contact</a> · <a href="./for-websites/">Add to your website</a></footer>
     <p class="embed-only embed-footer"><a href="https://csv-import-checker.utilityshelf.site/" target="_blank" rel="noopener noreferrer">Open the full checker on UtilityShelf</a></p>
   </main>
-  <script src="./usage.js?v=20261125-csv-embed"></script>
+  <script id="usageScript" defer src="./usage.js?v=20261125-csv-embed"></script>
   <script>
     const source = document.getElementById('source');
     const summary = document.getElementById('summary');
@@ -117,7 +117,23 @@
     const embedNext = document.getElementById('embedNext');
     let reportText = null, reportInput = null, reportMode = null;
     let checkedText = null, inputSource = 'custom';
-    const track = (event, mode) => window.UtilityShelfUsage?.track('csv-import-checker', event, mode, inputSource);
+    const usageChoice = document.getElementById('usage');
+    const earlyActions = new Map();
+    // The checker works while the optional tracker loads. Keep only action
+    // labels and their input type, including a standalone example opened by URL.
+    function track(event, mode) {
+      if (!usageChoice.checked) return;
+      const labels = ['csv-import-checker', event, mode, inputSource];
+      if (window.UtilityShelfUsage) window.UtilityShelfUsage.track(...labels);
+      else earlyActions.set(labels.join(':'), labels);
+    }
+    usageChoice.addEventListener('change', () => {
+      if (!usageChoice.checked) earlyActions.clear();
+    });
+    document.getElementById('usageScript').addEventListener('load', () => {
+      for (const labels of earlyActions.values()) window.UtilityShelfUsage?.track(...labels);
+      earlyActions.clear();
+    });
     if (embedded) {
       results.hidden = true;
       const privacy = document.getElementById('privacyDetails');

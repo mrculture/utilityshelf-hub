@@ -1,12 +1,11 @@
 (() => {
-  const checker = new URL('../', location.href);
   const partner = document.getElementById('partner');
   const error = document.getElementById('partner-error');
   const code = document.getElementById('embed-code');
   const direct = document.getElementById('direct-link');
   const copyCode = document.getElementById('copy-code');
+  const copyLink = document.getElementById('copy-link');
   const status = document.getElementById('copy-status');
-  direct.value = checker.href;
 
   function updateCode() {
     status.textContent = '';
@@ -19,17 +18,9 @@
       code.value = '';
       return;
     }
-    const frame = new URL(checker);
-    frame.searchParams.set('embed', '1');
-    if (value) frame.searchParams.set('partner', value);
-    const source = frame.href.replaceAll('&', '&amp;');
-    code.value = [
-      '<iframe title="CSV Import Checker"',
-      '  src="' + source + '"',
-      '  height="640" style="width:100%;border:0" loading="lazy"',
-      '  referrerpolicy="no-referrer"></iframe>',
-      '<p><a href="' + checker.href + '">Open the full CSV Import Checker</a></p>'
-    ].join('\n');
+    code.value = value
+      ? code.defaultValue.replace('?embed=1"', '?embed=1&amp;partner=' + value + '"')
+      : code.defaultValue;
   }
 
   async function copy(field, message) {
@@ -44,6 +35,7 @@
   }
   partner.addEventListener('input', updateCode);
   copyCode.addEventListener('click', () => copy(code, 'Embed code copied.'));
-  document.getElementById('copy-link').addEventListener('click', () => copy(direct, 'Link copied.'));
+  copyLink.addEventListener('click', () => copy(direct, 'Link copied.'));
   updateCode();
+  copyLink.disabled = false;
 })();

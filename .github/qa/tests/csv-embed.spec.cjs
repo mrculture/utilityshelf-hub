@@ -115,6 +115,55 @@ test('preview and the sample supplier page support real checks without recording
   expect(partnerSite.beacons).toEqual([]);
 });
 
+async function holdTracker(context) {
+  let resume;
+  const released = new Promise(resolve => { resume = resolve; });
+  await context.route(checker + '/usage.js*', async route => {
+    await released;
+    await route.fallback();
+  });
+  return resume;
+}
+
+test('first embed actions work before usage.js arrives and retain their original input types', async ({page, context, partnerSite}) => {
+  const resume = await holdTracker(context);
+  partnerSite.snippet = '<iframe title="Checker" src="' + checker + '/?embed=1&amp;partner=supplier-pilot"></iframe>';
+  await page.goto(supplier, {waitUntil: 'commit'});
+  const frame = page.frameLocator('iframe');
+  try {
+    await frame.locator('#sample').click();
+    await expect(frame.locator('#summary')).toContainText('2 issues');
+    await frame.locator('#file').setInputFiles(testFile);
+    await expect(frame.locator('#summary')).toContainText('checks passed');
+    expect(partnerSite.posts).toEqual([]);
+  } finally {
+    resume();
+  }
+  await expect.poll(() => partnerSite.points.map(point => point.blobs)).toEqual([
+    ['check_complete', 'issues', 'sample', 'embed', 'supplier-pilot'],
+    ['check_complete', 'passed', 'custom', 'embed', 'supplier-pilot'],
+  ]);
+});
+
+for (const optOut of [false, true]) {
+  test('a standalone example keeps its tracking choice during a slow load, opt out: ' + optOut, async ({page, context, partnerSite}) => {
+    const resume = await holdTracker(context);
+    await page.goto(checker + '/#inventory-example', {waitUntil: 'commit'});
+    try {
+      await expect(page.locator('#summary')).toContainText('2 issues');
+      if (optOut) {
+        await page.locator('#usage').uncheck();
+        await page.locator('#usage').check();
+      }
+      expect(partnerSite.posts).toEqual([]);
+    } finally {
+      resume();
+    }
+    await page.waitForLoadState('networkidle');
+    expect(partnerSite.points.map(point => point.blobs)).toEqual(optOut ? [] : [['check_complete', 'issues', 'sample']]);
+  });
+}
+
 for (const options of ['partner=supplier-demo', 'partner=supplier-pilot&amp;test-mode=1']) {
   test('embedded demo or test URL excludes checks with ' + options, async ({page, partnerSite}) => {
     partnerSite.snippet = '<iframe title="Checker" src="' + checker + '/?embed=1&amp;' + options + '#inventory-example"></iframe>';
@@ -133,3 +182,27 @@ for (const options of ['partner=supplier-demo', 'partner=supplier-pilot&amp;test
     expect(partnerSite.beacons).toEqual([]);
   });
 }
+
+test('the installer has a selectable standard snippet before its copy controls are ready', async ({page, partnerSite}) => {
+  let release;
+  const delayed = new Promise(resolve => { release = resolve; });
+  await page.route('**/for-websites/install.js', async route => {
+    await delayed;
+    await route.fallback();
+  });
+  try {
+    await page.goto(checker + '/for-websites/', {waitUntil: 'commit'});
+    await expect(page.locator('#copy-code')).toBeDisabled();
+    await expect(page.locator('#copy-link')).toBeDisabled();
+    await expect(page.locator('#embed-code')).toHaveValue(/src="https:\/\/csv-import-checker\.utilityshelf\.site\/\?embed=1"/);
+    await expect(page.locator('#direct-link')).toHaveValue(checker + '/');
+    await page.getByText('Use an assigned partner code').click();
+    await page.locator('#partner').fill('supplier-pilot');
+  } finally {
+    release();
+  }
+  await expect(page.locator('#copy-code')).toBeEnabled();
+  await expect(page.locator('#copy-link')).toBeEnabled();
+  await expect(page.locator('#embed-code')).toHaveValue(/embed=1&amp;partner=supplier-pilot/);
+  expect(partnerSite.posts).toEqual([]);
+});
