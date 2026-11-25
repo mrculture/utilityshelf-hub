@@ -2,6 +2,14 @@ const {test,expect}=require('@playwright/test');
 const csv=['CSV Import Checker','CSV Column Mapper','CSV Formula Checker','Supplier CSV Compare','SKU Photo Matcher','Bulk Barcode Checker'];
 const photos=['Filename Cleaner','Image Dimension Checker','Image Contact Sheet','SKU Photo Matcher'];
 const names=page=>page.locator('.tool-card:visible h3').allTextContents();
+async function expectHeroCounts(page) {
+ const cards=page.locator('.tool-card');
+ const betaCards=cards.filter({has:page.locator('.tag').filter({hasText:/\bbeta\b/i})});
+ const [total,beta]=await Promise.all([cards.count(),betaCards.count()]);
+ const status=page.locator('.signal-row');
+ await expect(status.locator('span').filter({hasText:/\blive tools$/})).toHaveText((total-beta)+' live tools');
+ await expect(status.locator('span').filter({hasText:/\bin beta$/})).toHaveText(beta+' in beta');
+}
 test.beforeEach(async({context,page})=>{
  await context.route('**/*',route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.abort());
  await page.goto('/');
@@ -10,6 +18,7 @@ test('finder starts before the catalog and workflows with every tool available',
  await expect(page.getByRole('search',{name:'Find a UtilityShelf tool'})).toBeVisible();
  await expect(page.locator('.tool-card:visible')).toHaveCount(20);
  await expect(page.locator('#tool-count')).toHaveText('Showing 20 of 20 tools.');
+ await expectHeroCounts(page);
  const positions=await page.locator('#tool-finder, .tool-card, #product-photos, #supplier-csv').evaluateAll(nodes=>nodes.map(n=>({id:n.id,top:n.getBoundingClientRect().top})));
  expect(positions[0].id).toBe('tool-finder');expect(positions.at(-2).id).toBe('product-photos');expect(positions.at(-1).id).toBe('supplier-csv');
  expect(new Set(await page.locator('.tool-card .button').evaluateAll(nodes=>nodes.map(n=>n.href))).size).toBe(20);
@@ -48,6 +57,7 @@ test('no matches and clear filters restore all tools and keyboard focus',async({
  await page.locator('#tool-query').fill('formula csv');await page.locator('#tool-category').selectOption('photos');
  await expect(page.locator('.tool-card:visible')).toHaveCount(0);await expect(page.locator('#tool-empty')).toBeVisible();
  await expect(page.locator('#tool-count')).toHaveText('Showing 0 of 20 tools.');await expect(page.locator('#companions')).toBeHidden();
+ await expectHeroCounts(page);
  await page.getByRole('button',{name:'Clear filters',exact:true}).click();await expect(page.locator('#tool-query')).toBeFocused();
  await expect(page.locator('#tool-query')).toHaveValue('');await expect(page.locator('#tool-category')).toHaveValue('all');
  await expect(page.locator('.tool-card:visible')).toHaveCount(20);await expect(page.locator('#tool-empty')).toBeHidden();
@@ -78,6 +88,7 @@ test('all static tool links and workflows remain available without JavaScript',a
  await context.route('**/*',route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.abort());
  const page=await context.newPage();await page.goto('http://127.0.0.1:4179/');
  await expect(page.locator('#tool-finder')).toBeHidden();await expect(page.locator('.tool-card:visible')).toHaveCount(20);
+ await expectHeroCounts(page);
  await expect(page.getByText('Browse all available tools below.',{exact:true})).toBeVisible();await expect(page.locator('#supplier-csv')).toBeVisible();await context.close();
 });
 test('a failed finder script leaves a usable static catalog',async({page})=>{
