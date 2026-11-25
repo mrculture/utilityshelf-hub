@@ -48,7 +48,7 @@
     <div class="panels">
       <section aria-labelledby="install-title">
         <h2 id="install-title">Install the checker</h2>
-        <p>Paste the embed code into an HTML block on your page. If your editor accepts links only, use the direct link.</p>
+        <p>Paste the embed code into an HTML block on your page. If your editor accepts links only, use the direct link. You can also select and copy either field manually.</p>
         <details>
           <summary>Use an assigned partner code</summary>
           <label for="partner">Partner code (optional)</label>
@@ -57,13 +57,17 @@
           <p id="partner-error" role="status"></p>
         </details>
         <label for="embed-code">Embed code</label>
-        <textarea id="embed-code" rows="7" readonly spellcheck="false"></textarea>
-        <button type="button" id="copy-code">Copy embed code</button>
+        <textarea id="embed-code" rows="7" readonly spellcheck="false">&lt;iframe title="CSV Import Checker"
+  src="https://csv-import-checker.utilityshelf.site/?embed=1"
+  height="640" style="width:100%;border:0" loading="lazy"
+  referrerpolicy="no-referrer"&gt;&lt;/iframe&gt;
+&lt;p&gt;&lt;a href="https://csv-import-checker.utilityshelf.site/"&gt;Open the full CSV Import Checker&lt;/a&gt;&lt;/p&gt;</textarea>
+        <button type="button" id="copy-code" disabled>Copy embed code</button>
         <label for="direct-link">Direct link to the full checker</label>
         <input id="direct-link" type="url" readonly value="https://csv-import-checker.utilityshelf.site/">
-        <button type="button" class="secondary" id="copy-link">Copy link</button>
+        <button type="button" class="secondary" id="copy-link" disabled>Copy link</button>
         <p class="hint" id="copy-status" role="status"></p>
-        <noscript><p><a href="../">Open the full checker</a>. Enable JavaScript to generate embed code and preview the checker.</p></noscript>
+        <noscript><p>You can copy the standard code above. Enable JavaScript to add a partner code or try the preview.</p></noscript>
       </section>
       <section aria-labelledby="preview-title">
         <h2 id="preview-title">Live preview</h2>
