@@ -1,0 +1,54 @@
+name: CSV partner embed preview
+on:
+  push:
+    branches: [codex/csv-embed-preview-deploy]
+permissions:
+  contents: read
+concurrency:
+  group: csv-embed-preview-only
+  cancel-in-progress: false
+jobs:
+  preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --prefix .github/release
+      - run: npm ci --ignore-scripts --prefix .github/qa
+      - run: node --test .github/release/tests/*.test.cjs
+      - run: npx --prefix .github/qa playwright install chromium
+      - run: npm test --prefix .github/qa -- csv-embed.spec.cjs
+      - name: Stage the isolated preview
+        run: node .github/preview/stage-csv-embed.cjs "$RUNNER_TEMP/csv-embed-pilot"
+      - name: Publish only to the pilot Pages project
+        env:
+          CLOUDFLARE_ACCOUNT_ID: f5c84f030ee282992b5da87ff0a2bcc5
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          wrangler="$GITHUB_WORKSPACE/.github/release/node_modules/.bin/wrangler"
+          cd "$RUNNER_TEMP/csv-embed-pilot"
+          "$wrangler" whoami
+          # List through the official API to distinguish a missing project from a permission failure.
+          node --input-type=module <<'JS'
+          const name = 'utilityshelf-csv-embed-lab';
+          const api = 'https://api.cloudflare.com/client/v4/accounts/' + process.env.CLOUDFLARE_ACCOUNT_ID + '/pages/projects';
+          const headers = {Authorization: 'Bearer ' + process.env.CLOUDFLARE_API_TOKEN, 'Content-Type': 'application/json'};
+          const existing = await fetch(api + '/' + name, {headers});
+          if (existing.status === 404) {
+            const created = await fetch(api, {method:'POST', headers, body:JSON.stringify({name, production_branch:'main'})});
+            if (!created.ok) throw new Error('Preview project creation failed: ' + created.status + ' ' + JSON.stringify((await created.json()).errors));
+          } else {
+            if (!existing.ok) throw new Error('Preview project lookup failed: ' + existing.status + ' ' + JSON.stringify((await existing.json()).errors));
+            const p = (await existing.json()).result;
+            if (p.name !== name || p.production_branch !== 'main' || p.subdomain !== name + '.pages.dev') throw new Error('Unexpected preview project identity.');
+          }
+          JS
+          for branch in main supplier-demo; do
+            "$wrangler" pages deploy public --project-name utilityshelf-csv-embed-lab --branch "$branch" --commit-hash "$GITHUB_SHA" --commit-dirty=false
+          done
