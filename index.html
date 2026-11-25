@@ -240,6 +240,20 @@
             <p>Compare two supplier CSVs by SKU to see which products were added or went missing and where price or stock changed.</p>
             <a class="button" href="/utilities/supplier-csv-compare/">Compare supplier CSVs</a>
           </article>
+          <article class="tool-card tool-card-link" data-categories="photos data" data-keywords="csv supplier catalogue inventory sku photo photos image images product ebay filename filenames match missing">
+            <span class="tool-icon" aria-hidden="true">P</span>
+            <p class="tag">Files and photos</p>
+            <h3>SKU Photo Matcher</h3>
+            <p>Match numbered photo filenames to a catalogue CSV. Find SKUs without photos and filenames that need review.</p>
+            <a class="button" href="/utilities/sku-photo-matcher/">Match photos to SKUs</a>
+          </article>
+          <article class="tool-card tool-card-meta" data-categories="data" data-keywords="csv supplier inventory catalogue product barcode barcodes gtin upc ean validation length checksum">
+            <span class="tool-icon" aria-hidden="true">B</span>
+            <p class="tag">Data imports</p>
+            <h3>Bulk Barcode Checker</h3>
+            <p>Check a CSV column for blank barcodes, incorrect lengths and invalid check digits before importing a catalogue.</p>
+            <a class="button" href="/utilities/bulk-barcode-checker/">Check barcodes in a CSV</a>
+          </article>
           <article class="tool-card tool-card-meta" data-categories="data text" data-keywords="list compare differences duplicates identifiers text">
             <span class="tool-icon" aria-hidden="true">≠</span>
             <p class="tag">Data imports</p>
@@ -289,6 +303,7 @@
           <li><span class="workflow-step">3 · Name &amp; download</span><h3>Download SKU-named photos</h3><p>Load the filename list or paste the names. Use Save settings to keep your SKU prefix, numbering and naming style, or Load settings to reuse them. Review the prefix, starting number and final names for this product, then select those same checked files by their current filenames. Download renamed photo copies in a ZIP with the filename mapping included.</p><a data-photo-step="name_download" href="https://filename-cleaner.utilityshelf.site/">Name photos and download ZIP</a></li>
         </ol>
         <p class="workflow-note">Use up to 30 photos, 32 MB each and 100 MB combined across these three steps. Split larger batches before starting. Photos stay in your browser. Resizing makes new JPEG copies and leaves your originals untouched. If you resize, open the checked-photo ZIP in Contact Sheet and use its extracted copies in Filename Cleaner. Keep the resize report, final photo report, contact sheet and renamed-photo ZIP together. Filename Cleaner matches by the selected files’ current names and preserves their bytes; it does not resize them again.</p>
+        <p><strong>Optional catalogue check.</strong> Extract the renamed copies and <a href="/utilities/sku-photo-matcher/">match SKU-named photos</a> against your supplier CSV before uploading.</p>
         <a class="button" data-photo-step="walkthrough" href="/guides/prepare-product-photos-for-ebay">Follow the six-photo walkthrough</a>
         <p><a class="button" href="/guides/samples/product-photo-practice-v1.zip" download>Download practice photo pack (.zip)</a> · <a href="/guides/prepare-product-photos-for-ebay#practice-pack">Practice instructions and expected results</a></p>
         <p class="workflow-note">Try six synthetic test files: three pass and three need attention under the included practice settings. Includes a replacement photo, saved limits and instructions. Extract the ZIP first; the repaired batch finishes with five photos.</p>
@@ -305,6 +320,7 @@
           <li class="workflow-optional"><span class="workflow-step">4 · Compare (optional)</span><h3>Compare with the previous supplier file</h3><p>If you have a previous export, check which SKUs were added or went missing and where price or stock changed before importing.</p><a href="/utilities/supplier-csv-compare/">Compare old and new CSVs</a></li>
         </ol>
         <p class="workflow-note">Files stay in your browser. Choose the file separately in each tool. After making changes, recheck the final export's structure and your destination's required fields.</p>
+        <p><strong>Optional catalogue checks.</strong> <a href="/utilities/bulk-barcode-checker/">Check catalogue barcodes</a> if your import uses them. <a href="/utilities/sku-photo-matcher/">Match the catalogue with product photos</a> if you also have SKU-named images.</p>
         <a class="button" href="/guides/prepare-supplier-csv-for-import">Follow the supplier CSV walkthrough</a>
       </section>
 
@@ -350,7 +366,7 @@
       </div>
     </footer>
     <!-- Cloudflare Web Analytics -->
-    <script src="/utilities/usage.js?v=20261124-supplier-compare" defer></script>
+    <script src="/utilities/usage.js?v=20261125-catalog-checks" defer></script>
     <!-- End Cloudflare Web Analytics -->
     <script src="/photo-workflow.js?v=20261110-workflow-tracking" defer></script>
   </body>

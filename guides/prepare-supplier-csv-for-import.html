@@ -10,7 +10,7 @@
 <body>
   <header class="site-header"><a class="brand" href="/"><span class="brand-mark">U</span><span><strong>UtilityShelf</strong><small>Practical browser tools</small></span></a><nav aria-label="Main"><a href="/#tools">Tools</a><a href="/guides">Guides</a></nav></header>
   <main class="article-page"><article class="article-card">
-    <p class="eyebrow">Supplier data · Updated 24 November 2026</p>
+    <p class="eyebrow">Supplier data · Updated 25 November 2026</p>
     <h1>How to prepare a supplier CSV for import</h1>
     <p>A CSV can look tidy in a spreadsheet while still having repeated headers, a short row or columns in the wrong order. Work on a copy of the supplier file and get the destination's current import template before editing. The examples here are invented inventory data.</p>
     <div class="tool-callout"><h2>Start with the file structure</h2><p>Use CSV Import Checker to find repeated headers, quoting problems and unexpected field counts. These checks do not verify prices, stock levels or your importer's business rules.</p><a class="button" href="https://csv-import-checker.utilityshelf.site/">Check a CSV before importing</a></div>
@@ -113,8 +113,11 @@ A103,15,4</code></pre>
       <li>Use the destination's preview or a small test import first and compare its results with your source records.</li>
     </ol>
     <p>Choose or paste the file in each tool separately; the tools do not transfer data between tabs. A passing structure check and no formula-prefix flags do not guarantee a successful import.</p>
+    <h3 id="check-catalogue-barcodes">Optional: check catalogue barcodes</h3>
+    <p>If your destination uses a barcode column, open the exact export in <a href="/utilities/bulk-barcode-checker/">Bulk Barcode Checker</a>. Select <strong>Read headers</strong>, choose the barcode column and optionally a SKU column to help identify affected rows. Select <strong>Check barcodes</strong> and review any blank values, format issues and incorrect check digits. Keep UPC, EAN and other GTIN values as text in spreadsheet software to preserve leading zeros. Save the findings with <strong>Download report (.txt)</strong>. Check with the supplier if you need to confirm a code belongs to a particular product.</p>
+    <p>If you have matching listing images, <a href="/utilities/sku-photo-matcher/">check the export against your final SKU-named photos</a>. Use the same product set in both inputs, and review missing photos and unmatched filenames before uploading.</p>
     <p><a href="/utilities/csv-column-mapper/">Map supplier columns</a> · <a href="/guides/prepare-product-photos-for-ebay">Prepare listing photos</a></p>
   </article></main>
   <footer><div class="footer-inner"><p>UtilityShelf · Practical browser tools</p><nav aria-label="Footer"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a></nav></div></footer>
-  <script defer src="/utilities/usage.js?v=20261124-supplier-compare"></script>
+  <script defer src="/utilities/usage.js?v=20261125-catalog-checks"></script>
 </body></html>

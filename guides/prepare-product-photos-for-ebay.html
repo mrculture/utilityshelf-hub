@@ -10,7 +10,7 @@
 <body>
   <header class="site-header"><a class="brand" href="/"><span class="brand-mark">U</span><span><strong>UtilityShelf</strong><small>Practical browser tools</small></span></a><nav aria-label="Main"><a href="/#product-photos">Photo workflow</a><a href="/guides">Guides</a></nav></header>
   <main class="article-page"><article class="article-card" data-photo-workflow="guide">
-    <p class="eyebrow">Product photos · Updated 24 November 2026</p>
+    <p class="eyebrow">Product photos · Updated 25 November 2026</p>
     <h1 data-workflow-entry>How to prepare product photos for an eBay listing</h1>
     <div class="tool-callout">
       <h2>Start with your photos or try the practice pack</h2>
@@ -105,11 +105,14 @@
     <p>Keep the latest <strong>photo report</strong>, <strong>contact-sheet PNG</strong> and <strong>renamed-photo ZIP</strong> together. The mapping inside the ZIP connects checked-file names to SKU names. Keep the resize report too when applicable: together the two mappings trace camera-original → checked copy → SKU name. Reports follow selection order; match by filename rather than row number.</p>
     <p>If you reorder, remove, replace or restore a photo, download and load the new filename list (or copy it again), then download a fresh contact sheet and ZIP. Filename lists use UTF-8 text, one name per line, with no folder paths. Blank lines are ignored; spelling, case and order are preserved. Invalid imports leave the previous list unchanged. Select only the current photos when creating the renamed ZIP, including replacements and leaving out removed photos. Changed photos also need a fresh size check and report; changed size limits need a fresh report. Loading a new list or editing names or selected files while a ZIP is being prepared cancels that pending ZIP.</p>
     <p>The ZIP supports up to 30 JPEG, PNG or WebP photos, 32 MB each and 100 MB combined. For other file types or larger batches, use the mapping in your file manager or renaming application. Do not assume the file manager's sort order matches the contact sheet. Neither the copied list nor the mapping download alone renames anything automatically.</p>
+    <h2 id="match-catalogue-photos">Optional: match the photos to a supplier catalogue</h2>
+    <p>If you have a catalogue CSV, extract the renamed ZIP and open <a href="/utilities/sku-photo-matcher/">SKU Photo Matcher</a>. Select <strong>Open supplier CSV</strong> or paste the data, then select the <strong>SKU column</strong>. Choose the extracted photos or their folder, or paste the final filenames one per line. Select <strong>Match photos to SKUs</strong>.</p>
+    <p>A name such as <code>sku-1042-001.jpg</code> matches SKU <code>SKU-1042</code> at photo position 1. The matcher reads a final number preceded by a hyphen, underscore or space, so use the complete SKU as the Filename Cleaner prefix. It ignores case and treats punctuation in the SKU as word separators. Leading zeros are preserved. Review missing photos, unmatched names and repeated positions. If two SKUs produce the same filename prefix, resolve the ambiguity before assigning photos. Select <strong>Download match report (.txt)</strong> to keep a record.</p>
     <h2 id="verify-listing-photos">6. Verify the listing photos</h2>
     <p>Upload the extracted checked, SKU-named photos to your listing, not the ZIP or contact-sheet PNG. Verify the main photo and order in eBay's editor. Numbered filenames help you organise the set, but the uploader may choose a different order. Review the completed listing before publishing.</p>
     <p><a href="/#product-photos">Back to the product-photo workflow</a> · <a href="/guides/prepare-supplier-csv-for-import">Prepare a supplier CSV</a></p>
   </article></main>
   <footer><div class="footer-inner"><p>UtilityShelf · Practical browser tools</p><nav aria-label="Footer"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a></nav></div></footer>
-  <script src="/utilities/usage.js?v=20261124-workflow-nav" defer></script>
+  <script src="/utilities/usage.js?v=20261125-catalog-checks" defer></script>
   <script src="/photo-workflow.js?v=20261110-workflow-tracking" defer></script>
 </body></html>

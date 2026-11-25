@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SKU Photo Matcher | UtilityShelf</title>
+  <meta name="description" content="Match numbered product photo filenames to supplier SKUs. Find missing photos, unrecognised filenames and ambiguous matches before listing.">
+  <link rel="canonical" href="https://utilityshelf.site/utilities/sku-photo-matcher/">
+  <link rel="stylesheet" href="/utilities/shared.css?v=20261124-workflow-nav">
+  <script defer src="/utilities/usage.js?v=20261125-catalog-checks"></script>
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header><a href="/">UtilityShelf</a><nav aria-label="Main"><a href="/#companions">Browse tools</a></nav></header>
+  <main>
+    <p class="eyebrow">Product photos and supplier data</p>
+    <h1>SKU Photo Matcher</h1>
+    <p>Check your supplier catalogue against a folder of numbered product photos. See which SKUs have photos and which filenames need a closer look. Your CSV and filenames stay in your browser.</p>
+    <nav class="workflow-nav" aria-label="Related tools and guides">
+      <div class="workflow-nav-links">
+        <a href="https://filename-cleaner.utilityshelf.site/">Filename Cleaner</a>
+        <a href="/utilities/csv-column-mapper/">CSV Column Mapper</a>
+        <a href="/guides/prepare-product-photos-for-ebay">Product photo guide</a>
+        <a href="/guides/prepare-supplier-csv-for-import">Supplier CSV guide</a>
+      </div>
+    </nav>
+    <section class="panel" aria-labelledby="catalogue">
+      <h2 id="catalogue">Choose the catalogue</h2>
+      <label for="csvFile">Open supplier CSV</label>
+      <input type="file" id="csvFile" accept=".csv,text/csv" disabled>
+      <label for="csv">Supplier CSV text</label>
+      <textarea id="csv" rows="4" spellcheck="false" placeholder="SKU,Title"></textarea>
+      <label for="skuColumn">SKU column</label>
+      <select id="skuColumn" disabled><option value="">Choose a column</option></select>
+      <p class="hint">Use a comma-separated UTF-8 file with a header and one row per SKU. The limit is 5,000 products and 2 MiB. Each SKU can contain up to 200 characters.</p>
+    </section>
+    <section class="panel" aria-labelledby="photosTitle">
+      <h2 id="photosTitle">Choose the photo filenames</h2>
+      <div class="controls">
+        <div><label for="photos">Choose photo files</label><input id="photos" type="file" multiple accept=".jpg,.jpeg,.png,.webp" disabled></div>
+        <div><label for="folder">Choose a photo folder</label><input id="folder" type="file" webkitdirectory multiple disabled></div>
+      </div>
+      <label for="names">Photo filenames</label>
+      <textarea id="names" rows="5" spellcheck="false" placeholder="sku-1042-001.jpg"></textarea>
+      <p class="hint">Choose files, choose an extracted photo folder, or paste one filename per line. A new selection replaces the list. Only filenames are read. Include up to 5,000 entries and 2 MiB of filename text.</p>
+      <p>For SKU <code>0012</code>, use a name such as <code>0012-01.jpg</code>. Start with the SKU, then a hyphen, underscore or space and a positive number of up to six digits. Supported extensions are JPG, JPEG, PNG and WebP.</p>
+      <div class="actions"><button id="match" class="primary" type="button" disabled>Match photos to SKUs</button><button id="sample" type="button" disabled>Try supplier example</button></div>
+      <p id="status" role="status">Choose a catalogue and photo filenames to begin.</p>
+    </section>
+    <section id="results" class="panel" aria-labelledby="resultsTitle" hidden>
+      <h2 id="resultsTitle">Photo match results</h2>
+      <p id="summary" role="status"></p>
+      <div class="actions"><button type="button" id="download">Download match report (.txt)</button></div>
+      <label for="filter">Show findings</label>
+      <select id="filter"><option value="">All findings</option><option>Missing photos</option><option>Unmatched photo</option><option>Needs review</option><option>Matched</option><option>Skipped</option></select>
+      <p id="pageStatus" role="status"></p>
+      <div class="table-wrap"><table><thead><tr><th scope="col">Finding</th><th scope="col">SKU</th><th scope="col">Filename</th><th scope="col">Details</th></tr></thead><tbody id="findings"></tbody></table></div>
+      <div id="pager" class="actions" hidden><button type="button" id="previous">Previous page</button><button type="button" id="next">Next page</button></div>
+    </section>
+    <section class="panel">
+      <h2>How the matcher decides</h2>
+      <p>Filename Cleaner lowercases the SKU and joins its letters and numbers with your chosen separator. The matcher uses that same spelling. Leading zeros count, so <code>0012</code> and <code>12</code> can belong to different products.</p>
+      <p>If several SKUs produce the same prefix, check Filename Cleaner’s original-to-new mapping and the original photos. Rerun those SKUs in separate batches with their verified photos. If two images claim one position, review the shots and give each retained file a distinct number. Open the images in <a href="/utilities/image-contact-sheet/">Image Contact Sheet</a> to check the product and order.</p>
+    </section>
+  </main>
+  <footer><a href="/#companions">More utilities</a> · <a href="/privacy">Privacy</a> · <a href="/contact">Contact</a></footer>
+</body>
+</html>

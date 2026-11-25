@@ -8,7 +8,7 @@
   <link rel="canonical" href="https://utilityshelf.site/utilities/supplier-csv-compare/">
   <link rel="stylesheet" href="/utilities/shared.css?v=20261124-workflow-nav">
   <link rel="stylesheet" href="./tool.css">
-  <script src="/utilities/usage.js?v=20261124-supplier-compare" defer></script>
+  <script src="/utilities/usage.js?v=20261125-catalog-checks" defer></script>
   <script type="module" src="./app.js?v=20261124-ready"></script>
 </head>
 <body>
@@ -93,6 +93,7 @@
       <p>SKUs match exactly, including capitals, spaces and leading zeros. For example, <code>0012</code> and <code>12</code> are different products. Each file needs one nonblank row identifier per product. Resolve blank or repeated SKUs before comparing.</p>
       <p>Prices use non-negative digits with an optional decimal point, and stock uses whole numbers. Use the same currency and stock units in both files. <code>7.50</code> and <code>7.5</code> compare as equal, while a blank cell is different from zero.</p>
       <p>Check the source files before acting on a difference. A missing SKU may mean the latest CSV covers a different set of products.</p>
+      <p>If the latest export includes product barcodes, <a href="/utilities/bulk-barcode-checker/">check its barcode column</a> before importing.</p>
     </section>
   </main>
   <footer><a href="/#companions">More utilities</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer>

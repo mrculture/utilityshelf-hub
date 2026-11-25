@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bulk Barcode Checker | UtilityShelf</title>
+  <meta name="description" content="Check GTIN, UPC and EAN barcode numbers in a supplier CSV. Review lengths, check digits and blank cells by SKU and download a report.">
+  <link rel="canonical" href="https://utilityshelf.site/utilities/bulk-barcode-checker/">
+  <link rel="stylesheet" href="/utilities/shared.css?v=20261124-workflow-nav">
+  <style>#resultRows td:nth-child(2), #resultRows td:nth-child(3) { white-space: pre-wrap; font-family: ui-monospace, Consolas, monospace }</style>
+  <script defer src="/utilities/usage.js?v=20261125-catalog-checks"></script>
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header><a href="/">UtilityShelf</a><nav aria-label="Main"><a href="/#companions">Browse tools</a></nav></header>
+  <main>
+    <p class="eyebrow">Supplier CSV tools</p>
+    <h1>Bulk Barcode Checker</h1>
+    <p>Find the rows in a supplier CSV that need a second look. Check barcode lengths and check digits for GTIN-8, GTIN-12 (UPC), GTIN-13 (EAN) and GTIN-14. Your file stays in your browser.</p>
+    <nav class="workflow-nav" aria-label="Related tools and guide">
+      <div class="workflow-nav-links"><a href="/utilities/csv-column-mapper/">CSV Column Mapper</a><a href="/utilities/supplier-csv-compare/">Supplier CSV Compare</a><a href="/guides/prepare-supplier-csv-for-import">Supplier CSV guide</a></div>
+    </nav>
+    <section class="panel" aria-labelledby="inputTitle">
+      <h2 id="inputTitle">Choose a supplier CSV</h2>
+      <p class="hint">Use a comma-separated UTF-8 file with a header, up to 2 MiB and 25,000 product rows. Keep barcode columns as text to preserve leading zeros.</p>
+      <label for="sourceFile">Open CSV file</label>
+      <input id="sourceFile" type="file" accept=".csv,text/csv" disabled>
+      <label for="source">Or paste CSV text</label>
+      <textarea id="source" rows="5" spellcheck="false" placeholder="SKU,Barcode"></textarea>
+      <div class="actions"><button type="button" id="readHeaders" disabled>Read headers</button><button type="button" id="sample" disabled>Try barcode example</button></div>
+      <div id="mapping" hidden>
+        <div class="controls">
+          <div><label for="barcodeColumn">Barcode column</label><select id="barcodeColumn"></select></div>
+          <div><label for="skuColumn">SKU column (optional)</label><select id="skuColumn"></select></div>
+        </div>
+        <button type="button" id="check" class="primary">Check barcodes</button>
+      </div>
+      <p id="status" role="status">Open or paste your CSV, then select Read headers.</p>
+    </section>
+    <section id="results" class="panel" aria-labelledby="resultTitle" hidden>
+      <h2 id="resultTitle">Barcode results</h2>
+      <p id="summary" role="status"></p>
+      <p>Valid means the digit count and check digit pass. Confirm the number belongs to the product against its packaging or supplier record. Blank rows are listed separately because some products have no assigned GTIN.</p>
+      <div class="controls">
+        <div><label for="resultFilter">Show rows</label>
+          <select id="resultFilter"><option value="all">All rows</option><option value="invalid">Invalid</option><option value="blank">Blank</option><option value="valid">Valid</option></select>
+        </div>
+        <button id="downloadReport" type="button" disabled>Download report (.txt)</button>
+      </div>
+      <p id="pageStatus" role="status"></p>
+      <div id="tableWrap" class="table-wrap"><table>
+        <thead><tr><th scope="col">CSV line</th><th scope="col">SKU</th><th scope="col">Barcode</th><th scope="col">Result</th><th scope="col">Details</th></tr></thead><tbody id="resultRows"></tbody>
+      </table></div>
+      <div id="pager" class="actions" hidden><button id="previous" type="button">Previous page</button><button id="next" type="button">Next page</button></div>
+    </section>
+  </main>
+  <footer><a href="/#companions">More utilities</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></footer>
+</body>
+</html>
