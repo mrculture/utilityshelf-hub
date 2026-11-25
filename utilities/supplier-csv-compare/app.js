@@ -15,6 +15,7 @@ const sources = ['previous', 'current'].map(key => ({
   file: byId(key + 'File'),
   controls: Object.fromEntries(Object.entries(fields).map(([field, suffix]) => [field, byId(key + suffix)])),
   revision: 0,
+  fileError: '',
 }));
 let snapshots = null;
 let comparison = null;
@@ -29,16 +30,22 @@ function clearResults() {
   byId('resultRows').replaceChildren();
 }
 
+function showInputStatus(message) {
+  const errors = sources.map(source => source.fileError).filter(Boolean);
+  status.textContent = errors.length ? errors.join(' ') : message;
+}
+
 function clearSnapshots(message) {
   snapshots = null;
   clearResults();
   byId('columnChoices').hidden = true;
-  status.textContent = message;
+  showInputStatus(message);
 }
 
 for (const source of sources) {
   source.text.addEventListener('input', () => {
     source.revision++;
+    source.fileError = '';
     clearSnapshots('CSV text changed. Select Read headers before comparing.');
   });
 
@@ -46,6 +53,7 @@ for (const source of sources) {
     const file = source.file.files[0];
     if (!file) return;
     const revision = ++source.revision;
+    source.fileError = '';
     source.file.value = '';
     source.text.value = '';
     clearSnapshots('Reading ' + source.label.toLowerCase() + '…');
@@ -55,9 +63,11 @@ for (const source of sources) {
       if (source.revision !== revision) return;
       try { source.text.value = new TextDecoder('utf-8', {fatal: true}).decode(bytes); }
       catch { throw new Error('Save the file as UTF-8 and open it again.'); }
-      status.textContent = source.label + ' loaded. Select Read headers once both files are ready.';
+      showInputStatus(source.label + ' loaded. Select Read headers once both files are ready.');
     } catch (error) {
-      if (source.revision === revision) status.textContent = source.label + ': ' + error.message;
+      if (source.revision !== revision) return;
+      source.fileError = source.label + ': ' + error.message;
+      showInputStatus('');
     }
   });
 
@@ -71,6 +81,7 @@ for (const source of sources) {
 
 function readHeaders() {
   clearSnapshots('Reading both headers…');
+  if (sources.some(source => source.fileError)) return false;
   try {
     snapshots = Object.fromEntries(sources.map(source => [source.key, readSnapshot(source.text.value, source.label)]));
   } catch (error) {
@@ -115,7 +126,10 @@ function compare() {
     option.textContent = option.textContent.replace(/ \(\d+\)$/, '') + ' (' + counts[option.value] + ')';
   }
   resultKind.value = Object.keys(counts).find(kind => counts[kind]) ?? 'changed';
-  status.textContent = 'Comparison complete.';
+  const emptySources = sources.filter(({key}) => snapshots[key].rows.length === 0);
+  status.textContent = emptySources.length
+    ? emptySources.map(source => source.label + ' has a header but no product rows.').join(' ') + ' Check that the supplier export is complete before using these results.'
+    : 'Comparison complete.';
   byId('results').hidden = false;
   renderPage();
 }
@@ -177,6 +191,7 @@ byId('sample').addEventListener('click', () => {
   ];
   for (const [index, source] of sources.entries()) {
     source.revision++;
+    source.fileError = '';
     source.text.value = examples[index];
   }
   if (readHeaders()) compare();

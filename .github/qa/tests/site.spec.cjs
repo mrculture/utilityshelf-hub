@@ -4,6 +4,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const root = path.resolve(__dirname, '../../..');
 const sites = require('../sites.json');
+const sitesByOrigin = new Map(sites.map(site => [site.origin, site]));
 const tracked = execFileSync('git', ['ls-files', '-z'], {cwd: root, encoding: 'utf8'}).split('\0').filter(Boolean);
 function resolveFile(site, pathname) {
   const file = path.join(root, site.dir, decodeURIComponent(pathname));
@@ -48,8 +49,9 @@ for (const site of sites) {
       const links = await page.locator('a[href], link[href], script[src], img[src]').evaluateAll(nodes => nodes.map(n => n.getAttribute('href') || n.getAttribute('src')));
       for (const link of links) {
         const target = new URL(link, url);
-        if (target.origin !== site.origin) continue;
-        const file = resolveFile(site, target.pathname);
+        const targetSite = sitesByOrigin.get(target.origin);
+        if (!targetSite) continue;
+        const file = resolveFile(targetSite, target.pathname);
         expect(file, `${url} -> ${link}`).toBeTruthy();
         if (target.hash && /\.html$/.test(file)) {
           const html = fs.readFileSync(file, 'utf8');

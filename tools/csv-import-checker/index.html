@@ -249,16 +249,28 @@
       issues.replaceChildren();
       summary.textContent = 'Reading CSV…';
       event.target.value = '';
+      let bytes;
       try {
-        const text = await file.text();
-        if (request !== revision) return;
-        source.value = text;
-        check();
+        bytes = await file.arrayBuffer();
       } catch {
         if (request !== revision) return;
-        issues.replaceChildren();
         summary.textContent = 'Could not read the file. Paste its contents below the file picker.';
+        return;
       }
+      if (request !== revision) return;
+      let text;
+      try {
+        text = new TextDecoder('utf-8', {fatal: true}).decode(bytes);
+      } catch {
+        summary.textContent = 'Save the CSV as UTF-8 and open it again.';
+        return;
+      }
+      if (text.includes('\0')) {
+        summary.textContent = 'The file contains null characters. Check its encoding and export it as UTF-8 CSV.';
+        return;
+      }
+      source.value = text;
+      check();
     });
     if (location.hash === "#inventory-example") { inputSource = 'sample'; source.value = sample; check(); }
   </script>

@@ -51,14 +51,14 @@ for(const c of checkers){
  });
  test(c.name+' loading, failed reads and late old reads invalidate the old report',async({page})=>{
   await page.goto(c.url+'?test-mode=1');await check(page,c,'A,B\n1,2');await report(page,c);
-  await page.evaluate(()=>{File.prototype.text=function(){return new Promise((resolve,reject)=>{window.pendingRead={resolve,reject};});};});
+  await page.evaluate(()=>{File.prototype.arrayBuffer=function(){return new Promise((resolve,reject)=>{window.pendingRead={resolve,reject};});};});
   const file={name:'later.csv',mimeType:'text/csv',buffer:Buffer.from('Old,File\n1,2')};
   await page.locator('#file').setInputFiles(file);await expect(page.locator('#downloadReport')).toBeDisabled();
   await page.evaluate(()=>window.pendingRead.reject(new Error('read failed')));
   await expect(page.locator('#summary')).toContainText(c.name==='import'?'Could not read':'read failed');
   await expect(page.locator('#downloadReport')).toBeDisabled();
   await page.locator('#file').setInputFiles(file);await check(page,c,'New,Data,Only\n3,4,5');
-  await page.evaluate(()=>window.pendingRead.resolve('Old,File\n=PRIVATE,2'));
+  await page.evaluate(()=>window.pendingRead.resolve(new TextEncoder().encode('Old,File\n=PRIVATE,2').buffer));
   const text=await report(page,c);expect(text).toContain('Status: Passed');
   expect(text).toContain(c.name==='import'?'3 columns and 1 data row':'6 checked');
   await expect(page.locator('#source')).toHaveValue('New,Data,Only\n3,4,5');
@@ -73,12 +73,60 @@ for(const c of checkers){
   expect(text).toContain('Status: Check incomplete');expect(text).toContain('line 107');expect(text).toContain('Listing 100');
  });
 }
+test('import rejects unreadable SKU encodings and preserves the corrected SKU in the CSV download', async ({page}) => {
+ const csv = 'SKU,Price\nCAFÉ-001,0\n0002,14';
+ const file = buffer => ({name: 'supplier.csv', mimeType: 'text/csv', buffer});
+ await page.goto('/tools/csv-import-checker/?test-mode=1');
+ await check(page, checkers[0], 'SKU,Price\nPREVIOUS,3');
+ const badFiles = [Buffer.from(csv, 'latin1'), Buffer.from('SKU,Price\n0002,14', 'utf16le')];
+ for (const buffer of badFiles) {
+  await page.locator('#file').setInputFiles(file(buffer));
+  await expect(page.locator('#summary')).toContainText('UTF-8');
+  await expect(page.locator('#source')).toHaveValue('');
+  await expect(page.locator('#download')).toBeDisabled();
+  await expect(page.locator('#downloadReport')).toBeDisabled();
+ }
+ await page.locator('#file').setInputFiles(file(Buffer.from('\uFEFF' + csv)));
+ await expect(page.locator('#summary')).toContainText('checks passed');
+ const pending = page.waitForEvent('download');
+ await page.locator('#download').click();
+ const download = await pending;
+ expect(fs.readFileSync(await download.path(), 'utf8')).toBe(csv);
+});
 test('import separator warnings produce an incomplete report with actionable guidance',async({page})=>{
  const c=checkers[0];await page.goto(c.url+'?test-mode=1');
  for(const separator of [';','\t']){
   await check(page,c,['A','B'].join(separator)+'\n'+['1','2'].join(separator));
   const text=await report(page,c);expect(text).toContain('Status: Check incomplete');expect(text).toContain('comma separator');
  }
+});
+test('the checked CSV keeps each product identity in barcode checks and photo matching', async ({page}, testInfo) => {
+ const csv = 'SKU,GTIN,Title\nCAFÉ-001,036000291452,"Mug, blue"\n0012,96385074,Monitor\n12,4006381333931,Laptop';
+ await page.goto('/tools/csv-import-checker/?test-mode=1');
+ await page.locator('#file').setInputFiles({name: 'supplier.csv', mimeType: 'text/csv', buffer: Buffer.from('\uFEFF' + csv)});
+ await expect(page.locator('#summary')).toContainText('checks passed');
+ const pending = page.waitForEvent('download');
+ await page.locator('#download').click();
+ const checkedFile = testInfo.outputPath('corrected.csv');
+ await (await pending).saveAs(checkedFile);
+
+ await page.goto('/utilities/bulk-barcode-checker/?test-mode=1');
+ await page.locator('#sourceFile').setInputFiles(checkedFile);
+ await expect(page.locator('#source')).toHaveValue(csv);
+ await page.locator('#readHeaders').click();
+ await page.locator('#check').click();
+ await expect(page.locator('#summary')).toContainText('3 valid');
+ const barcodeRow = page.getByRole('row').filter({has: page.getByRole('cell', {name: 'CAFÉ-001', exact: true})});
+ await expect(barcodeRow.getByRole('cell', {name: '036000291452', exact: true})).toBeVisible();
+
+ await page.goto('/utilities/sku-photo-matcher/?test-mode=1');
+ await page.locator('#csvFile').setInputFiles(checkedFile);
+ await expect(page.locator('#csv')).toHaveValue(csv);
+ await page.locator('#names').fill('café-001_01.jpg\n0012-01.png');
+ await page.locator('#match').click();
+ await expect(page.locator('#summary')).toContainText('2 with confirmed photos, 1 missing photos');
+ const missingRow = page.getByRole('row').filter({has: page.getByRole('cell', {name: 'Missing photos', exact: true})});
+ await expect(missingRow.getByRole('cell', {name: '12', exact: true})).toBeVisible();
 });
 test('formula report has accurate physical lines, safe previews and delimiter invalidation',async({page})=>{
  const c=checkers[1];await page.goto(c.url+'?test-mode=1');

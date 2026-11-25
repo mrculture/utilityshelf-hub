@@ -97,3 +97,45 @@ test('sample and optional SKU work and editing the CSV disables stale reports', 
   await expect(page.locator('#summary')).toHaveText('2 valid · 0 invalid · 0 blank');
   await expect(page.locator('#downloadReport')).toBeEnabled();
 });
+
+test('rejects a misencoded SKU before reporting and preserves SKUs in a UTF-8 replacement file', async ({page}) => {
+  await page.locator('#sample').click();
+  await expect(page.locator('#downloadReport')).toBeEnabled();
+
+  // A Windows-1252 export represents É as a single byte, which is invalid here in UTF-8.
+  const westernCsv = Buffer.from('SKU,GTIN\nCAFÉ-001,036000291452', 'latin1');
+  const file = page.locator('#sourceFile');
+  await file.setInputFiles({name: 'supplier.csv', mimeType: 'text/csv', buffer: westernCsv});
+  await expect(page.locator('#status')).toHaveText('Save the CSV as UTF-8 and open it again.');
+  await expect(page.locator('#source')).toHaveValue('');
+  await expect(page.locator('#mapping')).toBeHidden();
+  await expect(page.locator('#results')).toBeHidden();
+  await expect(page.locator('#downloadReport')).toBeDisabled();
+
+  const csv = 'SKU,GTIN\nCAFÉ-001,036000291452\n東京-002,96385074';
+  await file.setInputFiles({name: 'supplier.csv', mimeType: 'text/csv', buffer: Buffer.from('\uFEFF' + csv)});
+  await expect(page.locator('#source')).toHaveValue(csv);
+  await page.locator('#readHeaders').click();
+  await page.locator('#check').click();
+  await expect(page.locator('#summary')).toHaveText('2 valid · 0 invalid · 0 blank');
+  await expect(page.locator('#resultRows td:nth-child(2)')).toHaveText(['CAFÉ-001', '東京-002']);
+  const report = await downloadReport(page);
+  expect(report).toContain('"CAFÉ-001"\t"036000291452"');
+  expect(report).toContain('"東京-002"\t"96385074"');
+});
+
+test('rejects BOM-less UTF-16 files and embedded nulls before reading supplier columns', async ({page}) => {
+  const inputs = [
+    Buffer.from('SKU,GTIN\n0012,036000291452', 'utf16le'),
+    Buffer.from('SKU,GTIN\n00\u000012,036000291452', 'utf8'),
+  ];
+  for (const buffer of inputs) {
+    await page.locator('#sample').click();
+    await expect(page.locator('#downloadReport')).toBeEnabled();
+    await page.locator('#sourceFile').setInputFiles({name: 'supplier.csv', mimeType: 'text/csv', buffer});
+    await expect(page.locator('#status')).toContainText('Export as UTF-8 CSV without null characters');
+    await expect(page.locator('#source')).toHaveValue('');
+    await expect(page.locator('#mapping')).toBeHidden();
+    await expect(page.locator('#downloadReport')).toBeDisabled();
+  }
+});

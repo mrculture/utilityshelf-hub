@@ -54,9 +54,16 @@ export function attachFileInput(file, source, message) {
     file.value = '';
     try {
       if (selected.size > 2 * 1024 * 1024) throw new Error('Choose a file smaller than 2 MiB.');
-      const contents = await selected.text();
+      const bytes = await selected.arrayBuffer();
       if (current !== version) return;
-      source.value = contents;
+      if (new Uint8Array(bytes).includes(0)) {
+        throw new Error('The file contains a null character. Export as UTF-8 CSV without null characters and open it again.');
+      }
+      try {
+        source.value = new TextDecoder('utf-8', {fatal: true}).decode(bytes);
+      } catch {
+        throw new Error('Save the CSV as UTF-8 and open it again.');
+      }
       source.dispatchEvent(new Event('input'));
       message.textContent = 'Loaded ' + selected.name + '.';
     } catch (err) {

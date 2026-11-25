@@ -116,3 +116,48 @@ test('compares two selected CSV files without sending either snapshot', async ({
   await expect(rowFor(page, 'KEEP')).toContainText('9.50');
   expect(requests.filter(request => request.method() !== 'GET' || new URL(request.url()).hostname !== '127.0.0.1')).toEqual([]);
 });
+
+test('keeps file read errors until the affected snapshot is corrected', async ({page}) => {
+  const csv = 'SKU,Price,Stock\n0012,9.50,10';
+  const utf16 = {name: 'supplier.csv', mimeType: 'text/csv', buffer: Buffer.from('\uFEFF' + csv, 'utf16le')};
+  const utf8 = {name: 'supplier.csv', mimeType: 'text/csv', buffer: Buffer.from(csv)};
+  const status = page.locator('#status');
+  const previousError = 'Previous CSV: Save the file as UTF-8 and open it again.';
+  const latestError = 'Latest CSV: Save the file as UTF-8 and open it again.';
+  await page.locator('#sample').click();
+  await page.locator('#previousFile').setInputFiles(utf16);
+  await expect(status).toHaveText(previousError);
+  await expect(page.locator('#results')).toBeHidden();
+  await page.locator('#currentFile').setInputFiles(utf8);
+  await expect(page.locator('#current')).toHaveValue(csv);
+  await page.locator('#readHeaders').click();
+  await expect(status).toHaveText(previousError);
+  await expect(page.locator('#columnChoices')).toBeHidden();
+
+  await page.locator('#currentFile').setInputFiles(utf16);
+  await expect(status).toContainText(latestError);
+  await expect(status).toContainText(previousError);
+  await page.locator('#previous').fill(csv);
+  await expect(status).toHaveText(latestError);
+  await page.locator('#currentFile').setInputFiles(utf8);
+  await expect(page.locator('#current')).toHaveValue(csv);
+  await page.locator('#readHeaders').click();
+  await page.locator('#compare').click();
+  await expect(status).toHaveText('Comparison complete.');
+  await expect(page.locator('#summary')).toHaveText('0 added · 0 missing · 0 changed · 1 unchanged');
+});
+
+test('flags header-only supplier exports without losing their comparison counts', async ({page}) => {
+  const header = 'SKU,Price,Stock';
+  const stock = header + '\n0012,9.50,10\n0013,0,0';
+  for (const [previous, current, source, counts] of [
+    [stock, header, 'Latest CSV', '0 added · 2 missing'],
+    [header, stock, 'Previous CSV', '2 added · 0 missing'],
+  ]) {
+    await loadSnapshots(page, previous, current);
+    await page.locator('#compare').click();
+    await expect(page.locator('#summary')).toContainText(counts);
+    await expect(page.locator('#status')).toContainText(source + ' has a header but no product rows.');
+    await expect(page.locator('#resultRows tr')).toHaveCount(2);
+  }
+});

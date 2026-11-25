@@ -37,13 +37,15 @@ function indexProducts(text, column) {
     if (products.has(sku)) throw new Error('Duplicate SKU on lines ' + products.get(sku).line + ' and ' + start + '. Keep one row per SKU.');
     const product = {sku, line: start, matched: false, review: false};
     products.set(sku, product);
-    // Filename Cleaner’s numbered mode uses these Unicode word groups and the selected separator.
-    const words = sku.trim().normalize('NFC').toLowerCase().match(/[\p{L}\p{N}\p{M}]+/gu);
+    const literalPrefix = sku.trim().normalize('NFC').toLowerCase();
+    const words = literalPrefix.match(/[\p{L}\p{N}\p{M}]+/gu);
     if (!words || !/[\p{L}\p{N}]/u.test(sku) || /[\\/]/.test(sku)) continue;
     for (const [separator, groups] of byStyle) {
-      const prefix = words.join(separator);
-      if (!groups.has(prefix)) groups.set(prefix, []);
-      groups.get(prefix).push(product);
+      // Existing stock photos can keep the original SKU. Filename Cleaner also joins its words using this separator.
+      for (const prefix of new Set([literalPrefix, words.join(separator)])) {
+        if (!groups.has(prefix)) groups.set(prefix, []);
+        groups.get(prefix).push(product);
+      }
     }
   }
   if (!products.size) throw new Error('Add at least one product row beneath the CSV header.');

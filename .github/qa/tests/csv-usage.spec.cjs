@@ -69,7 +69,7 @@ test('corrected download requires the latest passing check and preserves exact C
 
 test('new or failed file reads cannot download a previously checked CSV',async({page})=>{
  await open(page,'csv-import-checker',{testMode:true});await runCustom(page,'csv-import-checker');
- await page.evaluate(()=>{File.prototype.text=function(){return new Promise((resolve,reject)=>{window.pendingRead={resolve,reject};});};});
+ await page.evaluate(()=>{File.prototype.arrayBuffer=function(){return new Promise((resolve,reject)=>{window.pendingRead={resolve,reject};});};});
  await page.locator('#file').setInputFiles({name:'later.csv',mimeType:'text/csv',buffer:Buffer.from('A,B\n1,2')});
  await expect(page.locator('#download')).toBeDisabled();
  await expect(page.locator('#source')).toHaveValue('');await page.locator('#check').click();await expect(page.locator('#download')).toBeDisabled();
@@ -77,7 +77,7 @@ test('new or failed file reads cannot download a previously checked CSV',async({
  await expect(page.locator('#summary')).toContainText('Could not read');await expect(page.locator('#download')).toBeDisabled();
  await page.locator('#file').setInputFiles({name:'later.csv',mimeType:'text/csv',buffer:Buffer.from('A,B\n1,2')});
  await page.locator('#source').fill('New,Data\n3,4');await page.locator('#check').click();
- await page.evaluate(()=>window.pendingRead.resolve('STALE,FILE\n5,6'));
+ await page.evaluate(()=>window.pendingRead.resolve(new TextEncoder().encode('STALE,FILE\n5,6').buffer));
  const saved=await download(page);expect(fs.readFileSync(await saved.path(),'utf8')).toBe('New,Data\n3,4');
 });
 

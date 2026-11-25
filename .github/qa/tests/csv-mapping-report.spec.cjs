@@ -48,7 +48,11 @@ test('changed inputs, choices and pending or failed file reads invalidate both r
  await page.locator('#generate').click();expect((await download(page,'#downloadReport')).text).toContain('2 inserted blank cells');
  await page.locator('#target').fill('Title');await expect(page.locator('#downloadReport')).toBeDisabled();
  await page.locator('#sample').click();await page.locator('#source').fill('A,B\n1');await expect(page.locator('#downloadReport')).toBeDisabled();await page.locator('#prepare').click();await expect(page.locator('#result')).toBeHidden();
- await page.locator('#sample').click();await page.evaluate(()=>{File.prototype.text=function(){return new Promise((resolve,reject)=>window.pendingRead={resolve,reject});};});
+ await page.locator('#sample').click();await page.evaluate(()=>{
+   const pendingRead=()=>new Promise((resolve,reject)=>{window.pendingRead={resolve,reject};});
+   File.prototype.arrayBuffer=pendingRead; // Source CSV
+   File.prototype.text=pendingRead; // Saved mapping JSON
+ });
  await page.locator('#file').setInputFiles({name:'pending.csv',mimeType:'text/csv',buffer:Buffer.from('A\n1')});await expect(page.locator('#downloadReport')).toBeDisabled();await expect(page.locator('#result')).toBeHidden();await page.evaluate(()=>window.pendingRead.reject(new Error('read failed')));await expect(page.locator('#downloadReport')).toBeDisabled();
  await page.locator('#sample').click();await page.locator('#mappingFile').setInputFiles({name:'pending.json',mimeType:'application/json',buffer:Buffer.from('{}')});await expect(page.locator('#downloadReport')).toBeDisabled();await page.evaluate(()=>window.pendingRead.reject(new Error('read failed')));await expect(page.locator('#result')).toBeHidden();
 });

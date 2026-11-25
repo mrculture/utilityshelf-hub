@@ -82,6 +82,21 @@ test('flags missing, extra and ambiguous files without allowing partial or leadi
   for (const state of ['Matched', 'Missing photos', 'Unmatched photo', 'Needs review', 'Skipped']) expect(report).toContain(state);
 });
 
+test('matches literal supplier SKU spellings and keeps collisions with generated names under review', async ({page}) => {
+  await page.locator('#csv').fill('SKU\nAB-123\nKIT.A\nBLUE BOX\nBLUE-BOX\n0012');
+  await page.locator('#names').fill('ab-123_01.jpg\nkit.a-01.jpg\nab_123_02.jpg\nblue-box-01.jpg\n12-01.jpg');
+  await page.locator('#match').click();
+  await expect(page.locator('#summary')).toContainText('3 matched, 1 unmatched, 1 needing review');
+  await expect(finding(page, 'ab-123_01.jpg').getByRole('cell', {name: 'AB-123', exact: true})).toBeVisible();
+  await expect(finding(page, 'kit.a-01.jpg').getByRole('cell', {name: 'KIT.A', exact: true})).toBeVisible();
+  await expect(finding(page, 'ab_123_02.jpg').getByRole('cell', {name: 'AB-123', exact: true})).toBeVisible();
+
+  const report = await downloadReport(page);
+  expect(report).toContain('Needs review\tBLUE BOX / BLUE-BOX\tblue-box-01.jpg');
+  expect(report).toContain('Unmatched photo\t\t12-01.jpg');
+  expect(report).toContain('Missing photos\t0012\t');
+});
+
 test('competing photo numbers and duplicate CSV SKUs never leave stale results available', async ({page}) => {
   await page.locator('#csv').fill('SKU,Title\nBOX,Box');
   await page.locator('#names').fill('BOX-1.jpg\nbox-001.png');
