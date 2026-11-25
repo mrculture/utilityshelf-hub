@@ -7,8 +7,8 @@
   <meta name="description" content="Match numbered product photo filenames to supplier SKUs. Find missing photos, unrecognised filenames and ambiguous matches before listing.">
   <link rel="canonical" href="https://utilityshelf.site/utilities/sku-photo-matcher/">
   <link rel="stylesheet" href="/utilities/shared.css?v=20261124-workflow-nav">
-  <script defer src="/utilities/usage.js?v=20261125-catalog-checks"></script>
-  <script type="module" src="./app.js"></script>
+  <script defer src="/utilities/usage.js?v=20261125-matcher-counts"></script>
+  <script type="module" src="./app.js?v=20261125-matcher-counts"></script>
 </head>
 <body>
   <header><a href="/">UtilityShelf</a><nav aria-label="Main"><a href="/#companions">Browse tools</a></nav></header>
@@ -24,6 +24,7 @@
         <a href="/guides/prepare-supplier-csv-for-import">Supplier CSV guide</a>
       </div>
     </nav>
+    <label class="hint usage-choice"><input id="usage" type="checkbox" checked> Share anonymous counts of completed matches and report downloads. SKUs and filenames stay on your device. <a href="/privacy">Privacy details</a></label>
     <section class="panel" aria-labelledby="catalogue">
       <h2 id="catalogue">Choose the catalogue</h2>
       <label for="csvFile">Open supplier CSV</label>

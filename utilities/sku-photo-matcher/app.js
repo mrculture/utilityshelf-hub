@@ -12,6 +12,13 @@ const pageSize = 50;
 let current = null;
 let page = 0;
 let csvRevision = 0;
+let usingExampleCatalogue = false;
+let usingExampleFilenames = false;
+
+function track(action) {
+  const source = usingExampleCatalogue || usingExampleFilenames ? 'sample' : 'custom';
+  window.UtilityShelfUsage?.track('sku-photo-matcher', action, 'match', source);
+}
 
 function invalidate(message) {
   current = null;
@@ -41,18 +48,23 @@ function refreshColumns(preferred) {
 
 csv.addEventListener('input', () => {
   csvRevision++;
+  usingExampleCatalogue = false;
   const preferred = column.selectedOptions[0]?.textContent;
   invalidate('Catalogue updated. Review the SKU column and match again.');
   refreshColumns(preferred);
 });
 column.addEventListener('change', () => invalidate('SKU column changed. Match again to refresh the report.'));
-names.addEventListener('input', () => invalidate('Photo list updated. Match again to refresh the report.'));
+names.addEventListener('input', () => {
+  usingExampleFilenames = false;
+  invalidate('Photo list updated. Match again to refresh the report.');
+});
 
 byId('csvFile').addEventListener('change', async event => {
   const input = event.currentTarget;
   const file = input.files[0];
   if (!file) return;
   const revision = ++csvRevision;
+  usingExampleCatalogue = false;
   input.value = '';
   csv.value = '';
   column.replaceChildren(new Option('Choose a column', ''));
@@ -74,6 +86,7 @@ for (const id of ['photos', 'folder']) {
   byId(id).addEventListener('change', event => {
     const input = event.currentTarget;
     if (!input.files.length) return;
+    usingExampleFilenames = false;
     names.value = '';
     invalidate('Reading photo filenames…');
     try {
@@ -104,6 +117,7 @@ function match() {
     results.hidden = false;
     renderPage();
     status.textContent = 'Photo match complete.';
+    track('check_complete');
   } catch (error) {
     status.textContent = error.message;
   }
@@ -137,6 +151,8 @@ byId('next').addEventListener('click', () => { page++; renderPage(); });
 byId('match').addEventListener('click', match);
 byId('sample').addEventListener('click', () => {
   csvRevision++;
+  usingExampleCatalogue = true;
+  usingExampleFilenames = true;
   csv.value = 'SKU,Product\n0012,Mouse\n12,Keyboard\nA-1,Cable\nA-10,Adapter\nBlue Mug,Small mug\nBLUE-MUG,Large mug\nMISSING,Charger';
   names.value = '0012-01.jpg\n12-01.jpg\na-1-01.png\na-10-01.webp\nblue-mug-01.jpg\nOTHER-01.jpg';
   refreshColumns();
@@ -161,6 +177,7 @@ byId('download').addEventListener('click', () => {
   link.download = 'sku-photo-match-report.txt';
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 30000);
+  track('report_download');
 });
 
 for (const id of ['csvFile', 'photos', 'folder', 'match', 'sample']) byId(id).disabled = false;

@@ -129,3 +129,25 @@ test('resize events accept only fixed labels from the hub origin',async()=>{
  assert.equal((await w.fetch(request(data),env)).status,403);
  }assert.equal(points.length,4);
 });
+
+test('SKU matcher collector stores only the two fixed actions from the production hub', async () => {
+ const w = await worker;
+ const hub = {Origin: 'https://utilityshelf.site'};
+ const points = [];
+ const env = {USAGE: {writeDataPoint: point => points.push(point)}};
+ const expected = [];
+ for (const source of ['sample', 'custom']) {
+  for (const action of ['check_complete', 'report_download']) {
+   const payload = {tool: 'sku-photo-matcher', event: action, mode: 'match', source};
+   const response = await w.fetch(request(payload, hub), env);
+   assert.equal(response.status, 204);
+   assert.equal(response.headers.get('Access-Control-Allow-Origin'), hub.Origin);
+   expected.push({indexes: [payload.tool], blobs: [action, 'match', source], doubles: [1]});
+   assert.equal((await w.fetch(request(payload), env)).status, 403);
+   assert.equal((await w.fetch(request({...payload, sku: 'PRIVATE-001'}, hub), env)).status, 400);
+   assert.equal((await w.fetch(request({...payload, mode: 'private filename'}, hub), env)).status, 400);
+   assert.equal((await w.fetch(request({...payload, source: 'private source'}, hub), env)).status, 400);
+  }
+ }
+ assert.deepEqual(points, expected);
+});

@@ -72,6 +72,7 @@ identifiers, or request headers are written to the dataset.
 | CSV Import Checker | corrected_download | Exact checked CSV download started after passing structure checks | passed |
 | CSV Column Mapper | build_complete / mapped_download | Mapping built / full CSV download started | mapped |
 | CSV Formula Checker | scan_complete | Parsed nonempty input and completed prefix scan | clear, warnings |
+| SKU Photo Matcher | check_complete / report_download | Match results displayed / current match report download started | match |
 | CSV Import Checker / CSV Formula Checker | report_download | Plain-text report download started for the current check | passed, issues, incomplete |
 
 Each action/mode/source combination is counted at most once per page load.
@@ -85,6 +86,7 @@ Editing a built-in CSV sample changes its source category to custom. CSV files
 opened from disk or pasted are custom; owner tests must use test mode regardless.
 The standalone CSV Import Checker ships an identical copy of `utilities/usage.js`
 at `tools/csv-import-checker/usage.js`; a release test guards against drift.
+SKU Photo Matcher classifies a result as sample while either input still comes from **Try supplier example**. Editing or replacing both example inputs makes the next completed match custom. Selecting a column, filtering findings or paging does not change the input source.
 Opt-out, DNT, GPC, automated browsers, previews and `?release-check` suppress events.
 Sample activity must be excluded when assessing custom use. Tests intercept all
 collector calls; any explicitly performed live sample verification stays sample.

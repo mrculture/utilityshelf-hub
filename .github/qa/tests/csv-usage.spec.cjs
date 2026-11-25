@@ -139,3 +139,80 @@ for(const tool of ['csv-import-checker','csv-formula-checker'])test(tool+' repor
  ]);
  expect(JSON.stringify(events)).not.toMatch(/PRIVATE|SKU|Price|broken/);
 });
+
+test('SKU matcher counts completed checks and report starts once for each input source', async ({page}) => {
+ const tool = 'sku-photo-matcher';
+ const {events} = await open(page, tool);
+ const csv = 'SKU,Title\nPRIVATE-001,Private title';
+ const catalogue = {name: 'private-catalogue.csv', mimeType: 'text/csv', buffer: Buffer.from(csv)};
+ const photo = {name: 'PRIVATE-001_01.jpg', mimeType: 'image/jpeg', buffer: Buffer.alloc(1)};
+ const check = page.locator('#match');
+ const results = page.locator('#results');
+
+ // Leave a sample catalogue in place when the selected photo is replaced.
+ await page.locator('#usage').uncheck();
+ await page.locator('#sample').click();
+ await expect(results).toBeVisible();
+ await download(page);
+ expect(events).toEqual([]);
+ await page.locator('#usage').check();
+ await page.locator('#photos').setInputFiles(photo);
+ await expect(results).toBeHidden();
+ await check.click();
+ await download(page);
+ await expect.poll(() => events.length).toBe(2);
+ expect(events).toEqual([
+  {tool, event: 'check_complete', mode: 'match', source: 'sample'},
+  {tool, event: 'report_download', mode: 'match', source: 'sample'}
+ ]);
+
+ // A custom catalogue with the example filenames also remains sample.
+ await page.locator('#sample').click();
+ await page.locator('#csvFile').setInputFiles(catalogue);
+ await expect(page.locator('#csv')).toHaveValue(csv);
+ await check.click();
+ await download(page);
+ expect(events).toHaveLength(2);
+
+ // A rejected upload or stale report cannot generate either custom event.
+ await page.locator('#photos').setInputFiles(photo);
+ await page.locator('#csvFile').setInputFiles({...catalogue, buffer: Buffer.from([0xff])});
+ await expect(page.locator('#status')).toContainText('UTF-8');
+ await check.click();
+ await expect(results).toBeHidden();
+ await page.locator('#download').dispatchEvent('click');
+ expect(events).toHaveLength(2);
+
+ await page.locator('#csvFile').setInputFiles(catalogue);
+ await expect(page.locator('#csv')).toHaveValue(csv);
+ await check.click();
+ await expect(results).toBeVisible();
+ await expect(page.locator('#findings')).toContainText(photo.name);
+ expect((await download(page)).suggestedFilename()).toBe('sku-photo-match-report.txt');
+ await check.click();
+ await download(page);
+ await expect.poll(() => events.length).toBe(4);
+ expect(events).toEqual(['sample', 'custom'].flatMap(source =>
+  ['check_complete', 'report_download'].map(event => ({tool, event, mode: 'match', source}))));
+});
+
+test('SKU matcher privacy exclusions suppress action requests while matches and downloads work', async ({browser}) => {
+ for (const setting of ['testMode', 'optout', 'dnt', 'gpc', 'release', 'automated']) {
+  const page = await browser.newPage();
+  try {
+   const {events, requests} = await open(page, 'sku-photo-matcher', {[setting]: true});
+   if (setting === 'optout') await page.locator('#usage').uncheck();
+   await page.locator('#csv').fill('SKU\n0012');
+   await page.locator('#names').fill('0012-01.jpg');
+   await page.locator('#match').click();
+   await expect(page.locator('#results')).toBeVisible();
+   expect((await download(page)).suggestedFilename()).toBe('sku-photo-match-report.txt');
+   expect(requests, setting).not.toContain(collector);
+   expect(events, setting).toEqual([]);
+   if (setting === 'testMode') await expect(page.locator('#testModeNotice')).toBeVisible();
+   if (['testMode','release','automated'].includes(setting)) {
+    expect(requests.some(url => url.includes('cloudflareinsights')), setting).toBe(false);
+   }
+  } finally { await page.close(); }
+ }
+});

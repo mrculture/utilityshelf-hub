@@ -40,6 +40,7 @@ Use these links before starting any owner/agent test:
 - https://csv-import-checker.utilityshelf.site/?test-mode=1
 - https://utilityshelf.site/utilities/csv-column-mapper/?test-mode=1
 - https://utilityshelf.site/utilities/csv-formula-checker/?test-mode=1
+- https://utilityshelf.site/utilities/sku-photo-matcher/?test-mode=1
 
 The visible Test mode notice confirms exclusion. On these pages it disables
 both action events and the Cloudflare Web Analytics beacon, without preventing
